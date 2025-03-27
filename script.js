@@ -63,6 +63,7 @@ const elements = {
     answerTexts: document.querySelectorAll('.answer-text'),
     lifelines: document.querySelectorAll('.lifeline'),
     prizeLevels: document.querySelectorAll('.prize-level'),
+    progressDots: document.querySelectorAll('.progress-dot'),
     
     // Results screen elements
     resultTitle: document.getElementById('result-title'),
@@ -261,7 +262,7 @@ async function checkPhoneAndStartGame(e) {
     
     // Get player name and phone
     const playerName = elements.playerNameInput.value.trim();
-    const playerPhone = elements.playerPhoneInput.value.trim();
+    let playerPhone = elements.playerPhoneInput.value.trim();
     
     if (!playerName) {
         alert('Por favor, ingresa tu nombre para comenzar.');
@@ -270,6 +271,15 @@ async function checkPhoneAndStartGame(e) {
     
     if (!playerPhone) {
         alert('Por favor, ingresa tu teléfono para comenzar.');
+        return;
+    }
+    
+    // Validar formato del teléfono - solo números y entre 8 y 12 dígitos
+    const phoneRegex = /^[0-9]{8,12}$/;
+    if (!phoneRegex.test(playerPhone)) {
+        alert('Por favor, ingresa un número de teléfono válido (8-12 dígitos, solo números).');
+        elements.playerPhoneInput.classList.add('input-error');
+        elements.playerPhoneInput.focus();
         return;
     }
     
@@ -319,7 +329,7 @@ function startGame(e) {
     
     // Set player name and phone
     gameState.player.name = playerName;
-    gameState.player.phone = playerPhone;
+    gameState.player.phone = playerPhone.toString();
     
     // Asegurar que comienza sin chances (prize = 0)
     gameState.player.prize = 0;
@@ -338,6 +348,9 @@ function startGame(e) {
     
     // Set game as active
     gameState.gameActive = true;
+    
+    // Asegurar que los puntos de progreso están reseteados
+    updateProgressDots();
     
     // Show game screen
     showScreen(elements.gameScreen);
@@ -407,7 +420,7 @@ function loadQuestion() {
     elements.questionNumber.textContent = `Pregunta ${gameState.player.currentQuestionIndex + 1} de ${GAME_CONFIG.questionsPerRound}`;
     elements.questionText.textContent = gameState.currentQuestion.text;
     elements.currentPillar.textContent = `Pilar: ${gameState.player.currentPillar}`;
-    elements.currentDifficulty.textContent = `Dificultad: ${currentDifficulty}`;
+    elements.currentDifficulty.textContent = `Nivel: ${currentDifficulty}`;
     
     // Set pillar color for question container
     document.querySelector('.question-container').className = 'question-container';
@@ -512,17 +525,7 @@ function handleCorrectAnswer() {
     gameState.player.questionsAnswered++;
     
     // Actualizar el indicador visual de progreso (puntos)
-    const currentProgress = Math.min(5, gameState.player.questionsAnswered % 5);
-    for (let i = 1; i <= 5; i++) {
-        const dot = document.getElementById(`progress-${i}`);
-        if (dot) {
-            if (i <= currentProgress) {
-                dot.classList.add('completed');
-            } else {
-                dot.classList.remove('completed');
-            }
-        }
-    }
+    updateProgressDots();
     
     // Acumulamos chances en lugar de dinero (1 chance cada 5 preguntas)
     // Cada 5 preguntas correctas = 1 chance
@@ -716,7 +719,10 @@ function startTimer() {
     elements.timerBar.style.width = '100%';
     elements.timerBar.style.backgroundColor = 'var(--success-green)';
     
-    // Iniciar el temporizador inmediatamente (antes no lo hacía en la primera pregunta)
+    // Update display immediately to ensure it's visible from the start
+    updateTimerDisplay();
+    
+    // Start the interval timer
     gameState.timer = setInterval(() => {
         // Decrement time remaining
         gameState.timeRemaining--;
@@ -1033,6 +1039,23 @@ function formatCurrency(amount) {
     }
 }
 
+// Actualizar indicador visual de progreso (los 5 puntos)
+function updateProgressDots() {
+    console.log("Actualizando puntos de progreso: " + gameState.player.questionsAnswered);
+    // Calcular cuántos puntos deben estar completos (1-5)
+    const currentProgress = Math.min(5, gameState.player.questionsAnswered % 5);
+    
+    // Verificar cada uno de los 5 puntos
+    for (let i = 0; i < 5; i++) {
+        // Actualizar la clase de cada punto de progreso
+        if (i < currentProgress) {
+            elements.progressDots[i].classList.add('completed');
+        } else {
+            elements.progressDots[i].classList.remove('completed');
+        }
+    }
+}
+
 // Show the confetti animation
 function showConfetti() {
     // Make sure the confetti canvas is visible
@@ -1179,14 +1202,7 @@ async function getLeaderboard() {
 
 // Reset the game and start again
 function resetAndStartGame() {
-    // Esta función lleva al usuario de vuelta a la pantalla de inicio
-    // para iniciar un nuevo juego con un nuevo número de teléfono
-    goToStartScreen();
-}
-
-// Go back to the start screen
-function goToStartScreen() {
-    // Reset game state
+    // Reset game state completely
     resetGameState();
     
     // Reset lifelines UI
@@ -1194,8 +1210,24 @@ function goToStartScreen() {
         lifeline.classList.remove('used');
     });
     
+    // Reset progress dots
+    elements.progressDots.forEach(dot => {
+        dot.classList.remove('completed');
+    });
+    
+    // Reset form inputs
+    elements.playerNameInput.value = '';
+    elements.playerPhoneInput.value = '';
+    elements.playerPhoneInput.classList.remove('input-error');
+    
     // Show start screen
     showScreen(elements.startScreen);
+}
+
+// Go back to the start screen
+function goToStartScreen() {
+    // Reset the game and go to start screen
+    resetAndStartGame();
 }
 
 // Utility Functions
