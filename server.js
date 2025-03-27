@@ -99,6 +99,15 @@ app.get('/api/questions', async (req, res) => {
     } catch (error) {
         console.error('Error fetching questions:', error);
         
+        // Print detailed error information
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+            console.error('Error Response Headers:', error.response.headers);
+        }
+        
         // On error, return sample questions for testing
         const { pillars, difficulty } = req.query;
         const pillarsArray = Array.isArray(pillars) ? pillars : JSON.parse(pillars);
@@ -191,6 +200,16 @@ app.post('/api/scores', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error saving score:', error);
+        
+        // Print detailed error information
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+            console.error('Error Response Headers:', error.response.headers);
+        }
+        
         // Return a successful response for testing
         res.json({
             id: 'sample-score-id',
@@ -250,6 +269,16 @@ app.get('/api/scores/top', async (req, res) => {
         res.json(scores);
     } catch (error) {
         console.error('Error fetching top scores:', error);
+        
+        // Print detailed error information
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+            console.error('Error Response Headers:', error.response.headers);
+        }
+        
         // Return sample scores for testing
         const limit = req.query.limit || 5;
         res.json(getSampleScores(limit));
