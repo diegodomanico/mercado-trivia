@@ -594,7 +594,7 @@ function endGame(isWinner) {
     // Update result details
     elements.resultPlayerName.textContent = gameState.player.name;
     elements.resultPrize.textContent = formatCurrency(gameState.player.prize);
-    elements.resultRound.textContent = `${gameState.player.currentRound} de ${GAME_STRUCTURE.totalRounds}`;
+    elements.resultRound.textContent = `${gameState.player.questionsAnswered} de 25`;
     elements.resultPillar.textContent = gameState.player.currentPillar;
     
     // Save score to leaderboard

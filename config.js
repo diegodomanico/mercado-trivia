@@ -12,12 +12,12 @@ const GAME_STRUCTURE = {
     difficultyLevels: ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'],
     pillars: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'],
     totalRounds: 5, // One round per difficulty level
-    totalQuestionsNeeded: 75 // 15 questions per pillar (3 per difficulty level)
+    totalQuestionsNeeded: 125 // 25 questions per pillar (5 per difficulty level)
 };
 
 // Game configuration
 const GAME_CONFIG = {
-    questionsPerRound: 3, // Number of questions per pillar in each round
+    questionsPerRound: 5, // Number of questions per pillar in each round
     questionPointValue: 100, // Base points per question
     timePerDifficulty: { // Time in seconds for each difficulty level
         facil: 30,
