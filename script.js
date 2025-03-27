@@ -321,6 +321,10 @@ function startGame(e) {
     gameState.player.name = playerName;
     gameState.player.phone = playerPhone;
     
+    // Asegurar que comienza sin chances (prize = 0)
+    gameState.player.prize = 0;
+    gameState.player.questionsAnswered = 0;
+    
     // Select a random pillar for first round
     selectRandomPillar();
     
@@ -1001,7 +1005,10 @@ function updatePrizeLadder() {
 
 // Format currency (changed to show chances instead of money amount)
 function formatCurrency(amount) {
-    if (amount === 1) {
+    // Si amount es 0, mostrar "0 Chances"
+    if (amount === 0) {
+        return `0 Chances`;
+    } else if (amount === 1) {
         return `1 Chance`;
     } else {
         return `${amount} Chances`;
