@@ -193,7 +193,7 @@ app.post('/api/scores', async (req, res) => {
     try {
         const scoreData = req.body;
         
-        if (!scoreData.name || scoreData.score === undefined || scoreData.maxRound === undefined || !scoreData.finalPillar) {
+        if (!scoreData.name || !scoreData.phone || scoreData.score === undefined || scoreData.maxRound === undefined || !scoreData.finalPillar) {
             return res.status(400).json({ error: 'Missing required score data' });
         }
         
@@ -217,6 +217,7 @@ app.post('/api/scores', async (req, res) => {
                 {
                     fields: {
                         Nombre: scoreData.name,
+                        Telefono: scoreData.phone,
                         Puntaje: scoreData.score,
                         Fecha: new Date().toISOString(),
                         RondaMax: scoreData.maxRound,
@@ -304,6 +305,7 @@ app.get('/api/scores/top', async (req, res) => {
         const scores = data.records.map(record => ({
             id: record.id,
             name: record.fields.Nombre,
+            phone: record.fields.Telefono || '',
             score: record.fields.Puntaje,
             date: record.fields.Fecha,
             maxRound: record.fields.RondaMax,
@@ -335,6 +337,7 @@ function getSampleScores(limit = 5) {
         {
             id: 'sample-1',
             name: 'Carlos Rodriguez',
+            phone: '1122334455',
             score: 1000000,
             date: new Date().toISOString(),
             maxRound: 5,
@@ -343,6 +346,7 @@ function getSampleScores(limit = 5) {
         {
             id: 'sample-2',
             name: 'Laura Gómez',
+            phone: '1166778899',
             score: 500000,
             date: new Date().toISOString(),
             maxRound: 4,
@@ -351,6 +355,7 @@ function getSampleScores(limit = 5) {
         {
             id: 'sample-3',
             name: 'Martín López',
+            phone: '1198765432',
             score: 200000,
             date: new Date().toISOString(),
             maxRound: 3,
@@ -359,6 +364,7 @@ function getSampleScores(limit = 5) {
         {
             id: 'sample-4',
             name: 'Sofía Martinez',
+            phone: '1155443322',
             score: 50000,
             date: new Date().toISOString(),
             maxRound: 2,
@@ -367,6 +373,7 @@ function getSampleScores(limit = 5) {
         {
             id: 'sample-5',
             name: 'Javier Ruiz',
+            phone: '1112345678',
             score: 10000,
             date: new Date().toISOString(),
             maxRound: 1,

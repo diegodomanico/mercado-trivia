@@ -4,6 +4,7 @@
 let gameState = {
     player: {
         name: "",
+        phone: "",
         currentRound: 1, // Starts at round 1 (Fácil)
         currentQuestionIndex: 0, // Index in the current round's questions
         currentPillar: null, // Current pillar (reputacion, oferta, etc.)
@@ -47,6 +48,7 @@ const elements = {
     // Start screen elements
     playerForm: document.getElementById('player-form'),
     playerNameInput: document.getElementById('player-name'),
+    playerPhoneInput: document.getElementById('player-phone'),
     showLeaderboardBtn: document.getElementById('show-leaderboard-btn'),
     
     // Game screen elements
@@ -65,6 +67,7 @@ const elements = {
     // Results screen elements
     resultTitle: document.getElementById('result-title'),
     resultPlayerName: document.getElementById('result-player-name'),
+    resultPlayerPhone: document.getElementById('result-player-phone'),
     resultPrize: document.getElementById('result-prize'),
     resultRound: document.getElementById('result-round'),
     resultPillar: document.getElementById('result-pillar'),
@@ -172,6 +175,7 @@ function resetGameState() {
     gameState = {
         player: {
             name: "",
+            phone: "",
             currentRound: 1,
             currentQuestionIndex: 0,
             currentPillar: null,
@@ -255,15 +259,23 @@ function hasEnoughQuestions() {
 function startGame(e) {
     if (e) e.preventDefault();
     
-    // Get player name
+    // Get player name and phone
     const playerName = elements.playerNameInput.value.trim();
+    const playerPhone = elements.playerPhoneInput.value.trim();
+    
     if (!playerName) {
         alert('Por favor, ingresa tu nombre para comenzar.');
         return;
     }
     
-    // Set player name
+    if (!playerPhone) {
+        alert('Por favor, ingresa tu teléfono para comenzar.');
+        return;
+    }
+    
+    // Set player name and phone
     gameState.player.name = playerName;
+    gameState.player.phone = playerPhone;
     
     // Select a random pillar for first round
     selectRandomPillar();
@@ -595,6 +607,7 @@ function endGame(isWinner) {
     
     // Update result details
     elements.resultPlayerName.textContent = gameState.player.name;
+    elements.resultPlayerPhone.textContent = gameState.player.phone;
     elements.resultPrize.textContent = formatCurrency(gameState.player.prize);
     elements.resultRound.textContent = `${gameState.player.questionsAnswered} de 25`;
     elements.resultPillar.textContent = gameState.player.currentPillar;
@@ -1012,6 +1025,7 @@ async function saveScore(name, prize, maxRound, finalPillar) {
     try {
         const scoreData = {
             name: name,
+            phone: gameState.player.phone,
             score: prize,
             maxRound: maxRound,
             finalPillar: finalPillar
