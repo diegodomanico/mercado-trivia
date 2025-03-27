@@ -48,7 +48,8 @@ const GAME_STRUCTURE = {
         'Oferta',
         'Logística',
         'Experiencia',
-        'Costos'
+        'Costos',
+        'Servicio'
     ],
     
     // Total number of rounds

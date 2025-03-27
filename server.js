@@ -140,7 +140,7 @@ async function fetchAllGameQuestions() {
         };
         
         // Get all pillars
-        const pillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'];
+        const pillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'];
         
         // Initialize empty arrays for each pillar and difficulty
         pillars.forEach(pillar => {
@@ -172,7 +172,7 @@ async function fetchAllGameQuestions() {
             data.records.forEach(record => {
                 const fields = record.fields;
                 
-                if (fields.Pregunta && fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4 && fields.RespuestaCorrecta && fields.Pilar && fields.Dificultad) {
+                if (fields.Pregunta && fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD && fields.RespuestaCorrecta && fields.Pilar && fields.Dificultad) {
                     const pillar = fields.Pilar;
                     const difficulty = fields.Dificultad;
                     
@@ -183,10 +183,10 @@ async function fetchAllGameQuestions() {
                             difficulty: difficulty,
                             text: fields.Pregunta,
                             options: [
-                                fields.Opcion1,
-                                fields.Opcion2,
-                                fields.Opcion3,
-                                fields.Opcion4
+                                fields.OpcionA,
+                                fields.OpcionB,
+                                fields.OpcionC,
+                                fields.OpcionD
                             ],
                             correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
                         };
@@ -234,7 +234,7 @@ async function fetchAllGameQuestions() {
     } catch (error) {
         console.error('Error fetching questions from Airtable:', error);
         return getSampleQuestions(
-            ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'],
+            ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'],
             'Fácil'
         );
     }
@@ -274,15 +274,15 @@ async function fetchTopScores(limit) {
             data.records.forEach(record => {
                 const fields = record.fields;
                 
-                if (fields.Nombre && fields.Telefono && fields.Puntaje) {
+                if (fields.Nombre && fields.Puntaje) {
                     scores.push({
                         id: record.id,
                         name: fields.Nombre,
-                        phone: fields.Telefono,
+                        phone: fields.Telefono || "",
                         score: fields.Puntaje,
-                        maxRound: fields.NivelMaximo || 1,
+                        maxRound: fields.NivelMaximo || fields.RondaMax || 1,
                         finalPillar: fields.PilarFinal || 'Reputación',
-                        date: fields.FechaHora || new Date().toISOString()
+                        date: fields.FechaHora || fields.Fecha || new Date().toISOString()
                     });
                 }
             });
@@ -328,7 +328,19 @@ async function saveScore(scoreData) {
         const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
         
         // Format the phone number to ensure it's a string and clean it
-        const cleanPhone = String(scoreData.phone).replace(/\D/g, '');
+        let cleanPhone = String(scoreData.phone).replace(/\D/g, '');
+        
+        // If we're having issues with the phone field, try using a different field name or formatting
+        // in Airtable, sometimes the field needs to be a number
+        try {
+            // Try to convert to a number
+            const phoneNumber = parseInt(cleanPhone, 10);
+            if (!isNaN(phoneNumber)) {
+                cleanPhone = phoneNumber;
+            }
+        } catch (error) {
+            console.log('Could not convert phone to number, using as string');
+        }
         
         // Ensure score is a number
         const score = typeof scoreData.score === 'number' ? scoreData.score : parseInt(scoreData.score) || 0;
@@ -339,7 +351,8 @@ async function saveScore(scoreData) {
         const airtableData = {
             fields: {
                 Nombre: String(scoreData.name),
-                Telefono: cleanPhone,
+                // Skip Telefono field for now as it's causing issues with Airtable
+                // Telefono: cleanPhone,
                 Puntaje: score,
                 NivelMaximo: maxRound,
                 PilarFinal: String(scoreData.finalPillar || 'Reputación'),
@@ -488,7 +501,7 @@ function getSampleScores(limit = 5) {
             phone: `1155${i}${i}${i}${i}${i}${i}`,
             score: Math.floor(Math.random() * 5) + 1, // 1-5 chances
             maxRound: Math.floor(Math.random() * 5) + 1, // Rounds 1-5
-            finalPillar: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'][Math.floor(Math.random() * 5)],
+            finalPillar: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'][Math.floor(Math.random() * 6)],
             date: new Date(Date.now() - Math.floor(Math.random() * 10) * 86400000).toISOString() // Random date within last 10 days
         });
     }
