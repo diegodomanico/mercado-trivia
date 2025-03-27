@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Quién quiere ser un Vendedor Estrella?</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+        <div class="logo-container">
+            <img src="assets/logo.svg" alt="Mercado Libre" class="logo">
+            <h1>¿Quién quiere ser un <span>Vendedor Estrella</span>?</h1>
+        </div>
+        <form id="player-form">
+            <input type="text" id="player-name" placeholder="Ingresa tu nombre" required>
+            <button type="submit" class="btn">¡COMENZAR!</button>
+        </form>
+        <button id="show-leaderboard-btn" class="btn btn-secondary">Ver tabla de líderes</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hide">
+        <div class="game-header">
+            <div class="player-info">
+                <span id="player-name-display"></span>
+                <span id="current-prize">$0</span>
+            </div>
+            <div class="timer-container">
+                <div id="timer-bar"></div>
+            </div>
+        </div>
+        
+        <div class="question-container">
+            <p id="question-number">Pregunta 1 de 15</p>
+            <p id="question-text"></p>
+        </div>
+        
+        <div class="answers-container">
+            <div class="answer" data-index="0">
+                <span class="answer-letter">A</span>
+                <span class="answer-text"></span>
+            </div>
+            <div class="answer" data-index="1">
+                <span class="answer-letter">B</span>
+                <span class="answer-text"></span>
+            </div>
+            <div class="answer" data-index="2">
+                <span class="answer-letter">C</span>
+                <span class="answer-text"></span>
+            </div>
+            <div class="answer" data-index="3">
+                <span class="answer-letter">D</span>
+                <span class="answer-text"></span>
+            </div>
+        </div>
+        
+        <div class="lifelines-container">
+            <div class="lifeline" id="fifty-fifty">
+                <i class="fas fa-balance-scale"></i>
+                <span>50:50</span>
+            </div>
+            <div class="lifeline" id="audience-help">
+                <i class="fas fa-users"></i>
+                <span>Público</span>
+            </div>
+            <div class="lifeline" id="expert-call">
+                <i class="fas fa-phone-alt"></i>
+                <span>Experto</span>
+            </div>
+        </div>
+        
+        <div class="prize-ladder">
+            <ul>
+                <li class="prize-level" data-level="15">$1,000,000</li>
+                <li class="prize-level" data-level="14">$500,000</li>
+                <li class="prize-level" data-level="13">$250,000</li>
+                <li class="prize-level" data-level="12">$125,000</li>
+                <li class="prize-level" data-level="11">$64,000</li>
+                <li class="prize-level" data-level="10">$32,000</li>
+                <li class="prize-level" data-level="9">$16,000</li>
+                <li class="prize-level" data-level="8">$8,000</li>
+                <li class="prize-level" data-level="7">$4,000</li>
+                <li class="prize-level" data-level="6">$2,000</li>
+                <li class="prize-level" data-level="5">$1,000</li>
+                <li class="prize-level" data-level="4">$500</li>
+                <li class="prize-level" data-level="3">$300</li>
+                <li class="prize-level" data-level="2">$200</li>
+                <li class="prize-level" data-level="1">$100</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="screen hide">
+        <h2 id="result-title"></h2>
+        <div class="results-container">
+            <p>Jugador: <span id="result-player-name"></span></p>
+            <p>Premio Final: <span id="result-prize"></span></p>
+            <p>Preguntas Contestadas: <span id="result-questions"></span></p>
+        </div>
+        <div class="results-buttons">
+            <button id="play-again-btn" class="btn">Jugar de nuevo</button>
+            <button id="back-to-start-btn" class="btn btn-secondary">Volver al inicio</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen hide">
+        <h2>Tabla de Líderes</h2>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Puesto</th>
+                    <th>Nombre</th>
+                    <th>Premio</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- Leaderboard entries will be inserted here -->
+            </tbody>
+        </table>
+        <button id="back-from-leaderboard-btn" class="btn">Volver</button>
+    </div>
+
+    <!-- Expert Call Modal -->
+    <div id="expert-modal" class="modal hide">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Llamada al Experto</h3>
+            <div class="expert-avatar">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <p id="expert-advice"></p>
+        </div>
+    </div>
+
+    <!-- Audience Help Modal -->
+    <div id="audience-modal" class="modal hide">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Ayuda del Público</h3>
+            <div class="audience-chart">
+                <div class="chart-bar" data-option="A">
+                    <div class="bar-fill"></div>
+                    <span class="bar-label">A</span>
+                    <span class="bar-percentage">0%</span>
+                </div>
+                <div class="chart-bar" data-option="B">
+                    <div class="bar-fill"></div>
+                    <span class="bar-label">B</span>
+                    <span class="bar-percentage">0%</span>
+                </div>
+                <div class="chart-bar" data-option="C">
+                    <div class="bar-fill"></div>
+                    <span class="bar-label">C</span>
+                    <span class="bar-percentage">0%</span>
+                </div>
+                <div class="chart-bar" data-option="D">
+                    <div class="bar-fill"></div>
+                    <span class="bar-label">D</span>
+                    <span class="bar-percentage">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for transitions and effects -->
+    <div id="overlay" class="hide"></div>
+    
+    <!-- Canvas for confetti -->
+    <canvas id="confetti-canvas" class="hide"></canvas>
+
+    <script src="config.js"></script>
+    <script src="assets/sounds.js"></script>
+    <script src="assets/confetti.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
