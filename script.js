@@ -173,6 +173,15 @@ async function initGame() {
 
 // Reset game state
 function resetGameState() {
+    // Detener temporizador si existe
+    if (gameState && gameState.timer) {
+        clearInterval(gameState.timer);
+    }
+    
+    // Guardar las preguntas para no tener que cargarlas de nuevo
+    const savedQuestions = gameState && gameState.allQuestions ? gameState.allQuestions : {};
+    
+    // Reiniciar completamente el estado del juego
     gameState = {
         player: {
             name: "",
@@ -183,9 +192,9 @@ function resetGameState() {
             questionsAnswered: 0,    // Contador de respuestas correctas (incrementa solo en handleCorrectAnswer)
             prize: 0,                // Esto es para las chances (1 chance por cada 5 preguntas correctas)
             usedLifelines: {
-                fiftyFifty: false,
-                audienceHelp: false,
-                expertCall: false
+                'fifty-fifty': false,  // Corregido para coincidir con los IDs en HTML
+                'audience-help': false,
+                'expert-call': false
             },
             completedRounds: []
         },
@@ -194,7 +203,7 @@ function resetGameState() {
         timeRemaining: 0,
         selectedAnswer: null,
         gameActive: false,
-        allQuestions: {},
+        allQuestions: savedQuestions, // Mantener las preguntas cargadas
         currentRoundQuestions: [],
         isLoading: false,
         hasError: false,
@@ -713,38 +722,47 @@ function startTimer() {
     // Clear any existing timer
     if (gameState.timer) {
         clearInterval(gameState.timer);
+        gameState.timer = null;
     }
     
-    // Force timer display at 100% initially
+    // Log para debugging
+    console.log("Iniciando temporizador con " + gameState.timeRemaining + " segundos");
+    
+    // Forzar visualización del temporizador al 100% inicialmente
     elements.timerBar.style.width = '100%';
     elements.timerBar.style.backgroundColor = 'var(--success-green)';
     
-    // Update display immediately to ensure it's visible from the start
+    // Actualizar el display de tiempo inmediatamente
     updateTimerDisplay();
     
-    // Start the interval timer
-    gameState.timer = setInterval(() => {
-        // Decrement time remaining
-        gameState.timeRemaining--;
-        
-        // Update timer display
-        updateTimerDisplay();
-        
-        // Play sounds based on time remaining
-        if (typeof playSound === 'function') {
-            if (gameState.timeRemaining <= 5) {
-                playSound('timeLow');
-            } else if (gameState.timeRemaining <= 15) {
-                playSound('timeRunning');
+    // Pequeña pausa antes de iniciar el timer para evitar problemas
+    setTimeout(() => {
+        // Start the interval timer
+        gameState.timer = setInterval(() => {
+            // Decrement time remaining
+            gameState.timeRemaining--;
+            
+            console.log("Tiempo restante: " + gameState.timeRemaining);
+            
+            // Update timer display
+            updateTimerDisplay();
+            
+            // Play sounds based on time remaining
+            if (typeof playSound === 'function') {
+                if (gameState.timeRemaining <= 5) {
+                    playSound('timeLow');
+                } else if (gameState.timeRemaining <= 15) {
+                    playSound('timeRunning');
+                }
             }
-        }
-        
-        // Check if time is up
-        if (gameState.timeRemaining <= 0) {
-            stopTimer();
-            timeUp();
-        }
-    }, 1000);
+            
+            // Check if time is up
+            if (gameState.timeRemaining <= 0) {
+                stopTimer();
+                timeUp();
+            }
+        }, 1000);
+    }, 100);
 }
 
 // Stop the timer
