@@ -432,7 +432,10 @@ function checkAnswer(selectedIndex) {
     
     // Update UI to show correct/incorrect
     elements.answers[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
-    if (!isCorrect) {
+    
+    // Si la respuesta es correcta, mostrar cuál era la correcta
+    // Si es incorrecta, NO mostrar la respuesta correcta
+    if (isCorrect) {
         elements.answers[correctIndex].classList.add('correct');
     }
     
@@ -456,10 +459,13 @@ function handleCorrectAnswer() {
     // Increment question index
     gameState.player.currentQuestionIndex++;
     
-    // Update prize (each correct answer adds a fraction of the round's prize)
-    const roundPrize = PRIZE_LEVELS[gameState.player.currentRound - 1].amount;
-    const questionPrize = roundPrize / GAME_CONFIG.questionsPerRound;
-    gameState.player.prize += questionPrize;
+    // Acumulamos chances en lugar de dinero (1 chance cada 5 preguntas)
+    // Calculamos las chances basadas en el total de preguntas respondidas correctamente
+    const totalQuestionsAnsweredCorrectly = gameState.player.questionsAnswered;
+    const newChances = Math.floor(totalQuestionsAnsweredCorrectly / 5);
+    
+    // Actualizamos el premio (que ahora son chances)
+    gameState.player.prize = newChances;
     
     // Update prize display
     updatePrizeDisplay();
@@ -547,7 +553,7 @@ function completeRound() {
     elements.roundCompleteTitle.classList.add('violet-text');
     elements.roundCompleteMessage.textContent = 
         `¡Felicidades! Has completado todos los pilares de la dificultad ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}. 
-        Tu premio actual es ${formatCurrency(gameState.player.prize)}.
+        Tienes ${formatCurrency(gameState.player.prize)} para participar en sorteos.
         ¡Prepárate para la siguiente ronda!`;
     
     elements.roundCompleteModal.classList.remove('hide');
@@ -694,8 +700,7 @@ function timeUp() {
     // Disable all answers
     elements.answers.forEach(answer => answer.classList.add('disabled'));
     
-    // Highlight the correct answer
-    elements.answers[gameState.currentQuestion.correctIndex].classList.add('correct');
+    // NO mostramos la respuesta correcta cuando se acaba el tiempo
     
     // Play wrong sound
     if (typeof playSound === 'function') {
@@ -942,9 +947,13 @@ function updatePrizeLadder() {
     });
 }
 
-// Format currency (e.g., 1000 -> $1,000)
+// Format currency (changed to show chances instead of money amount)
 function formatCurrency(amount) {
-    return `$${amount.toLocaleString('es')}`;
+    if (amount === 1) {
+        return `1 Chance`;
+    } else {
+        return `${amount} Chances`;
+    }
 }
 
 // Show the confetti animation
