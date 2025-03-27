@@ -84,22 +84,43 @@ app.get('/api/questions', async (req, res) => {
             return res.json(getSampleQuestions(pillars, difficulty));
         }
         
+        // Log the raw record data to see the structure
+        console.log('Sample Airtable record:', data.records[0]);
+        
         // Transform Airtable records to our question format
-        const questions = data.records.map(record => ({
-            id: record.id,
-            pillar: record.fields.Pilar,
-            difficulty: record.fields.Dificultad,
-            text: record.fields.Pregunta,
-            options: [
-                record.fields.OpcionA,
-                record.fields.OpcionB,
-                record.fields.OpcionC,
-                record.fields.OpcionD
-            ],
-            correctIndex: ['A', 'B', 'C', 'D'].indexOf(record.fields.RespuestaCorrecta),
-            correctSoundURL: record.fields.CorrectSoundURL,
-            wrongSoundURL: record.fields.WrongSoundURL
-        }));
+        const questions = data.records.map(record => {
+            // Ensure the correct answer field is properly processed
+            let correctIndex = 0; // Default to first option if not found
+            
+            if (record.fields.RespuestaCorrecta) {
+                correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.RespuestaCorrecta);
+                // If it's still -1, try looking for Respuesta_Correcta field
+                if (correctIndex === -1 && record.fields.Respuesta_Correcta) {
+                    correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.Respuesta_Correcta);
+                }
+                // If still not found, default to first option for demo purposes
+                if (correctIndex === -1) {
+                    correctIndex = 0;
+                    console.log(`Warning: Could not determine correct answer for question ID ${record.id}, defaulting to A`);
+                }
+            }
+            
+            return {
+                id: record.id,
+                pillar: record.fields.Pilar,
+                difficulty: record.fields.Dificultad,
+                text: record.fields.Pregunta,
+                options: [
+                    record.fields.OpcionA,
+                    record.fields.OpcionB,
+                    record.fields.OpcionC,
+                    record.fields.OpcionD
+                ],
+                correctIndex: correctIndex,
+                correctSoundURL: record.fields.CorrectSoundURL,
+                wrongSoundURL: record.fields.WrongSoundURL
+            };
+        });
         
         res.json(questions);
     } catch (error) {

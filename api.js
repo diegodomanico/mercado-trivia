@@ -4,7 +4,7 @@ require('dotenv').config();
 
 // Get environment variables
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = 'app8ZbcPx7dkpOnP0'; // Mercado Libre Game base ID
+const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF'; // Mercado Libre Game base ID
 const QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
 const SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
