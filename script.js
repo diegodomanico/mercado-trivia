@@ -288,9 +288,16 @@ async function checkPhoneAndStartGame(e) {
         
         // If phone exists, show error
         if (data.exists) {
-            alert('Este número de teléfono ya ha participado. Por favor, utiliza otro número.');
+            const errorMessage = 'Este número de teléfono ya ha participado en el juego. Solo puedes participar una vez por número. Por favor, utiliza otro número.';
+            alert(errorMessage);
+            // Mostrar el input de teléfono con error 
+            elements.playerPhoneInput.classList.add('input-error');
+            elements.playerPhoneInput.focus();
             showScreen(elements.startScreen);
             return;
+        } else {
+            // Quitar estilo de error si existía
+            elements.playerPhoneInput.classList.remove('input-error');
         }
         
         // If phone is new, start the game
@@ -497,9 +504,12 @@ function handleCorrectAnswer() {
     gameState.player.currentQuestionIndex++;
     
     // Acumulamos chances en lugar de dinero (1 chance cada 5 preguntas)
-    // Calculamos las chances basadas en el total de preguntas respondidas correctamente
-    const totalQuestionsAnsweredCorrectly = gameState.player.questionsAnswered;
-    const newChances = Math.floor(totalQuestionsAnsweredCorrectly / 5);
+    // Calculamos las chances basadas en las preguntas correctas (solo incrementamos al contestar correctamente)
+    // Cada 5 preguntas correctas = 1 chance
+    const correctQuestions = gameState.player.questionsAnswered;
+    
+    // Las chances se basan en el nivel (ronda) actual, que va de 1 a 5
+    const newChances = gameState.player.currentRound;
     
     // Actualizamos el premio (que ahora son chances)
     gameState.player.prize = newChances;
@@ -1071,11 +1081,13 @@ async function saveScore(name, prize, maxRound, finalPillar) {
     try {
         const scoreData = {
             name: name,
-            phone: gameState.player.phone,
+            phone: gameState.player.phone.toString(),
             score: prize,
             maxRound: maxRound,
             finalPillar: finalPillar
         };
+        
+        console.log('Guardando puntuación:', JSON.stringify(scoreData));
         
         // Send the score to the server
         const response = await fetch(API_ENDPOINTS.scores, {
@@ -1087,12 +1099,18 @@ async function saveScore(name, prize, maxRound, finalPillar) {
         });
         
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error respuesta del servidor:', errorText);
             throw new Error('Error al guardar la puntuación');
         }
         
-        console.log('Score saved successfully');
+        const result = await response.json();
+        console.log('Puntuación guardada exitosamente:', result);
+        
+        // Obtener el tablero de líderes después de guardar
+        getLeaderboard();
     } catch (error) {
-        console.error('Error saving score:', error);
+        console.error('Error guardando puntuación:', error);
     }
 }
 

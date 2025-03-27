@@ -132,6 +132,7 @@ async function saveScore(scoreData) {
         const data = {
             fields: {
                 Nombre: scoreData.name,
+                Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string
                 Puntaje: scoreData.score,
                 Fecha: formattedDate,
                 RondaMax: scoreData.maxRound,

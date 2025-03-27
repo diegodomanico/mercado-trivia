@@ -213,18 +213,14 @@ app.post('/api/scores', async (req, res) => {
         
         // Prepare data for Airtable
         const data = {
-            records: [
-                {
-                    fields: {
-                        Nombre: scoreData.name,
-                        Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string para Airtable
-                        Puntaje: scoreData.score,
-                        Fecha: new Date().toISOString(),
-                        RondaMax: scoreData.maxRound,
-                        PilarFinal: scoreData.finalPillar
-                    }
-                }
-            ]
+            fields: {
+                Nombre: scoreData.name,
+                Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string para Airtable
+                Puntaje: scoreData.score,
+                Fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+                RondaMax: scoreData.maxRound,
+                PilarFinal: scoreData.finalPillar
+            }
         };
         
         // Save data to Airtable using axios
