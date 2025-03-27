@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initGame();
     
     // Start screen
-    elements.playerForm.addEventListener('submit', startGame);
+    elements.playerForm.addEventListener('submit', checkPhoneAndStartGame);
     elements.showLeaderboardBtn.addEventListener('click', showLeaderboard);
     
     // Error screen
@@ -255,8 +255,8 @@ function hasEnoughQuestions() {
     return gameState.allQuestions.total > 0;
 }
 
-// Start the game
-function startGame(e) {
+// Verificar si el teléfono ya existe en la base de datos
+async function checkPhoneAndStartGame(e) {
     if (e) e.preventDefault();
     
     // Get player name and phone
@@ -272,6 +272,43 @@ function startGame(e) {
         alert('Por favor, ingresa tu teléfono para comenzar.');
         return;
     }
+    
+    try {
+        // Show loading screen while checking
+        showScreen(elements.loadingScreen);
+        
+        // Check if phone already exists
+        const response = await fetch(`${API_ENDPOINTS.checkPhone}?phone=${encodeURIComponent(playerPhone)}`);
+        
+        if (!response.ok) {
+            throw new Error('Error al verificar el teléfono. Intenta nuevamente.');
+        }
+        
+        const data = await response.json();
+        
+        // If phone exists, show error
+        if (data.exists) {
+            alert('Este número de teléfono ya ha participado. Por favor, utiliza otro número.');
+            showScreen(elements.startScreen);
+            return;
+        }
+        
+        // If phone is new, start the game
+        startGame();
+    } catch (error) {
+        console.error('Error checking phone:', error);
+        alert('Error al verificar el teléfono. Intenta nuevamente.');
+        showScreen(elements.startScreen);
+    }
+}
+
+// Start the game
+function startGame(e) {
+    if (e) e.preventDefault();
+    
+    // Get player name and phone
+    const playerName = elements.playerNameInput.value.trim();
+    const playerPhone = elements.playerPhoneInput.value.trim();
     
     // Set player name and phone
     gameState.player.name = playerName;

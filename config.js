@@ -4,7 +4,8 @@
 const API_ENDPOINTS = {
     questions: '/api/questions',
     scores: '/api/scores',
-    topScores: '/api/scores/top'
+    topScores: '/api/scores/top',
+    checkPhone: '/api/check-phone'
 };
 
 // Game structure
@@ -35,13 +36,13 @@ const GAME_CONFIG = {
     }
 };
 
-// Prize levels for each round
+// Prize levels for each round (now in chances instead of money)
 const PRIZE_LEVELS = [
-    { round: 1, amount: 1000 },    // Fácil
-    { round: 2, amount: 5000 },    // Media
-    { round: 3, amount: 20000 },   // Difícil
-    { round: 4, amount: 100000 },  // Muy Difícil
-    { round: 5, amount: 1000000 }  // Experto
+    { round: 1, amount: 1 },    // Fácil - 1 Chance
+    { round: 2, amount: 2 },    // Media - 2 Chances
+    { round: 3, amount: 3 },   // Difícil - 3 Chances
+    { round: 4, amount: 4 },  // Muy Difícil - 4 Chances
+    { round: 5, amount: 5 }  // Experto - 5 Chances
 ];
 
 // Game messages

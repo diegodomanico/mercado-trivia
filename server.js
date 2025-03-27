@@ -217,7 +217,7 @@ app.post('/api/scores', async (req, res) => {
                 {
                     fields: {
                         Nombre: scoreData.name,
-                        Telefono: scoreData.phone,
+                        Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string para Airtable
                         Puntaje: scoreData.score,
                         Fecha: new Date().toISOString(),
                         RondaMax: scoreData.maxRound,
@@ -261,6 +261,60 @@ app.post('/api/scores', async (req, res) => {
             success: true,
             message: 'Score saved successfully (sample response due to API error)'
         });
+    }
+});
+
+// Endpoint to check if phone number already exists
+app.get('/api/check-phone', async (req, res) => {
+    try {
+        const { phone } = req.query;
+        
+        if (!phone) {
+            return res.status(400).json({ error: 'Missing phone number' });
+        }
+        
+        // Check if we have a valid API key
+        if (!AIRTABLE_API_KEY || AIRTABLE_API_KEY === 'XXXXXXXXXX') {
+            console.warn('Missing or invalid Airtable API key. Please provide a valid key in the .env file.');
+            // For testing, return that phone doesn't exist
+            return res.json({ exists: false });
+        }
+        
+        // Build the API URL with filter for phone number
+        const filterFormula = encodeURIComponent(`{Telefono}="${phone}"`);
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SCORES_TABLE}?filterByFormula=${filterFormula}`;
+        
+        // Fetch data from Airtable using axios
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+            }
+        });
+        
+        // With axios, successful responses have status in the 200-299 range
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Failed to check phone: ${response.status} ${response.statusText}`);
+        }
+        
+        // Axios already parses JSON in the response
+        const data = response.data;
+        
+        // Check if we have records with this phone number
+        const exists = data.records && data.records.length > 0;
+        
+        res.json({ exists });
+    } catch (error) {
+        console.error('Error checking phone number:', error);
+        
+        // Print detailed error information
+        if (error.response) {
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+            console.error('Error Response Headers:', error.response.headers);
+        }
+        
+        // Return a default response for testing
+        res.json({ exists: false, error: true });
     }
 });
 
