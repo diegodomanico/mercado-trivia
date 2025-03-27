@@ -132,7 +132,7 @@ async function saveScore(scoreData) {
         const data = {
             fields: {
                 Nombre: scoreData.name,
-                Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string
+                Telefono: scoreData.phone.toString().replace(/[^0-9]/g, '') || "123456789", // Asegurar que el teléfono sea string y solo contenga números
                 Puntaje: scoreData.score,
                 Fecha: formattedDate,
                 RondaMax: scoreData.maxRound,

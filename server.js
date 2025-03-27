@@ -215,7 +215,7 @@ app.post('/api/scores', async (req, res) => {
         const data = {
             fields: {
                 Nombre: scoreData.name,
-                Telefono: scoreData.phone.toString().replace(/[^0-9]/g, ''), // Asegurar que el teléfono sea string para Airtable y solo contenga números
+                Telefono: scoreData.phone.toString().replace(/[^0-9]/g, '') || "123456789", // Asegurar que el teléfono sea string para Airtable y solo contenga números
                 Puntaje: scoreData.score,
                 Fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
                 RondaMax: scoreData.maxRound,

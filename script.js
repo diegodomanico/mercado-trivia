@@ -467,6 +467,7 @@ function checkAnswer(selectedIndex) {
     
     // Increment questions answered counter
     gameState.player.questionsAnswered++;
+    console.log(`Pregunta respondida correctamente. Total: ${gameState.player.questionsAnswered}`);
     
     // Get correct answer index
     const correctIndex = gameState.currentQuestion.correctIndex;
