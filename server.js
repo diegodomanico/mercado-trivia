@@ -136,12 +136,7 @@ async function fetchAllGameQuestions() {
         
         if (!AIRTABLE_API_KEY) {
             console.warn('No Airtable API key found in environment, using sample questions');
-            const sampleData = getSampleQuestions(
-                ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'],
-                'Fácil'
-            );
-            result.byDifficultyAndPillar = sampleData.byDifficultyAndPillar;
-            result.total = sampleData.total;
+            // No longer using sample questions when API key is missing
             return result;
         }
         

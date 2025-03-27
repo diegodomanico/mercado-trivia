@@ -231,14 +231,19 @@ function updateAirtableConnectionStatus(data, error = null) {
         return;
     }
     
-    // Check if we have real Airtable data
-    if (data.airtableConnected) {
+    // Check if we have real Airtable data - need at least 10 questions for all categories
+    const minRealQuestionsNeeded = 10;
+    if (data.airtableConnected && data.realQuestionsCount >= minRealQuestionsNeeded) {
         elements.statusIcon.className = 'status-icon connected';
         elements.statusText.textContent = `Conectado a Airtable (${data.realQuestionsCount} preguntas reales)`;
         elements.startGameButton.disabled = false;
+    } else if (data.airtableConnected) {
+        elements.statusIcon.className = 'status-icon disconnected';
+        elements.statusText.textContent = `Conexión a Airtable insuficiente (solo ${data.realQuestionsCount} preguntas reales, se necesitan ${minRealQuestionsNeeded})`;
+        elements.startGameButton.disabled = true;
     } else {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Usando preguntas de ejemplo (sin conexión a Airtable)';
+        elements.statusText.textContent = 'Sin conexión a Airtable - no se puede jugar';
         elements.startGameButton.disabled = true;
     }
 }
@@ -250,18 +255,31 @@ function hasEnoughQuestions() {
     }
     
     // Check if we have at least 5 questions per pillar for each difficulty level
+    let realQuestionCount = 0;
+    let hasRealQuestions = true;
+    
     for (const difficulty of GAME_STRUCTURE.difficultyLevels) {
         for (const pillar of GAME_STRUCTURE.pillars) {
             const questions = gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar];
-            if (!questions || questions.length < GAME_CONFIG.questionsPerRound) {
-                console.warn(`Not enough questions for ${pillar} at ${difficulty} level. Need ${GAME_CONFIG.questionsPerRound}, have ${questions ? questions.length : 0}`);
-                // We'll use sample questions, so don't fail the check
-                // return false;
+            
+            // Count how many real questions (not sample) we have
+            if (questions) {
+                const realQuestions = questions.filter(q => !q.id.startsWith('sample-'));
+                realQuestionCount += realQuestions.length;
+                
+                if (!questions || realQuestions.length < GAME_CONFIG.questionsPerRound) {
+                    console.warn(`Not enough real questions for ${pillar} at ${difficulty} level. Need ${GAME_CONFIG.questionsPerRound}, have ${realQuestions.length}`);
+                    hasRealQuestions = false;
+                }
+            } else {
+                hasRealQuestions = false;
             }
         }
     }
     
-    return true;
+    console.log(`Total real questions count: ${realQuestionCount}`);
+    // We'll no longer accept sample questions as valid
+    return hasRealQuestions;
 }
 
 // Check Phone Number and Start Game

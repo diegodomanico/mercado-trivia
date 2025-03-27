@@ -96,13 +96,26 @@ async function fetchQuestions(pillars, difficulty) {
             data.records.forEach(record => {
                 const fields = record.fields;
                 
-                if (fields.Pregunta && fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4 && fields.RespuestaCorrecta) {
+                // Verificar y usar los campos OpcionA/B/C/D que son los correctos en Airtable
+                if (fields.Pregunta && 
+                    ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
+                     (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4)) && 
+                    fields.RespuestaCorrecta) {
+                    
+                    // Determine which option fields to use
+                    const useABCD = fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD;
+                    
                     const question = {
                         id: record.id,
                         pillar: fields.Pilar,
                         difficulty: fields.Dificultad,
                         text: fields.Pregunta,
-                        options: [
+                        options: useABCD ? [
+                            fields.OpcionA,
+                            fields.OpcionB,
+                            fields.OpcionC,
+                            fields.OpcionD
+                        ] : [
                             fields.Opcion1,
                             fields.Opcion2,
                             fields.Opcion3,
