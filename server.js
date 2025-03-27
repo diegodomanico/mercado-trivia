@@ -14,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Constants for Airtable
-const AIRTABLE_BASE_ID = 'app8ZbcPx7dkpOnP0';
+const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
 const QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
 const SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
