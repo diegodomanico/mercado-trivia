@@ -572,7 +572,7 @@ function endGame(isWinner) {
     
     // Update results screen
     if (isWinner) {
-        elements.resultTitle.textContent = '¡FELICIDADES! ¡ERES UN VENDEDOR MELI PRO!';
+        elements.resultTitle.textContent = '¡FELICIDADES! ¡ERES UN VENDEDOR SUPER PRO!';
         elements.resultTitle.classList.add('winner-text');
         
         // Play winner sound
