@@ -179,8 +179,8 @@ function resetGameState() {
             currentRound: 1,
             currentQuestionIndex: 0,
             currentPillar: null,
-            questionsAnswered: 0,
-            prize: 0,
+            questionsAnswered: 0,    // Contador de respuestas correctas (incrementa solo en handleCorrectAnswer)
+            prize: 0,                // Esto es para las chances (1 chance por cada 5 preguntas correctas)
             usedLifelines: {
                 fiftyFifty: false,
                 audienceHelp: false,
@@ -465,9 +465,9 @@ function checkAnswer(selectedIndex) {
     // If game is not active, do nothing
     if (!gameState.gameActive) return;
     
-    // Increment questions answered counter
-    gameState.player.questionsAnswered++;
-    console.log(`Pregunta respondida correctamente. Total: ${gameState.player.questionsAnswered}`);
+    // Solo incrementar contador si la respuesta es correcta (esto se ejecuta para cada pregunta, 
+    // pero debería incrementarse solo en handleCorrectAnswer)
+    // NO incrementamos aquí porque este código se ejecuta tanto para respuestas correctas como incorrectas
     
     // Get correct answer index
     const correctIndex = gameState.currentQuestion.correctIndex;
@@ -503,6 +503,9 @@ function checkAnswer(selectedIndex) {
 function handleCorrectAnswer() {
     // Increment question index
     gameState.player.currentQuestionIndex++;
+    
+    // Incrementar contador de preguntas correctas (aquí es donde debe incrementarse)
+    gameState.player.questionsAnswered++;
     
     // Acumulamos chances en lugar de dinero (1 chance cada 5 preguntas)
     // Calculamos las chances basadas en las preguntas correctas (solo incrementamos al contestar correctamente)
@@ -1151,16 +1154,12 @@ async function getLeaderboard() {
 
 // Reset the game and start again
 function resetAndStartGame() {
-    // Reset game state
-    resetGameState();
+    // Esta función no debería usarse ya que el usuario solo puede jugar una vez por teléfono
+    // Alertar al usuario de que solo puede jugar una vez
+    alert('Solo puedes jugar una vez por número de teléfono. Si deseas jugar nuevamente, regresa a la pantalla inicial e ingresa un nuevo número de teléfono.');
     
-    // Reset lifelines UI
-    elements.lifelines.forEach(lifeline => {
-        lifeline.classList.remove('used');
-    });
-    
-    // Start the game
-    startGame();
+    // Redirigir a la pantalla de inicio
+    goToStartScreen();
 }
 
 // Go back to the start screen
