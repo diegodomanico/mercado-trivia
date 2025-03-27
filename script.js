@@ -17,6 +17,8 @@ const elements = {
     playerPhoneInput: document.getElementById('player-phone'),
     phoneError: document.getElementById('phone-error'),
     startGameButton: document.getElementById('start-game'),
+    statusIcon: document.getElementById('status-icon'),
+    statusText: document.getElementById('status-text'),
     
     // Game Screen
     playerNameDisplay: document.getElementById('player-name-display'),
@@ -121,6 +123,11 @@ async function initGame() {
     // Reset game state
     resetGameState();
     
+    // Set loading status for API connection
+    elements.statusIcon.className = 'status-icon loading';
+    elements.statusText.textContent = 'Verificando conexión a Airtable...';
+    elements.startGameButton.disabled = true;
+    
     try {
         // Load all questions
         await loadAllQuestions();
@@ -189,6 +196,9 @@ async function loadAllQuestions() {
         
         console.log('All questions loaded:', data);
         
+        // Update connection status UI
+        updateAirtableConnectionStatus(data);
+        
         // Check if we have enough questions
         if (!hasEnoughQuestions()) {
             throw new Error('No hay suficientes preguntas para jugar. Por favor agrega más preguntas en Airtable.');
@@ -197,7 +207,39 @@ async function loadAllQuestions() {
         return data;
     } catch (error) {
         console.error('Error loading questions:', error);
+        // Update connection status to show error
+        updateAirtableConnectionStatus(null, error);
         throw error;
+    }
+}
+
+// Update Airtable Connection Status
+function updateAirtableConnectionStatus(data, error = null) {
+    if (error) {
+        // Connection error
+        elements.statusIcon.className = 'status-icon disconnected';
+        elements.statusText.textContent = 'Error de conexión a Airtable: ' + error.message;
+        elements.startGameButton.disabled = true;
+        return;
+    }
+    
+    if (!data) {
+        // No data
+        elements.statusIcon.className = 'status-icon disconnected';
+        elements.statusText.textContent = 'No hay conexión a Airtable.';
+        elements.startGameButton.disabled = true;
+        return;
+    }
+    
+    // Check if we have real Airtable data
+    if (data.airtableConnected) {
+        elements.statusIcon.className = 'status-icon connected';
+        elements.statusText.textContent = `Conectado a Airtable (${data.realQuestionsCount} preguntas reales)`;
+        elements.startGameButton.disabled = false;
+    } else {
+        elements.statusIcon.className = 'status-icon disconnected';
+        elements.statusText.textContent = 'Usando preguntas de ejemplo (sin conexión a Airtable)';
+        elements.startGameButton.disabled = true;
     }
 }
 

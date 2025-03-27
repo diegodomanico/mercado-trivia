@@ -119,12 +119,30 @@ async function fetchAllGameQuestions() {
         const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
         const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PREGUNTAS';
         
+        // Create a response object with connection status
+        const result = {
+            connected: false,
+            airtableConnected: false,
+            realQuestionsCount: 0,
+            total: 0,
+            byDifficultyAndPillar: {
+                'Fácil': {},
+                'Media': {},
+                'Difícil': {},
+                'Muy Difícil': {},
+                'Experto': {}
+            }
+        };
+        
         if (!AIRTABLE_API_KEY) {
             console.warn('No Airtable API key found in environment, using sample questions');
-            return getSampleQuestions(
-                ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'],
+            const sampleData = getSampleQuestions(
+                ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'],
                 'Fácil'
             );
+            result.byDifficultyAndPillar = sampleData.byDifficultyAndPillar;
+            result.total = sampleData.total;
+            return result;
         }
         
         // Initialize question structure
@@ -162,7 +180,10 @@ async function fetchAllGameQuestions() {
         
         if (!response.ok) {
             console.error(`Error fetching questions: ${response.status} ${response.statusText}`);
-            return getSampleQuestions(pillars, 'Fácil');
+            const sampleData = getSampleQuestions(pillars, 'Fácil');
+            result.byDifficultyAndPillar = sampleData.byDifficultyAndPillar;
+            result.total = sampleData.total;
+            return result;
         }
         
         const data = await response.json();
@@ -230,13 +251,38 @@ async function fetchAllGameQuestions() {
         });
         
         console.log(`Loaded ${allQuestions.total} questions from Airtable and samples`);
-        return allQuestions;
+        
+        // Count real questions from Airtable vs. sample questions
+        let realQuestions = 0;
+        pillars.forEach(pillar => {
+            ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'].forEach(difficulty => {
+                allQuestions.byDifficultyAndPillar[difficulty][pillar].forEach(question => {
+                    if (!question.id.startsWith('sample-')) {
+                        realQuestions++;
+                    }
+                });
+            });
+        });
+        
+        // Set connection status based on real questions
+        result.connected = true;
+        result.airtableConnected = realQuestions > 0;
+        result.realQuestionsCount = realQuestions;
+        result.byDifficultyAndPillar = allQuestions.byDifficultyAndPillar;
+        result.total = allQuestions.total;
+        
+        return result;
     } catch (error) {
         console.error('Error fetching questions from Airtable:', error);
-        return getSampleQuestions(
+        const sampleData = getSampleQuestions(
             ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'],
             'Fácil'
         );
+        result.byDifficultyAndPillar = sampleData.byDifficultyAndPillar;
+        result.total = sampleData.total;
+        result.connected = true;
+        result.airtableConnected = false;
+        return result;
     }
 }
 

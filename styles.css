@@ -190,6 +190,54 @@ button {
     margin: var(--space-large) 0;
 }
 
+/* Airtable connection status */
+.airtable-status {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    width: 100%;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+.status-icon.connected {
+    background-color: #4CAF50;
+}
+
+.status-icon.disconnected {
+    background-color: #F44336;
+}
+
+.status-icon.loading {
+    background-color: #FFD700;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 .form-group {
     margin-bottom: var(--space-medium);
 }
