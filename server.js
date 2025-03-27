@@ -43,10 +43,16 @@ app.get('/api/questions', async (req, res) => {
         // Parse pillars if it's a string
         const pillarsArray = Array.isArray(pillars) ? pillars : JSON.parse(pillars);
         
-        // Create filter formula for Airtable
-        const pillarFilter = pillarsArray.map(pillar => `{Pilar} = '${pillar}'`).join(' OR ');
-        const difficultyFilter = `{Dificultad} = '${difficulty}'`;
-        const filterFormula = `AND(${difficultyFilter}, OR(${pillarFilter}))`;  // Fixed the formula order
+        // Create filter formula for Airtable - Simplified to avoid encoding issues
+        let pillarFilter = '';
+        if (pillarsArray.length === 1) {
+            pillarFilter = `AND({Dificultad}="${difficulty}", {Pilar}="${pillarsArray[0]}")`;
+        } else {
+            // For multiple pillars, we need to be careful with the OR syntax
+            const pillarConditions = pillarsArray.map(pillar => `{Pilar}="${pillar}"`).join(",");
+            pillarFilter = `AND({Dificultad}="${difficulty}", OR(${pillarConditions}))`;
+        }
+        const filterFormula = pillarFilter;
         
         // Encode the formula for URL
         const encodedFilter = encodeURIComponent(filterFormula);
@@ -231,8 +237,8 @@ app.get('/api/scores/top', async (req, res) => {
             return res.json(getSampleScores(limit));
         }
         
-        // Build the API URL with sorting and limit
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SCORES_TABLE}?sort[0][field]=Puntaje&sort[0][direction]=desc&maxRecords=${limit}`;
+        // Build the API URL with sorting and limit - using simpler query syntax
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SCORES_TABLE}?sort%5B0%5D%5Bfield%5D=Puntaje&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=${limit}`;
         
         // Fetch data from Airtable using axios
         const response = await axios.get(url, {
