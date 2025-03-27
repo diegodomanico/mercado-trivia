@@ -251,6 +251,7 @@ app.get('/api/scores/top', async (req, res) => {
     } catch (error) {
         console.error('Error fetching top scores:', error);
         // Return sample scores for testing
+        const limit = req.query.limit || 5;
         res.json(getSampleScores(limit));
     }
 });
