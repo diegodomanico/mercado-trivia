@@ -6,9 +6,10 @@
 }
 
 :root {
-    /* Mercado Libre Colors */
-    --ml-yellow: #FFE600;
-    --ml-blue: #3483FA;
+    /* Mercado Libre Colors (Actualizados) */
+    --ml-yellow: #FFE600;  /* Amarillo Mercado Libre */
+    --ml-blue: #3483FA;    /* Azul Mercado Libre */
+    --ml-violet: #7A1DEA;  /* Violeta Domup */
     --ml-light-blue: #36A1FF;
     --ml-dark-gray: #333333;
     --ml-mid-gray: #666666;
@@ -24,7 +25,7 @@
     --reputacion-color: var(--ml-blue);
     --oferta-color: var(--success-green);
     --logistica-color: var(--warning-orange);
-    --experiencia-color: var(--ml-light-blue);
+    --experiencia-color: var(--ml-violet); /* Cambiado a violeta Domup */
     --costos-color: var(--danger-red);
 }
 
@@ -74,6 +75,15 @@ body {
 
 .secondary-btn:hover {
     background-color: #ddd;
+}
+
+.violet-btn {
+    background-color: var(--ml-violet);
+    color: white;
+}
+
+.violet-btn:hover {
+    background-color: #6315c9;
 }
 
 .loader {
@@ -291,6 +301,19 @@ body {
     font-weight: bold;
 }
 
+.lifeline-icon.fifty-fifty {
+    background-color: var(--ml-yellow);
+    color: var(--ml-dark-gray);
+}
+
+.lifeline-icon.audience {
+    background-color: var(--ml-blue);
+}
+
+.lifeline-icon.expert {
+    background-color: var(--ml-violet);
+}
+
 .lifeline-label {
     font-size: 14px;
     font-weight: 500;
@@ -472,6 +495,10 @@ body {
     color: var(--ml-blue);
 }
 
+.results-container h1.winner-text {
+    color: var(--ml-violet);
+}
+
 .result-details {
     margin: 30px 0;
 }
@@ -490,6 +517,10 @@ body {
 .result-value {
     color: var(--ml-blue);
     font-weight: 700;
+}
+
+.result-value.highlight {
+    color: var(--ml-violet);
 }
 
 .result-actions {
@@ -572,6 +603,10 @@ body {
     color: var(--ml-blue);
 }
 
+.modal h2.violet-text {
+    color: var(--ml-violet);
+}
+
 .expert-container {
     display: flex;
     align-items: center;
@@ -615,6 +650,10 @@ body {
     margin-bottom: 10px;
 }
 
+.bar-label.correct {
+    background-color: var(--ml-violet);
+}
+
 .bar-container {
     width: 100%;
     height: 150px;
@@ -631,6 +670,10 @@ body {
     background-color: var(--ml-blue);
     height: 0%;
     transition: height 1s ease;
+}
+
+.bar-fill.correct {
+    background-color: var(--ml-violet);
 }
 
 .bar-percentage {

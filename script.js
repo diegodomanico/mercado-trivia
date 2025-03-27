@@ -530,6 +530,7 @@ function completeRound() {
     
     // Show round complete modal
     elements.roundCompleteTitle.textContent = `¡Ronda ${gameState.player.currentRound} Completada! 🎉`;
+    elements.roundCompleteTitle.classList.add('violet-text');
     elements.roundCompleteMessage.textContent = 
         `¡Felicidades! Has completado todos los pilares de la dificultad ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}. 
         Tu premio actual es ${formatCurrency(gameState.player.prize)}.
@@ -542,6 +543,9 @@ function completeRound() {
 function startNextRound() {
     // Hide the round complete modal
     elements.roundCompleteModal.classList.add('hide');
+    
+    // Remove violet text class from the title
+    elements.roundCompleteTitle.classList.remove('violet-text');
     
     // Increment round
     gameState.player.currentRound++;
@@ -567,6 +571,7 @@ function endGame(isWinner) {
     // Update results screen
     if (isWinner) {
         elements.resultTitle.textContent = '¡FELICIDADES! ¡ERES UN VENDEDOR SÚPER PRO!';
+        elements.resultTitle.classList.add('winner-text');
         
         // Play winner sound
         if (typeof playSound === 'function') {
@@ -578,6 +583,7 @@ function endGame(isWinner) {
             showConfetti();
         }
     } else {
+        elements.resultTitle.classList.remove('winner-text');
         if (gameState.timeRemaining <= 0) {
             elements.resultTitle.textContent = '¡SE ACABÓ EL TIEMPO!';
         } else {
@@ -752,10 +758,20 @@ function showAudienceHelp() {
     elements.audienceChartBars.forEach((bar, index) => {
         const fill = bar.querySelector('.bar-fill');
         const percentage = bar.querySelector('.bar-percentage');
+        const barLabel = bar.querySelector('.bar-label');
         
         // Reset height first
         fill.style.height = '0%';
         percentage.textContent = '0%';
+        
+        // Add or remove correct class
+        if (index === correctIndex) {
+            fill.classList.add('correct');
+            barLabel.classList.add('correct');
+        } else {
+            fill.classList.remove('correct');
+            barLabel.classList.remove('correct');
+        }
         
         // Animate the chart after a short delay
         setTimeout(() => {
