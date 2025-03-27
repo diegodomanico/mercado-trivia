@@ -215,7 +215,7 @@ app.post('/api/scores', async (req, res) => {
         const data = {
             fields: {
                 Nombre: scoreData.name,
-                Telefono: scoreData.phone.toString(), // Asegurar que el teléfono sea string para Airtable
+                Telefono: scoreData.phone.toString().replace(/[^0-9]/g, ''), // Asegurar que el teléfono sea string para Airtable y solo contenga números
                 Puntaje: scoreData.score,
                 Fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
                 RondaMax: scoreData.maxRound,
@@ -263,11 +263,15 @@ app.post('/api/scores', async (req, res) => {
 // Endpoint to check if phone number already exists
 app.get('/api/check-phone', async (req, res) => {
     try {
-        const { phone } = req.query;
+        let { phone } = req.query;
         
         if (!phone) {
             return res.status(400).json({ error: 'Missing phone number' });
         }
+        
+        // Limpiar el teléfono para asegurar que solo contenga números
+        phone = phone.toString().replace(/[^0-9]/g, '');
+        console.log(`Verificando teléfono limpio: ${phone}`);
         
         // Check if we have a valid API key
         if (!AIRTABLE_API_KEY || AIRTABLE_API_KEY === 'XXXXXXXXXX') {
@@ -279,6 +283,7 @@ app.get('/api/check-phone', async (req, res) => {
         // Build the API URL with filter for phone number
         const filterFormula = encodeURIComponent(`{Telefono}="${phone}"`);
         const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SCORES_TABLE}?filterByFormula=${filterFormula}`;
+        console.log(`URL de consulta: ${url}`);
         
         // Fetch data from Airtable using axios
         const response = await axios.get(url, {

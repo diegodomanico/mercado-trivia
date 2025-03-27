@@ -508,8 +508,9 @@ function handleCorrectAnswer() {
     // Cada 5 preguntas correctas = 1 chance
     const correctQuestions = gameState.player.questionsAnswered;
     
-    // Las chances se basan en el nivel (ronda) actual, que va de 1 a 5
-    const newChances = gameState.player.currentRound;
+    // Calculamos las chances: 1 chance por cada 5 preguntas contestadas correctamente
+    const newChances = Math.floor(correctQuestions / 5);
+    console.log(`Preguntas correctas: ${correctQuestions}, Chances: ${newChances}`);
     
     // Actualizamos el premio (que ahora son chances)
     gameState.player.prize = newChances;
