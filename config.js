@@ -12,7 +12,7 @@ const GAME_STRUCTURE = {
     difficultyLevels: ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'],
     pillars: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'],
     totalRounds: 5, // One round per difficulty level
-    totalQuestionsNeeded: 125 // 25 questions per pillar (5 per difficulty level)
+    totalQuestionsNeeded: 10 // Reducido para poder jugar con las preguntas disponibles
 };
 
 // Game configuration

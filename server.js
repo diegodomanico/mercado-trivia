@@ -92,14 +92,31 @@ app.get('/api/questions', async (req, res) => {
             // Ensure the correct answer field is properly processed
             let correctIndex = 0; // Default to first option if not found
             
-            if (record.fields.RespuestaCorrecta) {
-                correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.RespuestaCorrecta);
-                // If it's still -1, try looking for Respuesta_Correcta field
-                if (correctIndex === -1 && record.fields.Respuesta_Correcta) {
-                    correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.Respuesta_Correcta);
+            if (record.fields.RespuestaCorrecta !== undefined) {
+                // Check if RespuestaCorrecta is a number (0-3)
+                if (typeof record.fields.RespuestaCorrecta === 'number') {
+                    // If it's a number between 0-3, use it directly
+                    if (record.fields.RespuestaCorrecta >= 0 && record.fields.RespuestaCorrecta <= 3) {
+                        correctIndex = record.fields.RespuestaCorrecta;
+                    } else {
+                        // If it's a number outside that range, it might be 1-based index (1-4)
+                        const adjusted = record.fields.RespuestaCorrecta - 1;
+                        if (adjusted >= 0 && adjusted <= 3) {
+                            correctIndex = adjusted;
+                        }
+                    }
+                } else {
+                    // Try as a letter (A, B, C, D)
+                    correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.RespuestaCorrecta);
+                    
+                    // If not found as letter, try as Respuesta_Correcta
+                    if (correctIndex === -1 && record.fields.Respuesta_Correcta) {
+                        correctIndex = ['A', 'B', 'C', 'D'].indexOf(record.fields.Respuesta_Correcta);
+                    }
                 }
-                // If still not found, default to first option for demo purposes
-                if (correctIndex === -1) {
+                
+                // If still not valid, default to first option
+                if (correctIndex < 0 || correctIndex > 3) {
                     correctIndex = 0;
                     console.log(`Warning: Could not determine correct answer for question ID ${record.id}, defaulting to A`);
                 }

@@ -246,7 +246,9 @@ async function loadAllQuestions() {
 
 // Check if we have enough questions to play
 function hasEnoughQuestions() {
-    return gameState.allQuestions.total >= GAME_STRUCTURE.totalQuestionsNeeded;
+    // Comprobar si hay al menos algunas preguntas para comenzar el juego
+    // Si no hay suficientes preguntas reales, el servidor proporciona preguntas de muestra
+    return gameState.allQuestions.total > 0;
 }
 
 // Start the game
