@@ -508,17 +508,34 @@ function handleCorrectAnswer() {
     // Increment question index
     gameState.player.currentQuestionIndex++;
     
-    // Incrementar contador de preguntas correctas (aquí es donde debe incrementarse)
+    // Incrementar contador de preguntas correctas
     gameState.player.questionsAnswered++;
     
+    // Actualizar el indicador visual de progreso (puntos)
+    const currentProgress = Math.min(5, gameState.player.questionsAnswered % 5);
+    for (let i = 1; i <= 5; i++) {
+        const dot = document.getElementById(`progress-${i}`);
+        if (dot) {
+            if (i <= currentProgress) {
+                dot.classList.add('completed');
+            } else {
+                dot.classList.remove('completed');
+            }
+        }
+    }
+    
     // Acumulamos chances en lugar de dinero (1 chance cada 5 preguntas)
-    // Calculamos las chances basadas en las preguntas correctas (solo incrementamos al contestar correctamente)
     // Cada 5 preguntas correctas = 1 chance
     const correctQuestions = gameState.player.questionsAnswered;
     
     // Calculamos las chances: 1 chance por cada 5 preguntas contestadas correctamente
     const newChances = Math.floor(correctQuestions / 5);
     console.log(`Preguntas correctas: ${correctQuestions}, Chances: ${newChances}`);
+    
+    // Si acaba de conseguir un nuevo chance (divisible por 5), mostrar mensaje
+    if (correctQuestions > 0 && correctQuestions % 5 === 0) {
+        alert(`¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.`);
+    }
     
     // Actualizamos el premio (que ahora son chances)
     gameState.player.prize = newChances;
@@ -695,10 +712,11 @@ function startTimer() {
         clearInterval(gameState.timer);
     }
     
-    // Update timer display initially
-    updateTimerDisplay();
+    // Force timer display at 100% initially
+    elements.timerBar.style.width = '100%';
+    elements.timerBar.style.backgroundColor = 'var(--success-green)';
     
-    // Start the timer
+    // Iniciar el temporizador inmediatamente (antes no lo hacía en la primera pregunta)
     gameState.timer = setInterval(() => {
         // Decrement time remaining
         gameState.timeRemaining--;
@@ -1161,11 +1179,8 @@ async function getLeaderboard() {
 
 // Reset the game and start again
 function resetAndStartGame() {
-    // Esta función no debería usarse ya que el usuario solo puede jugar una vez por teléfono
-    // Alertar al usuario de que solo puede jugar una vez
-    alert('Solo puedes jugar una vez por número de teléfono. Si deseas jugar nuevamente, regresa a la pantalla inicial e ingresa un nuevo número de teléfono.');
-    
-    // Redirigir a la pantalla de inicio
+    // Esta función lleva al usuario de vuelta a la pantalla de inicio
+    // para iniciar un nuevo juego con un nuevo número de teléfono
     goToStartScreen();
 }
 
