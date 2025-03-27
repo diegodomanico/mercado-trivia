@@ -465,9 +465,20 @@ function handleCorrectAnswer() {
     const newChances = Math.floor(gameState.player.questionsAnswered / 5);
     console.log(`Preguntas correctas: ${gameState.player.questionsAnswered}, Chances: ${newChances}`);
     
-    // If just earned a new chance (divisible by 5), show alert
+    // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
-        alert(`¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.`);
+        // Show round complete modal with custom message
+        elements.roundCompleteTitle.textContent = `¡Felicidades! 🎉`;
+        elements.roundCompleteMessage.textContent = `Has ganado 1 Chance por responder correctamente 5 preguntas.`;
+        
+        // Set button text
+        elements.nextRoundButton.textContent = 'Aceptar';
+        
+        // Show the modal
+        elements.roundCompleteModal.classList.remove('hide');
+        elements.overlay.classList.remove('hide');
+        
+        // The nextRoundButton click event will hide the modal and continue the game
     }
     
     // Update prizes
