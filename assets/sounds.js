@@ -1,80 +1,109 @@
-// Game sound effects using Web Audio API
-let audioContext;
-let sounds = {};
-let isSoundInitialized = false;
+// Sound Effects System
 
-// Function to initialize the sound system
+// Audio Context and Sounds Storage
+let audioContext;
+let soundsLoaded = false;
+let sounds = {};
+
+// Initialize audio context and setup sounds
 function initializeSounds() {
-    if (isSoundInitialized) return;
-    
     try {
-        // Create audio context
+        // Create AudioContext
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         audioContext = new AudioContext();
         
         // Create all sound effects
         createSounds();
         
-        console.log('Sound system initialized');
-        isSoundInitialized = true;
+        // Mark sounds as loaded
+        soundsLoaded = true;
+        
+        console.log("Sound system initialized");
+        
+        // Some browsers require user interaction to start audio context
+        document.addEventListener('click', resumeAudioContext, { once: true });
     } catch (error) {
-        console.error('Error initializing sound system:', error);
+        console.error("Error initializing sound system:", error);
     }
-    
-    // Add a click handler to the document to resume audio context if needed
-    document.addEventListener('click', resumeAudioContext, { once: true });
 }
 
-// Function to resume audio context (needed for browsers that suspend it until user interaction)
+// Resume audio context after user interaction
 function resumeAudioContext() {
     if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume().then(() => {
-            console.log('Audio context resumed');
+            console.log("AudioContext resumed successfully");
+        }).catch(error => {
+            console.error("Error resuming AudioContext:", error);
         });
     }
 }
 
-// Create all sounds
+// Create all game sounds
 function createSounds() {
-    sounds = {
-        start: createStartSound(),
-        question: createQuestionSound(),
-        select: createSelectSound(),
-        correct: createCorrectSound(),
-        wrong: createWrongSound(),
-        timeRunning: createTimeRunningSound(),
-        timeLow: createTimeLowSound(),
-        lifeline: createLifelineSound(),
-        winner: createWinnerSound(),
-        levelUp: createLevelUpSound()
-    };
+    // Create all sound effects
+    createStartSound();
+    createQuestionSound();
+    createSelectSound();
+    createCorrectSound();
+    createWrongSound();
+    createTimeRunningSound();
+    createTimeLowSound();
+    createLifelineSound();
+    createWinnerSound();
+    createLevelUpSound();
 }
 
-// Play a sound by name
+// Play a specific sound by name
 function playSound(soundName) {
-    // Ensure audio context is running
-    if (!audioContext || audioContext.state === 'suspended') {
-        resumeAudioContext();
+    // If sound system not initialized or no such sound, do nothing
+    if (!soundsLoaded || !sounds[soundName]) {
         return;
     }
     
-    // Check if the sound exists
-    if (!sounds[soundName]) {
-        console.error(`Sound '${soundName}' not found`);
-        return;
-    }
-    
-    // For simple sounds
-    if (typeof sounds[soundName] === 'function') {
-        sounds[soundName]();
-    } 
-    // For pre-defined oscillator sequences
-    else if (Array.isArray(sounds[soundName])) {
-        playOscillatorSequence(sounds[soundName]);
+    try {
+        // Resume audio context if suspended
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        
+        // If sound is an oscillator sequence, play that
+        if (sounds[soundName].type === 'sequence') {
+            playOscillatorSequence(sounds[soundName].sequence);
+            return;
+        }
+        
+        // For normal sounds
+        const sound = sounds[soundName];
+        
+        // Create source node
+        const source = audioContext.createOscillator();
+        source.type = sound.type;
+        
+        // Create gain node
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = sound.volume;
+        
+        // If frequency is an array, it's a sweep
+        if (Array.isArray(sound.frequency)) {
+            source.frequency.setValueAtTime(sound.frequency[0], audioContext.currentTime);
+            source.frequency.linearRampToValueAtTime(sound.frequency[1], audioContext.currentTime + sound.duration);
+        } else {
+            source.frequency.value = sound.frequency;
+        }
+        
+        // Connect nodes
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Start and stop the sound
+        source.start();
+        source.stop(audioContext.currentTime + sound.duration);
+    } catch (error) {
+        console.error(`Error playing sound ${soundName}:`, error);
     }
 }
 
-// Play a sequence of oscillator notes
+// Play a sequence of oscillator sounds
 function playOscillatorSequence(sequence) {
     let startTime = audioContext.currentTime;
     
@@ -82,158 +111,140 @@ function playOscillatorSequence(sequence) {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         
-        // Set oscillator type and frequency
         oscillator.type = note.type || 'sine';
-        oscillator.frequency.setValueAtTime(note.frequency, startTime + note.time);
+        oscillator.frequency.value = note.frequency;
         
-        // Frequency modulation if needed
-        if (note.frequencyTo) {
-            oscillator.frequency.exponentialRampToValueAtTime(
-                note.frequencyTo, 
-                startTime + note.time + note.duration
-            );
-        }
+        gainNode.gain.value = note.volume || 0.3;
         
-        // Volume envelope
-        gainNode.gain.setValueAtTime(0, startTime + note.time);
-        gainNode.gain.linearRampToValueAtTime(note.volume || 0.5, startTime + note.time + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, startTime + note.time + note.duration);
+        // Apply fade in/out for smoother sound
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(note.volume || 0.3, startTime + 0.01);
+        gainNode.gain.setValueAtTime(note.volume || 0.3, startTime + note.duration - 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, startTime + note.duration);
         
-        // Connect and start
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        oscillator.start(startTime + note.time);
-        oscillator.stop(startTime + note.time + note.duration + 0.01);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + note.duration);
+        
+        startTime += note.duration;
     });
 }
 
-// Create start game sound
+// Create game start sound (triumphant fanfare)
 function createStartSound() {
-    return [
-        { time: 0.0, frequency: 300, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.2, frequency: 400, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.4, frequency: 500, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.6, frequency: 600, duration: 0.45, volume: 0.7, type: 'triangle' }
-    ];
+    sounds.start = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 392, duration: 0.2, volume: 0.3, type: 'triangle' },
+            { frequency: 493.88, duration: 0.2, volume: 0.3, type: 'triangle' },
+            { frequency: 587.33, duration: 0.4, volume: 0.3, type: 'triangle' },
+            { frequency: 783.99, duration: 0.6, volume: 0.3, type: 'triangle' }
+        ]
+    };
 }
 
-// Create new question sound
+// Create question appearance sound (subtle attention sound)
 function createQuestionSound() {
-    return [
-        { time: 0.0, frequency: 300, duration: 0.1, volume: 0.3, type: 'sine' },
-        { time: 0.1, frequency: 400, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.2, frequency: 500, duration: 0.2, volume: 0.5, type: 'sine' }
-    ];
+    sounds.question = {
+        type: 'sine',
+        frequency: [440, 550],
+        duration: 0.3,
+        volume: 0.2
+    };
 }
 
-// Create select answer sound
+// Create answer selection sound (click)
 function createSelectSound() {
-    return function() {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.02);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.1);
+    sounds.select = {
+        type: 'square',
+        frequency: 330,
+        duration: 0.1,
+        volume: 0.1
     };
 }
 
-// Create correct answer sound
+// Create correct answer sound (happy ascending notes)
 function createCorrectSound() {
-    return [
-        { time: 0.0, frequency: 300, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.1, frequency: 400, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.2, frequency: 500, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.3, frequency: 600, duration: 0.5, volume: 0.5, type: 'sine' }
-    ];
+    sounds.correct = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 523.25, duration: 0.15, volume: 0.3, type: 'triangle' },
+            { frequency: 659.25, duration: 0.15, volume: 0.3, type: 'triangle' },
+            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'triangle' }
+        ]
+    };
 }
 
-// Create wrong answer sound
+// Create wrong answer sound (descending notes)
 function createWrongSound() {
-    return [
-        { time: 0.0, frequency: 400, duration: 0.2, volume: 0.5, type: 'sawtooth' },
-        { time: 0.2, frequency: 200, duration: 0.6, volume: 0.5, type: 'sawtooth', frequencyTo: 180 }
-    ];
+    sounds.wrong = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 392, duration: 0.15, volume: 0.3, type: 'sawtooth' },
+            { frequency: 349.23, duration: 0.15, volume: 0.3, type: 'sawtooth' },
+            { frequency: 293.66, duration: 0.3, volume: 0.3, type: 'sawtooth' }
+        ]
+    };
 }
 
-// Create time running out sound
+// Create timer running sound (ticking)
 function createTimeRunningSound() {
-    return function() {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.2);
+    sounds.timeRunning = {
+        type: 'square',
+        frequency: 440,
+        duration: 0.1,
+        volume: 0.15
     };
 }
 
-// Create time almost up sound
+// Create time low sound (urgent ticking)
 function createTimeLowSound() {
-    return function() {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.2);
+    sounds.timeLow = {
+        type: 'square',
+        frequency: 880,
+        duration: 0.1,
+        volume: 0.3
     };
 }
 
-// Create lifeline used sound
+// Create lifeline use sound (helpful tone)
 function createLifelineSound() {
-    return [
-        { time: 0.0, frequency: 600, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.1, frequency: 700, duration: 0.1, volume: 0.4, type: 'sine' },
-        { time: 0.2, frequency: 800, duration: 0.3, volume: 0.4, type: 'sine' }
-    ];
+    sounds.lifeline = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 587.33, duration: 0.15, volume: 0.3, type: 'sine' },
+            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'sine' }
+        ]
+    };
 }
 
-// Create winner celebration sound
+// Create winner sound (celebratory melody)
 function createWinnerSound() {
-    return [
-        { time: 0.0, frequency: 300, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.15, frequency: 400, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.3, frequency: 500, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.45, frequency: 600, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.6, frequency: 700, duration: 0.15, volume: 0.5, type: 'triangle' },
-        { time: 0.75, frequency: 800, duration: 0.5, volume: 0.6, type: 'triangle' }
-    ];
+    sounds.winner = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 523.25, duration: 0.15, volume: 0.3, type: 'triangle' },
+            { frequency: 659.25, duration: 0.15, volume: 0.3, type: 'triangle' },
+            { frequency: 783.99, duration: 0.15, volume: 0.3, type: 'triangle' },
+            { frequency: 1046.50, duration: 0.4, volume: 0.3, type: 'triangle' }
+        ]
+    };
 }
 
-// Create level up sound
+// Create level up sound (ascending arpeggio)
 function createLevelUpSound() {
-    return [
-        { time: 0.0, frequency: 400, duration: 0.15, volume: 0.4, type: 'sine' },
-        { time: 0.15, frequency: 500, duration: 0.15, volume: 0.5, type: 'sine' },
-        { time: 0.3, frequency: 600, duration: 0.15, volume: 0.5, type: 'sine' },
-        { time: 0.45, frequency: 700, duration: 0.4, volume: 0.6, type: 'sine' }
-    ];
+    sounds.levelUp = {
+        type: 'sequence',
+        sequence: [
+            { frequency: 392, duration: 0.1, volume: 0.3, type: 'sine' },
+            { frequency: 493.88, duration: 0.1, volume: 0.3, type: 'sine' },
+            { frequency: 587.33, duration: 0.1, volume: 0.3, type: 'sine' },
+            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'sine' }
+        ]
+    };
 }
+
+// Initialize sounds on load
+document.addEventListener('DOMContentLoaded', initializeSounds);

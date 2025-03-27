@@ -1,192 +1,144 @@
-// Confetti animation for celebration
-const confetti = {
-    maxParticles: 150,
-    gravity: 1,
-    particles: [],
-    colors: [
-        '#3483FA', // Blue - Mercado Libre color
-        '#FFE600', // Yellow - Mercado Libre color
-        '#36A1FF', // Light blue
-        '#00A650', // Green
-        '#FF7733', // Orange
-        '#FF2D55'  // Pink
-    ],
-    shapes: ['circle', 'square', 'triangle', 'line'],
-    canvas: null,
-    ctx: null,
-    width: 0,
-    height: 0,
-    animationId: null,
-    active: false,
+// Confetti Animation
+class ConfettiEffect {
+    constructor() {
+        this.canvas = document.getElementById('confetti-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.particleCount = 150;
+        this.gravity = 0.5;
+        this.colors = [
+            '#3483FA', // ML Blue
+            '#FFE600', // ML Yellow
+            '#7A1DEA', // ML Violet
+            '#39B54A', // Success Green
+            '#F19F4D', // Warning Orange
+            '#F44336', // Danger Red
+        ];
+        this.animationId = null;
+        
+        this.initialize();
+    }
     
     initialize() {
-        this.canvas = document.getElementById('confetti-canvas');
-        if (!this.canvas) return;
-        
-        this.ctx = this.canvas.getContext('2d');
+        // Set canvas to full window size
         this.resizeCanvas();
-        
-        // Add event listener for window resize
         window.addEventListener('resize', () => this.resizeCanvas());
-    },
+    }
     
     resizeCanvas() {
-        if (!this.canvas) return;
-        
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-    },
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
     
     start() {
-        if (!this.canvas || !this.ctx) this.initialize();
-        if (!this.canvas) return;
+        // Create initial particles
+        this.createParticles(this.particleCount);
         
-        this.active = true;
-        this.createParticles(this.maxParticles);
-        
-        // Cancel any existing animation
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-        }
-        
-        // Start the animation
+        // Start animation loop
         this.animate();
-    },
+    }
     
     stop() {
-        this.active = false;
+        // Stop animation
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
         }
         
-        // Clear the canvas
-        if (this.ctx) {
-            this.ctx.clearRect(0, 0, this.width, this.height);
-        }
-        
-        // Clear the particles array
+        // Clear particles
         this.particles = [];
-    },
+        
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
     
     createParticles(count) {
         for (let i = 0; i < count; i++) {
             this.particles.push({
-                x: Math.random() * this.width,
-                y: Math.random() * this.height - this.height,
-                size: Math.random() * 10 + 5,
+                x: Math.random() * this.canvas.width,  // Random x position
+                y: Math.random() * -this.canvas.height, // Start above the canvas
+                size: Math.random() * 10 + 5,          // Random size between 5-15
                 color: this.colors[Math.floor(Math.random() * this.colors.length)],
-                shape: this.shapes[Math.floor(Math.random() * this.shapes.length)],
-                speedX: Math.random() * 6 - 3,
-                speedY: Math.random() * 2 + 2,
-                rotation: Math.random() * 360,
-                rotationSpeed: Math.random() * 4 - 2,
+                speed: Math.random() * 3 + 2,          // Random speed between 2-5
+                angle: Math.random() * Math.PI * 2,    // Random angle
+                rotation: Math.random() * 0.2 - 0.1,   // Random rotation
+                rotationSpeed: Math.random() * 0.01 - 0.005, // Random rotation speed
                 opacity: 1
             });
         }
-    },
+    }
     
     animate() {
-        if (!this.active) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        
-        // Update and draw particles
-        this.particles.forEach((particle, index) => {
-            // Update position
-            particle.x += particle.speedX;
-            particle.y += particle.speedY;
-            particle.speedY += this.gravity * 0.1;
-            particle.rotation += particle.rotationSpeed;
+        // Draw and update each particle
+        for (let i = 0; i < this.particles.length; i++) {
+            const particle = this.particles[i];
             
-            // Draw the particle
+            // Draw particle
             this.drawParticle(particle);
             
-            // Remove particles that are out of bounds
-            if (particle.y > this.height + 100) {
-                // Create a new particle at the top
-                if (this.active) {
-                    this.particles[index] = {
-                        x: Math.random() * this.width,
-                        y: -20,
-                        size: Math.random() * 10 + 5,
-                        color: this.colors[Math.floor(Math.random() * this.colors.length)],
-                        shape: this.shapes[Math.floor(Math.random() * this.shapes.length)],
-                        speedX: Math.random() * 6 - 3,
-                        speedY: Math.random() * 2 + 2,
-                        rotation: Math.random() * 360,
-                        rotationSpeed: Math.random() * 4 - 2,
-                        opacity: 1
-                    };
-                }
+            // Update particle position
+            particle.x += Math.cos(particle.angle) * particle.speed;
+            particle.y += Math.sin(particle.angle) * particle.speed + this.gravity;
+            
+            // Update particle rotation
+            particle.rotation += particle.rotationSpeed;
+            
+            // Update particle speed and angle
+            particle.speed *= 0.99;
+            particle.angle += particle.rotation;
+            
+            // Fade out particles as they approach the bottom
+            if (particle.y > this.canvas.height * 0.8) {
+                particle.opacity = (this.canvas.height - particle.y) / (this.canvas.height * 0.2);
             }
-        });
+            
+            // Remove particles that have gone off-screen or faded out
+            if (particle.y > this.canvas.height || particle.opacity <= 0) {
+                // Replace with a new particle
+                this.particles[i] = {
+                    x: Math.random() * this.canvas.width,
+                    y: -10, // Just above the top of canvas
+                    size: Math.random() * 10 + 5,
+                    color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                    speed: Math.random() * 3 + 2,
+                    angle: Math.random() * Math.PI * 2,
+                    rotation: Math.random() * 0.2 - 0.1,
+                    rotationSpeed: Math.random() * 0.01 - 0.005,
+                    opacity: 1
+                };
+            }
+        }
         
-        // Continue animation
+        // Continue animation loop
         this.animationId = requestAnimationFrame(() => this.animate());
-    },
+    }
     
     drawParticle(particle) {
         this.ctx.save();
         this.ctx.translate(particle.x, particle.y);
-        this.ctx.rotate(particle.rotation * Math.PI / 180);
-        this.ctx.fillStyle = particle.color;
+        this.ctx.rotate(particle.rotation);
         this.ctx.globalAlpha = particle.opacity;
+        this.ctx.fillStyle = particle.color;
         
-        switch (particle.shape) {
-            case 'circle':
-                this.ctx.beginPath();
-                this.ctx.arc(0, 0, particle.size / 2, 0, Math.PI * 2, true);
-                this.ctx.fill();
-                break;
-                
-            case 'square':
-                this.ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
-                break;
-                
-            case 'triangle':
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, -particle.size / 2);
-                this.ctx.lineTo(particle.size / 2, particle.size / 2);
-                this.ctx.lineTo(-particle.size / 2, particle.size / 2);
-                this.ctx.closePath();
-                this.ctx.fill();
-                break;
-                
-            case 'line':
-                this.ctx.lineWidth = particle.size / 5;
-                this.ctx.strokeStyle = particle.color;
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, -particle.size);
-                this.ctx.lineTo(0, particle.size);
-                this.ctx.stroke();
-                break;
-        }
+        // Draw a rectangle for confetti piece
+        this.ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size / 2);
         
         this.ctx.restore();
     }
-};
-
-// Initialize confetti when the document is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    confetti.initialize();
-});
-
-// Function to start confetti animation
-function startConfetti() {
-    confetti.start();
-    
-    // Stop confetti after 15 seconds
-    setTimeout(() => {
-        confetti.stop();
-    }, 15000);
 }
 
-// Function to stop confetti animation
+// Create confetti instance
+const confetti = new ConfettiEffect();
+
+// Public functions
+function startConfetti() {
+    confetti.canvas.classList.remove('hide');
+    confetti.start();
+}
+
 function stopConfetti() {
     confetti.stop();
+    confetti.canvas.classList.add('hide');
 }

@@ -3,202 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¿Quién quiere ser un Vendedor Estrella? - Mercado Libre</title>
+    <title>¿Quién quiere ser un Vendedor SUPER PRO?</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="./assets/domup_games_logo_violeta_gris.png" type="image/png">
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="screen">
         <div class="loading-container">
-            <img src="assets/logo.svg" alt="Mercado Libre Logo" class="logo">
-            <h1>Cargando...</h1>
-            <div class="loader"></div>
+            <img src="./assets/domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+            <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
+            <div class="loading-animation">
+                <div class="spinner"></div>
+                <p>Cargando preguntas...</p>
+            </div>
         </div>
     </div>
-
+    
     <!-- Error Screen -->
     <div id="error-screen" class="screen hide">
         <div class="error-container">
-            <img src="assets/logo.svg" alt="Mercado Libre Logo" class="logo">
+            <img src="./assets/domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
             <h1>¡Ups! Algo salió mal</h1>
-            <p id="error-message">Error desconocido. Intenta nuevamente.</p>
-            <button id="retry-btn" class="btn primary-btn">Reintentar</button>
+            <p id="error-message">Error al cargar el juego.</p>
+            <button id="retry-button" class="cta-button">Reintentar</button>
         </div>
     </div>
-
+    
     <!-- Start Screen -->
     <div id="start-screen" class="screen hide">
         <div class="start-container">
-            <img src="assets/domup_games_logo.png" alt="Domup Games Logo" class="logo">
-            <h1>¿Quién quiere ser un <span class="highlighted">Vendedor SUPER PRO</span>?</h1>
-            <p class="intro-text">Demuestra tus conocimientos como vendedor de Mercado Libre y conviértete en un Vendedor SUPER PRO. ¡Responde 25 preguntas y gana chances para participar por muchos premios!</p>
+            <img src="./assets/domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+            <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
+            <p class="subtitle">Pon a prueba tus conocimientos sobre Mercado Libre</p>
             
-            <form id="player-form">
+            <form id="player-form" class="player-form">
                 <div class="form-group">
                     <label for="player-name">Nombre:</label>
-                    <input type="text" id="player-name" placeholder="Ingresa tu nombre" required>
+                    <input type="text" id="player-name" required placeholder="Tu nombre">
                 </div>
+                
                 <div class="form-group">
                     <label for="player-phone">Teléfono:</label>
-                    <input type="tel" id="player-phone" placeholder="Ingresa tu teléfono" required>
+                    <input type="tel" id="player-phone" required placeholder="Tu número de teléfono (10 dígitos)">
+                    <p id="phone-error" class="error-text hide">Formato incorrecto de teléfono</p>
                 </div>
-                <button type="submit" class="btn violet-btn">¡Comenzar!</button>
+                
+                <button type="submit" id="start-game" class="cta-button">¡Comenzar Juego!</button>
             </form>
             
-            <button id="show-leaderboard-btn" class="btn secondary-btn">Ver Tabla de Líderes</button>
+            <div class="game-instructions">
+                <h3>Instrucciones:</h3>
+                <ul>
+                    <li>Responde correctamente 25 preguntas para convertirte en un Vendedor SUPER PRO.</li>
+                    <li>Por cada 5 preguntas correctas, ganarás 1 Chance para participar en los sorteos.</li>
+                    <li>Usa los comodines para obtener ayuda: 50:50, Ayuda del Público y Llamada a un Experto.</li>
+                    <li>Tienes un tiempo limitado para responder cada pregunta.</li>
+                    <li>Las preguntas aumentarán en dificultad en cada ronda.</li>
+                </ul>
+            </div>
         </div>
     </div>
-
+    
     <!-- Game Screen -->
     <div id="game-screen" class="screen hide">
-        <div class="game-header">
-            <div class="game-info">
-                <div class="player-info">
-                    <span class="player-name">Jugador: <span id="player-name-display"></span></span>
-                    <span class="current-prize">Acumulado: <span id="current-prize">0 Chances</span></span>
-                </div>
-                <div class="question-info">
-                    <span id="current-difficulty">Nivel: Fácil</span>
-                    <span id="current-pillar">Pilar: Reputación</span>
-                </div>
+        <div class="top-bar">
+            <div class="player-info">
+                <span id="player-name-display"></span>
+                <span id="current-prize">0 Chances</span>
             </div>
-            <div class="timer-container">
-                <div class="timer">
-                    <div id="timer-bar"></div>
+            
+            <div class="game-info">
+                <span id="current-difficulty">Nivel: Fácil</span>
+                <span id="current-pillar">Pilar: Reputación</span>
+            </div>
+            
+            <div class="lifelines">
+                <div id="fifty-fifty" class="lifeline" title="50:50">
+                    <span>50:50</span>
+                </div>
+                <div id="audience-help" class="lifeline" title="Ayuda del Público">
+                    <span>👥</span>
+                </div>
+                <div id="expert-call" class="lifeline" title="Llamada a un Experto">
+                    <span>📞</span>
                 </div>
             </div>
         </div>
         
-        <div class="game-body">
-            <div class="left-panel">
-                <div class="lifelines">
-                    <div id="fifty-fifty" class="lifeline">
-                        <div class="lifeline-icon fifty-fifty">50:50</div>
-                        <span class="lifeline-label">50:50</span>
-                    </div>
-                    <div id="audience-help" class="lifeline">
-                        <div class="lifeline-icon audience">👥</div>
-                        <span class="lifeline-label">Público</span>
-                    </div>
-                    <div id="expert-call" class="lifeline">
-                        <div class="lifeline-icon expert">📞</div>
-                        <span class="lifeline-label">Experto</span>
-                    </div>
-                </div>
-                
-                <div class="prize-ladder">
-                    <div class="ladder-title">Compitiendo por</div>
-                    <div class="prize-levels">
-                        <div class="prize-level" data-round="5">
-                            <span class="prize-amount">5 Chances</span>
-                            <span class="prize-difficulty">Experto</span>
-                        </div>
-                        <div class="prize-level" data-round="4">
-                            <span class="prize-amount">4 Chances</span>
-                            <span class="prize-difficulty">Muy Difícil</span>
-                        </div>
-                        <div class="prize-level" data-round="3">
-                            <span class="prize-amount">3 Chances</span>
-                            <span class="prize-difficulty">Difícil</span>
-                        </div>
-                        <div class="prize-level" data-round="2">
-                            <span class="prize-amount">2 Chances</span>
-                            <span class="prize-difficulty">Media</span>
-                        </div>
-                        <div class="prize-level current" data-round="1">
-                            <span class="prize-amount yellow-text">Compitiendo</span>
-                            <span class="prize-difficulty">Fácil</span>
-                        </div>
-                    </div>
+        <div class="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-header">
+                <div id="question-number">Pregunta 1 de 5</div>
+                <div class="progress-indicator">
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
                 </div>
             </div>
             
-            <div class="right-panel">
-                <div class="question-container">
-                    <div class="question-header">
-                        <span id="question-number">Pregunta 1 de 5</span>
-                    </div>
-                    <div class="question-progress">
-                        <div class="progress-dot" id="progress-1"></div>
-                        <div class="progress-dot" id="progress-2"></div>
-                        <div class="progress-dot" id="progress-3"></div>
-                        <div class="progress-dot" id="progress-4"></div>
-                        <div class="progress-dot" id="progress-5"></div>
-                    </div>
-                    <div class="question-body">
-                        <p id="question-text">¿Cuál es la mejor práctica para aumentar la reputación como vendedor en Mercado Libre?</p>
-                    </div>
+            <div id="question-text" class="question-text">
+                ¿Cuál es la respuesta correcta a esta pregunta?
+            </div>
+            
+            <div class="answers">
+                <div class="answer" data-index="0">
+                    <div class="answer-letter">A</div>
+                    <div class="answer-text">Primera opción de respuesta</div>
                 </div>
                 
-                <div class="answers-container">
-                    <div class="answer" data-index="0">
-                        <div class="answer-letter">A</div>
-                        <div class="answer-text">Responder rápidamente a las preguntas de los compradores</div>
-                    </div>
-                    <div class="answer" data-index="1">
-                        <div class="answer-letter">B</div>
-                        <div class="answer-text">Ignorar los comentarios negativos</div>
-                    </div>
-                    <div class="answer" data-index="2">
-                        <div class="answer-letter">C</div>
-                        <div class="answer-text">Enviar los productos después de la fecha prometida</div>
-                    </div>
-                    <div class="answer" data-index="3">
-                        <div class="answer-letter">D</div>
-                        <div class="answer-text">Publicar fotos de baja calidad</div>
-                    </div>
+                <div class="answer" data-index="1">
+                    <div class="answer-letter">B</div>
+                    <div class="answer-text">Segunda opción de respuesta</div>
+                </div>
+                
+                <div class="answer" data-index="2">
+                    <div class="answer-letter">C</div>
+                    <div class="answer-text">Tercera opción de respuesta</div>
+                </div>
+                
+                <div class="answer" data-index="3">
+                    <div class="answer-letter">D</div>
+                    <div class="answer-text">Cuarta opción de respuesta</div>
                 </div>
             </div>
         </div>
+        
+        <div class="prize-ladder">
+            <div class="prize-level" data-round="5">Nivel 5: Experto</div>
+            <div class="prize-level" data-round="4">Nivel 4: Muy Difícil</div>
+            <div class="prize-level" data-round="3">Nivel 3: Difícil</div>
+            <div class="prize-level" data-round="2">Nivel 2: Media</div>
+            <div class="prize-level current" data-round="1">Nivel 1: Fácil</div>
+        </div>
     </div>
-
+    
     <!-- Results Screen -->
     <div id="results-screen" class="screen hide">
         <div class="results-container">
-            <h1 id="result-title">¡JUEGO TERMINADO!</h1>
-            <div class="result-details">
+            <h1 id="result-title" class="result-title">¡JUEGO TERMINADO!</h1>
+            
+            <div class="results-info">
                 <div class="result-item">
                     <span class="result-label">Nombre:</span>
                     <span id="result-player-name" class="result-value">Jugador</span>
                 </div>
+                
                 <div class="result-item">
                     <span class="result-label">Teléfono:</span>
-                    <span id="result-player-phone" class="result-value">12345678</span>
+                    <span id="result-player-phone" class="result-value">1122334455</span>
                 </div>
+                
                 <div class="result-item">
-                    <span class="result-label">Chances Ganadas:</span>
-                    <span id="result-prize" class="result-value">0 Chances</span>
+                    <span class="result-label">Chances ganadas:</span>
+                    <span id="result-prize" class="result-value highlight">0 Chances</span>
                 </div>
+                
                 <div class="result-item">
-                    <span class="result-label">Preguntas Respondidas:</span>
+                    <span class="result-label">Preguntas respondidas:</span>
                     <span id="result-round" class="result-value">0 de 25</span>
                 </div>
+                
                 <div class="result-item">
-                    <span class="result-label">Pilar Final:</span>
+                    <span class="result-label">Último pilar:</span>
                     <span id="result-pillar" class="result-value">Reputación</span>
                 </div>
             </div>
-            <div class="result-actions">
-                <button id="play-again-btn" class="btn violet-btn">Jugar de Nuevo</button>
-                <button id="back-to-start-btn" class="btn secondary-btn">Volver al Inicio</button>
+            
+            <div class="result-buttons">
+                <button id="play-again" class="cta-button">Jugar de Nuevo</button>
+                <button id="view-leaderboard" class="secondary-button">Ver Tabla de Líderes</button>
             </div>
         </div>
     </div>
-
+    
     <!-- Leaderboard Screen -->
     <div id="leaderboard-screen" class="screen hide">
         <div class="leaderboard-container">
             <h1>Tabla de Líderes</h1>
-            <div id="leaderboard-loading" class="loader"></div>
-            <div id="leaderboard-table" class="hide">
+            
+            <div id="leaderboard-loading" class="loading-animation">
+                <div class="spinner"></div>
+                <p>Cargando tabla de líderes...</p>
+            </div>
+            
+            <div id="leaderboard-table" class="leaderboard-table">
                 <table>
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>Pos</th>
                             <th>Nombre</th>
-                            <th>Premio</th>
-                            <th>Ronda</th>
+                            <th>Chances</th>
+                            <th>Nivel</th>
                             <th>Pilar</th>
                             <th>Fecha</th>
                         </tr>
@@ -208,79 +209,78 @@
                     </tbody>
                 </table>
             </div>
-            <button id="back-from-leaderboard-btn" class="btn secondary-btn">Volver</button>
+            
+            <button id="hide-leaderboard" class="secondary-button">Volver</button>
         </div>
     </div>
-
+    
     <!-- Modals -->
-    <div id="overlay" class="hide"></div>
+    <div id="overlay" class="overlay hide"></div>
     
     <!-- Round Complete Modal -->
     <div id="round-complete-modal" class="modal hide">
-        <div class="modal-content">
-            <h2 id="round-complete-title">¡Ronda Completada!</h2>
-            <p id="round-complete-message">Has completado la ronda. ¡Prepárate para la siguiente!</p>
-            <button id="next-round-btn" class="btn violet-btn">Continuar</button>
-        </div>
+        <h2 id="round-complete-title">¡Ronda Completada!</h2>
+        <p id="round-complete-message">Has completado todas las preguntas de la ronda. ¡Felicidades!</p>
+        <button id="next-round-button" class="cta-button">Siguiente Ronda</button>
     </div>
     
     <!-- Expert Call Modal -->
     <div id="expert-modal" class="modal hide">
-        <div class="modal-content">
-            <h2>Llamada al Experto</h2>
-            <div class="expert-container">
-                <div class="expert-icon">👨‍💼</div>
-                <p id="expert-advice" class="expert-message">Después de analizar la pregunta, creo que la opción A es la correcta porque es una práctica recomendada para todos los vendedores exitosos.</p>
-            </div>
-            <button class="close-modal btn secondary-btn">Cerrar</button>
+        <h2>Consejo del Experto</h2>
+        <div class="expert-container">
+            <div class="expert-icon">👨‍💼</div>
+            <p id="expert-advice">Creo que la respuesta correcta es la opción A. Estoy bastante seguro de ello.</p>
         </div>
+        <button id="close-expert-modal" class="cta-button">Entendido</button>
     </div>
     
     <!-- Audience Help Modal -->
     <div id="audience-modal" class="modal hide">
-        <div class="modal-content">
-            <h2>Ayuda del Público</h2>
-            <div class="audience-chart">
-                <div class="chart-bar">
-                    <div class="bar-label">A</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="height: 65%"></div>
-                    </div>
-                    <div class="bar-percentage">65%</div>
+        <h2>Ayuda del Público</h2>
+        <div class="audience-chart">
+            <div class="chart-bar">
+                <div class="bar-label">A</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
                 </div>
-                <div class="chart-bar">
-                    <div class="bar-label">B</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="height: 15%"></div>
-                    </div>
-                    <div class="bar-percentage">15%</div>
-                </div>
-                <div class="chart-bar">
-                    <div class="bar-label">C</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="height: 10%"></div>
-                    </div>
-                    <div class="bar-percentage">10%</div>
-                </div>
-                <div class="chart-bar">
-                    <div class="bar-label">D</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="height: 10%"></div>
-                    </div>
-                    <div class="bar-percentage">10%</div>
-                </div>
+                <div class="bar-percentage">0%</div>
             </div>
-            <button class="close-modal btn secondary-btn">Cerrar</button>
+            
+            <div class="chart-bar">
+                <div class="bar-label">B</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="bar-label">C</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="bar-label">D</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
         </div>
+        <button id="close-audience-modal" class="cta-button">Entendido</button>
     </div>
-
+    
     <!-- Confetti Canvas -->
-    <canvas id="confetti-canvas" class="hide"></canvas>
-
+    <canvas id="confetti-canvas" class="confetti-canvas hide"></canvas>
+    
     <!-- Scripts -->
     <script src="config.js"></script>
-    <script src="assets/confetti.js"></script>
+    <script src="api.js"></script>
     <script src="assets/sounds.js"></script>
+    <script src="assets/confetti.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

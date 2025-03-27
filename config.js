@@ -1,92 +1,87 @@
-// Game constants and configuration
-
 // API Endpoints
 const API_ENDPOINTS = {
+    apiKey: '/api/airtable-key',
+    checkPhone: (phone) => `/api/check-phone/${phone}`,
     questions: '/api/questions',
     scores: '/api/scores',
-    topScores: '/api/scores/top',
-    checkPhone: '/api/check-phone'
-};
-
-// Game structure
-const GAME_STRUCTURE = {
-    difficultyLevels: ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'],
-    pillars: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos'],
-    totalRounds: 5, // One round per difficulty level
-    totalQuestionsNeeded: 10 // Reducido para poder jugar con las preguntas disponibles
+    topScores: '/api/top-scores'
 };
 
 // Game configuration
 const GAME_CONFIG = {
-    questionsPerRound: 5, // Number of questions per pillar in each round
-    questionPointValue: 100, // Base points per question
-    timePerDifficulty: { // Time in seconds for each difficulty level
-        facil: 30,
+    // Time per difficulty level (in seconds)
+    timePerDifficulty: {
+        fácil: 30,
         media: 45,
-        dificil: 60,
-        muy_dificil: 75,
+        difícil: 60,
+        muy_difícil: 75,
         experto: 90
     },
-    audienceHelpAccuracy: { // Percentage of audience that will choose the correct answer
-        facil: 70,
-        media: 60,
-        dificil: 50,
-        muy_dificil: 40,
-        experto: 30
+    
+    // Number of questions per pillar in each round
+    questionsPerRound: 5,
+    
+    // Points awarded per difficulty level
+    pointsPerDifficulty: {
+        fácil: 100,
+        media: 200,
+        difícil: 500,
+        muy_difícil: 1000,
+        experto: 2000
     }
 };
 
-// Prize levels for each round (now in chances instead of money)
-const PRIZE_LEVELS = [
-    { round: 1, amount: 1 },    // Fácil - 1 Chance
-    { round: 2, amount: 2 },    // Media - 2 Chances
-    { round: 3, amount: 3 },   // Difícil - 3 Chances
-    { round: 4, amount: 4 },  // Muy Difícil - 4 Chances
-    { round: 5, amount: 5 }  // Experto - 5 Chances
-];
-
-// Game messages
-const GAME_MESSAGES = {
-    welcome: "¡Bienvenido a ¿Quién quiere ser un Vendedor Estrella?!",
-    noQuestions: "No hay suficientes preguntas disponibles para jugar. Intenta más tarde.",
-    timeUp: "¡Se acabó el tiempo!",
-    correctAnswer: "¡Respuesta correcta!",
-    wrongAnswer: "Respuesta incorrecta",
-    gameOver: "Juego terminado",
-    winner: "¡Eres un Vendedor Estrella!",
-    nextRound: "¡Prepárate para la siguiente ronda!"
+// Game structure
+const GAME_STRUCTURE = {
+    // Difficulty levels
+    difficultyLevels: [
+        'Fácil',
+        'Media',
+        'Difícil',
+        'Muy Difícil',
+        'Experto'
+    ],
+    
+    // Pillars
+    pillars: [
+        'Reputación',
+        'Oferta',
+        'Logística',
+        'Experiencia',
+        'Costos'
+    ],
+    
+    // Total number of rounds
+    totalRounds: 5
 };
 
-// Expert advice templates
+// Templates for expert advice
 const EXPERT_ADVICE_TEMPLATES = [
-    "Después de analizar la pregunta, creo que la opción {option} es la correcta porque {reason}",
-    "Basado en mi experiencia, diría que la respuesta es {option} ya que {reason}",
-    "He visto este tema muchas veces, y la opción {option} parece ser la correcta porque {reason}",
-    "Si no me equivoco, la respuesta es {option} debido a que {reason}",
-    "Tengo bastante certeza de que {option} es la respuesta correcta porque {reason}"
+    "Después de analizar la pregunta, creo que la respuesta correcta es la opción {option}. {reason}",
+    "Si tuviera que elegir, diría que es la opción {option}. {reason}",
+    "Basado en mi experiencia, me inclino por la opción {option}. {reason}",
+    "Mmm... Esta es difícil, pero creo que la respuesta es {option}. {reason}",
+    "Analizando las opciones, me parece que {option} es la respuesta correcta. {reason}"
 ];
 
-// Expert reasons by confidence level
+// Expert reasons based on confidence level
 const EXPERT_REASONS = {
     high: [
-        "es un concepto fundamental en Mercado Libre.",
-        "es una práctica recomendada para todos los vendedores exitosos.",
-        "está bien documentado en el Centro de Vendedores de Mercado Libre.",
-        "he visto que los mejores vendedores siempre siguen esta estrategia.",
-        "es consistente con las políticas actuales de la plataforma."
+        "Estoy bastante seguro de esta respuesta.",
+        "He visto este tema muchas veces en mi experiencia.",
+        "La respuesta es clara según las mejores prácticas de Mercado Libre.",
+        "Esta es definitivamente la mejor opción para los vendedores."
     ],
     medium: [
-        "tiene sentido según lo que he visto en mi experiencia.",
-        "es probablemente la mejor opción, aunque hay algunas excepciones.",
-        "suena como la respuesta más razonable en este contexto.",
-        "encaja con lo que he observado en casos similares.",
-        "parece ser la práctica más común entre vendedores exitosos."
+        "Aunque no estoy 100% seguro, es la que tiene más sentido.",
+        "Entre las opciones disponibles, esta parece ser la más adecuada.",
+        "Basado en lo que sé, esta debería ser la correcta, pero tengo algunas dudas.",
+        "No es mi área de especialidad, pero esta opción parece la más lógica."
     ],
     low: [
-        "podría ser correcto, pero no estoy completamente seguro.",
-        "es mi mejor suposición, aunque este tema es complicado.",
-        "parece tener sentido, pero hay varias posibilidades.",
-        "es lo que recuerdo, aunque las políticas pueden haber cambiado.",
-        "es lo que yo haría en esta situación, pero verifica por tu cuenta."
+        "Es un tema complicado y podría equivocarme.",
+        "No tengo mucha experiencia en este aspecto específico, pero es mi mejor suposición.",
+        "La verdad es que estoy dividido entre un par de opciones, pero me inclino por esta.",
+        "Es difícil estar seguro, pero vamos con esta respuesta."
     ]
 };
