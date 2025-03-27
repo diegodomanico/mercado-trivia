@@ -13,6 +13,13 @@
     --white: #FFFFFF;
     --black: #000000;
     
+    /* Pillar Colors */
+    --pillar-reputacion: #FF4D4D;
+    --pillar-oferta: #3483FA;
+    --pillar-trafico: #9C27B0;
+    --pillar-servicio: #FFE600;
+    --pillar-escalabilidad: #E91E63;
+    
     /* Other variables */
     --border-radius: 8px;
     --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -566,6 +573,105 @@ h1 span {
     height: 100%;
     z-index: 50;
     pointer-events: none;
+}
+
+/* Loading Screen */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+    background-color: var(--white);
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--light-gray);
+    border-top: 5px solid var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loading-message {
+    font-size: 18px;
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+/* Error Screen */
+#error-screen {
+    text-align: center;
+}
+
+.error-container {
+    margin-bottom: 30px;
+}
+
+.error-icon {
+    font-size: 60px;
+    color: var(--danger-red);
+    margin-bottom: 20px;
+}
+
+/* Pillar Info */
+.pillar-info {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    background-color: var(--light-gray);
+}
+
+/* Round Complete Modal */
+#round-complete-modal .modal-content {
+    border-top: 5px solid var(--success-green);
+}
+
+#next-round-btn {
+    margin-top: 20px;
+}
+
+/* Pillar-specific Styling */
+.reputacion-theme {
+    background-color: var(--pillar-reputacion) !important;
+}
+
+.oferta-theme {
+    background-color: var(--pillar-oferta) !important;
+}
+
+.trafico-theme {
+    background-color: var(--pillar-trafico) !important;
+}
+
+.servicio-theme {
+    background-color: var(--pillar-servicio) !important;
+}
+
+.escalabilidad-theme {
+    background-color: var(--pillar-escalabilidad) !important;
+}
+
+/* Prize ladder updates */
+.prize-level[data-round="5"],
+.prize-level[data-round="2"] {
+    background-color: var(--primary-yellow);
+    color: var(--dark-gray);
 }
 
 /* Responsive Styles */

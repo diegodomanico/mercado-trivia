@@ -1,0 +1,94 @@
+
+Build a full quiz web app called “Who wants to be a Super Pro Seller?” focused on Mercado Libre sellers. The app must use Airtable for both question sourcing and score tracking.
+
+---
+
+📌 Airtable integration:
+
+Use two Airtable tables from the same base ID: `app6Q7z8qliHP0YXF`
+
+1. `MELIXP_GAME_QUIEN_PREGUNTAS` – Questions table:
+   - `Pilar`: one of Reputación, Oferta, Tráfico, Servicio, Escalabilidad
+   - `Dificultad`: Fácil, Media, Difícil, Muy Difícil, Experto
+   - `Pregunta`: string with emojis
+   - `OpcionA`, `OpcionB`, `OpcionC`, `OpcionD`
+   - `RespuestaCorrecta`: index (0 to 3)
+   - `CorrectSoundURL` and `WrongSoundURL` (optional)
+
+2. `MELIXP_GAME_QUIEN_PUNTAJES` – Score tracking table:
+   - `Nombre`: player name
+   - `Puntaje`: final score
+   - `Fecha`: game date (timestamp)
+   - `RondaMax`: highest round achieved
+   - `PilarFinal`: last pillar played
+
+Use an Airtable API token stored as an environment variable for security.
+
+---
+
+🧠 Game mechanics:
+
+- 5 rounds with 1 question from each pillar
+- Progression: Fácil → Media → Difícil → Muy Difícil → Experto
+- Each round pulls one question per pillar at that difficulty level
+- Show only 25 questions per game: 5 pillars x 5 rounds
+- If fewer than 25 available, display an error and stop
+
+---
+
+🎨 UI and UX:
+
+- Game title: “¿Quién quiere ser un Vendedor Súper Pro? 🛍️👑”
+- Add emojis in all texts, buttons, and messages
+- Change background color dynamically based on the pillar:
+  - Reputación → `#FF4D4D`
+  - Oferta → `#3483FA`
+  - Tráfico → `#9C27B0`
+  - Servicio → `#FFE600`
+  - Escalabilidad → `#E91E63`
+- Include animated confetti when player wins
+- Mobile responsive
+- Friendly feedback for right/wrong answers
+
+---
+
+🔉 Audio & sounds:
+
+- Play `CorrectSoundURL` or `WrongSoundURL` using the Audio API
+- If no URL is present, skip without error
+
+---
+
+🛡️ Lifelines (must be included and styled):
+
+- 50:50 – remove two incorrect answers
+- Audience Help – show a bar chart with estimated votes
+- Expert Call – show a text suggestion (simulate confidence levels)
+
+---
+
+🧾 Score submission:
+
+At the end of the game, store:
+- Name of the player (entered at start)
+- Score (based on correct answers or prize ladder)
+- Round reached
+- Last pillar
+- Date/time of game
+
+POST this data to the `MELIXP_GAME_QUIEN_PUNTAJES` table.
+
+---
+
+🧼 Code requirements:
+
+- Use clean modular JavaScript
+- Separate fetch logic, game state, UI rendering
+- Use async/await with proper error handling
+- Include comments in each major block
+
+---
+
+🎁 Bonus: Show a local leaderboard on screen with top 5 players (by highest score), fetched from Airtable.
+
+Please build the entire project based on these instructions or give me a complete working prototype.

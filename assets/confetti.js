@@ -1,180 +1,192 @@
-// Confetti animation for winner celebration
-
-// Global canvas context
-let confettiCanvas;
-let confettiCtx;
-let confettiAnimationId;
-let confettiParticles = [];
-
-// Initialize confetti
-document.addEventListener('DOMContentLoaded', function() {
-    confettiCanvas = document.getElementById('confetti-canvas');
-    confettiCtx = confettiCanvas.getContext('2d');
+// Confetti animation for celebration
+const confetti = {
+    maxParticles: 150,
+    gravity: 1,
+    particles: [],
+    colors: [
+        '#3483FA', // Blue - Mercado Libre color
+        '#FFE600', // Yellow - Mercado Libre color
+        '#36A1FF', // Light blue
+        '#00A650', // Green
+        '#FF7733', // Orange
+        '#FF2D55'  // Pink
+    ],
+    shapes: ['circle', 'square', 'triangle', 'line'],
+    canvas: null,
+    ctx: null,
+    width: 0,
+    height: 0,
+    animationId: null,
+    active: false,
     
-    // Set canvas to full window size
-    function resizeCanvas() {
-        confettiCanvas.width = window.innerWidth;
-        confettiCanvas.height = window.innerHeight;
+    initialize() {
+        this.canvas = document.getElementById('confetti-canvas');
+        if (!this.canvas) return;
+        
+        this.ctx = this.canvas.getContext('2d');
+        this.resizeCanvas();
+        
+        // Add event listener for window resize
+        window.addEventListener('resize', () => this.resizeCanvas());
+    },
+    
+    resizeCanvas() {
+        if (!this.canvas) return;
+        
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+    },
+    
+    start() {
+        if (!this.canvas || !this.ctx) this.initialize();
+        if (!this.canvas) return;
+        
+        this.active = true;
+        this.createParticles(this.maxParticles);
+        
+        // Cancel any existing animation
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        
+        // Start the animation
+        this.animate();
+    },
+    
+    stop() {
+        this.active = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
+        // Clear the canvas
+        if (this.ctx) {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+        }
+        
+        // Clear the particles array
+        this.particles = [];
+    },
+    
+    createParticles(count) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push({
+                x: Math.random() * this.width,
+                y: Math.random() * this.height - this.height,
+                size: Math.random() * 10 + 5,
+                color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                shape: this.shapes[Math.floor(Math.random() * this.shapes.length)],
+                speedX: Math.random() * 6 - 3,
+                speedY: Math.random() * 2 + 2,
+                rotation: Math.random() * 360,
+                rotationSpeed: Math.random() * 4 - 2,
+                opacity: 1
+            });
+        }
+    },
+    
+    animate() {
+        if (!this.active) return;
+        
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        
+        // Update and draw particles
+        this.particles.forEach((particle, index) => {
+            // Update position
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+            particle.speedY += this.gravity * 0.1;
+            particle.rotation += particle.rotationSpeed;
+            
+            // Draw the particle
+            this.drawParticle(particle);
+            
+            // Remove particles that are out of bounds
+            if (particle.y > this.height + 100) {
+                // Create a new particle at the top
+                if (this.active) {
+                    this.particles[index] = {
+                        x: Math.random() * this.width,
+                        y: -20,
+                        size: Math.random() * 10 + 5,
+                        color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                        shape: this.shapes[Math.floor(Math.random() * this.shapes.length)],
+                        speedX: Math.random() * 6 - 3,
+                        speedY: Math.random() * 2 + 2,
+                        rotation: Math.random() * 360,
+                        rotationSpeed: Math.random() * 4 - 2,
+                        opacity: 1
+                    };
+                }
+            }
+        });
+        
+        // Continue animation
+        this.animationId = requestAnimationFrame(() => this.animate());
+    },
+    
+    drawParticle(particle) {
+        this.ctx.save();
+        this.ctx.translate(particle.x, particle.y);
+        this.ctx.rotate(particle.rotation * Math.PI / 180);
+        this.ctx.fillStyle = particle.color;
+        this.ctx.globalAlpha = particle.opacity;
+        
+        switch (particle.shape) {
+            case 'circle':
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, particle.size / 2, 0, Math.PI * 2, true);
+                this.ctx.fill();
+                break;
+                
+            case 'square':
+                this.ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+                break;
+                
+            case 'triangle':
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -particle.size / 2);
+                this.ctx.lineTo(particle.size / 2, particle.size / 2);
+                this.ctx.lineTo(-particle.size / 2, particle.size / 2);
+                this.ctx.closePath();
+                this.ctx.fill();
+                break;
+                
+            case 'line':
+                this.ctx.lineWidth = particle.size / 5;
+                this.ctx.strokeStyle = particle.color;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -particle.size);
+                this.ctx.lineTo(0, particle.size);
+                this.ctx.stroke();
+                break;
+        }
+        
+        this.ctx.restore();
     }
-    
-    // Resize on load and window resize
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+};
+
+// Initialize confetti when the document is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    confetti.initialize();
 });
 
-// Start confetti animation
+// Function to start confetti animation
 function startConfetti() {
-    if (!confettiCanvas || !confettiCtx) return;
+    confetti.start();
     
-    // Clear existing animation if running
-    if (confettiAnimationId) {
-        stopConfetti();
-    }
-    
-    // Reset particles array
-    confettiParticles = [];
-    
-    // Create initial particles
-    createConfettiParticles(150);
-    
-    // Start animation loop
-    animateConfetti();
+    // Stop confetti after 15 seconds
+    setTimeout(() => {
+        confetti.stop();
+    }, 15000);
 }
 
-// Stop confetti animation
+// Function to stop confetti animation
 function stopConfetti() {
-    if (confettiAnimationId) {
-        cancelAnimationFrame(confettiAnimationId);
-        confettiAnimationId = null;
-    }
-    
-    // Clear canvas
-    if (confettiCtx) {
-        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    }
-}
-
-// Create confetti particles
-function createConfettiParticles(count) {
-    for (let i = 0; i < count; i++) {
-        confettiParticles.push({
-            x: Math.random() * confettiCanvas.width,
-            y: Math.random() * -confettiCanvas.height,
-            size: randomRange(7, 14),
-            color: getRandomColor(),
-            shape: getRandomShape(),
-            angle: randomRange(0, 2 * Math.PI),
-            rotation: randomRange(-0.1, 0.1),
-            speed: randomRange(1, 3),
-            opacity: 1
-        });
-    }
-}
-
-// Animate confetti
-function animateConfetti() {
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    
-    // Draw and update each particle
-    for (let i = 0; i < confettiParticles.length; i++) {
-        const particle = confettiParticles[i];
-        
-        // Update position
-        particle.y += particle.speed;
-        particle.angle += particle.rotation;
-        
-        // Slight horizontal movement
-        particle.x += Math.sin(particle.angle) * 0.5;
-        
-        // Fade out as it falls
-        if (particle.y > confettiCanvas.height * 0.7) {
-            particle.opacity = Math.max(0, particle.opacity - 0.01);
-        }
-        
-        // Draw the particle
-        drawConfettiParticle(particle);
-        
-        // Remove particles that are out of view or completely faded
-        if (particle.y > confettiCanvas.height || particle.opacity <= 0) {
-            confettiParticles.splice(i, 1);
-            i--;
-            
-            // Add a new particle to replace the removed one
-            if (Math.random() < 0.3) {
-                confettiParticles.push({
-                    x: Math.random() * confettiCanvas.width,
-                    y: -10,
-                    size: randomRange(7, 14),
-                    color: getRandomColor(),
-                    shape: getRandomShape(),
-                    angle: randomRange(0, 2 * Math.PI),
-                    rotation: randomRange(-0.1, 0.1),
-                    speed: randomRange(1, 3),
-                    opacity: 1
-                });
-            }
-        }
-    }
-    
-    // Continue animation
-    confettiAnimationId = requestAnimationFrame(animateConfetti);
-}
-
-// Draw a single confetti particle
-function drawConfettiParticle(particle) {
-    confettiCtx.save();
-    confettiCtx.translate(particle.x, particle.y);
-    confettiCtx.rotate(particle.angle);
-    confettiCtx.globalAlpha = particle.opacity;
-    confettiCtx.fillStyle = particle.color;
-    
-    switch (particle.shape) {
-        case 'circle':
-            confettiCtx.beginPath();
-            confettiCtx.arc(0, 0, particle.size / 2, 0, 2 * Math.PI);
-            confettiCtx.fill();
-            break;
-        
-        case 'rect':
-            confettiCtx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
-            break;
-        
-        case 'triangle':
-            confettiCtx.beginPath();
-            confettiCtx.moveTo(0, -particle.size / 2);
-            confettiCtx.lineTo(particle.size / 2, particle.size / 2);
-            confettiCtx.lineTo(-particle.size / 2, particle.size / 2);
-            confettiCtx.closePath();
-            confettiCtx.fill();
-            break;
-    }
-    
-    confettiCtx.restore();
-}
-
-// Utility functions
-function randomRange(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function getRandomColor() {
-    // Mercado Libre colors plus some festive colors
-    const colors = [
-        '#FFE600', // Yellow
-        '#3483FA', // Blue
-        '#2968C8', // Dark Blue
-        '#39B54A', // Green
-        '#FF9800', // Orange
-        '#F23D4F', // Red
-        '#9C27B0', // Purple
-        '#4CAF50', // Green
-        '#00BCD4', // Cyan
-    ];
-    
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-function getRandomShape() {
-    const shapes = ['circle', 'rect', 'triangle'];
-    return shapes[Math.floor(Math.random() * shapes.length)];
+    confetti.stop();
 }
