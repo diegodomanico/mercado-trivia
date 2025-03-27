@@ -501,6 +501,9 @@ function checkAnswer(selectedIndex) {
     // Check if the answer is correct
     const isCorrect = selectedIndex === correctIndex;
     
+    // Deshabilitar todas las respuestas para evitar clicks adicionales
+    elements.answers.forEach(answer => answer.classList.add('disabled'));
+    
     // Update UI to show correct/incorrect
     elements.answers[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
     
@@ -515,14 +518,14 @@ function checkAnswer(selectedIndex) {
         playSound(isCorrect ? 'correct' : 'wrong');
     }
     
-    // Wait before proceeding
+    // Aumentar el tiempo de espera entre respuestas para evitar que pase automáticamente
     setTimeout(() => {
         if (isCorrect) {
             handleCorrectAnswer();
         } else {
             handleWrongAnswer();
         }
-    }, 2000);
+    }, 3000);
 }
 
 // Handle a correct answer
@@ -728,6 +731,7 @@ function startTimer() {
     // Log para debugging
     console.log("Iniciando temporizador con " + gameState.timeRemaining + " segundos");
     
+    // IMPORTANTE: Establecer el timer inmediatamente sin setTimeout
     // Forzar visualización del temporizador al 100% inicialmente
     elements.timerBar.style.width = '100%';
     elements.timerBar.style.backgroundColor = 'var(--success-green)';
@@ -735,19 +739,17 @@ function startTimer() {
     // Actualizar el display de tiempo inmediatamente
     updateTimerDisplay();
     
-    // Pequeña pausa antes de iniciar el timer para evitar problemas
-    setTimeout(() => {
-        // Start the interval timer
-        gameState.timer = setInterval(() => {
-            // Decrement time remaining
-            gameState.timeRemaining--;
-            
-            console.log("Tiempo restante: " + gameState.timeRemaining);
-            
-            // Update timer display
-            updateTimerDisplay();
-            
-            // Play sounds based on time remaining
+    // Iniciar el timer inmediatamente, sin delay
+    gameState.timer = setInterval(() => {
+        // Decrement time remaining
+        gameState.timeRemaining--;
+        
+        console.log("Tiempo restante: " + gameState.timeRemaining);
+        
+        // Update timer display
+        updateTimerDisplay();
+        
+        // Play sounds based on time remaining
             if (typeof playSound === 'function') {
                 if (gameState.timeRemaining <= 5) {
                     playSound('timeLow');
@@ -762,7 +764,6 @@ function startTimer() {
                 timeUp();
             }
         }, 1000);
-    }, 100);
 }
 
 // Stop the timer
