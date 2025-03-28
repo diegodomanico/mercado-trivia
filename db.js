@@ -26,17 +26,27 @@ async function initDatabase() {
             )
         `);
 
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS scores (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                phone TEXT,
-                prize INTEGER DEFAULT 0,
-                round INTEGER DEFAULT 1,
-                final_pillar TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+        // Verificamos primero si existe la tabla scores
+        const tableExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'scores'
+            );
         `);
+        
+        if (!tableExists.rows[0].exists) {
+            await pool.query(`
+                CREATE TABLE scores (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    phone VARCHAR(255),
+                    score INTEGER DEFAULT 0,
+                    max_round INTEGER DEFAULT 1,
+                    final_pillar VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+        }
 
         console.log('Tablas creadas o ya existentes');
         return true;
@@ -67,14 +77,14 @@ async function validatePhone(phone) {
 // Guardar puntaje
 async function saveScore(scoreData) {
     try {
-        const { name, phone, prize, round, finalPillar } = scoreData;
+        const { name, phone, score, maxRound, finalPillar } = scoreData;
         const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
         
         const result = await pool.query(
-            `INSERT INTO scores (name, phone, prize, round, final_pillar) 
+            `INSERT INTO scores (name, phone, score, max_round, final_pillar) 
              VALUES ($1, $2, $3, $4, $5) 
              RETURNING *`,
-            [name, cleanPhone, prize, round, finalPillar]
+            [name, cleanPhone, score, maxRound, finalPillar]
         );
         
         return result.rows[0];
@@ -88,9 +98,9 @@ async function saveScore(scoreData) {
 async function fetchTopScores(limit = 5) {
     try {
         const result = await pool.query(
-            `SELECT name, phone, prize, round, final_pillar, created_at 
+            `SELECT name, phone, score, max_round, final_pillar, created_at 
              FROM scores 
-             ORDER BY prize DESC, round DESC 
+             ORDER BY score DESC, max_round DESC 
              LIMIT $1`,
             [limit]
         );
@@ -98,8 +108,8 @@ async function fetchTopScores(limit = 5) {
         return result.rows.map(row => ({
             name: row.name,
             phone: row.phone,
-            prize: row.prize,
-            round: row.round,
+            prize: row.score, // Usamos score pero lo mapeamos a prize para compatibilidad
+            round: row.max_round, // Usamos max_round pero lo mapeamos a round para compatibilidad
             pillar: row.final_pillar,
             date: row.created_at
         }));
@@ -138,24 +148,34 @@ async function loadQuestionsFromCSV(csvFilePath) {
                     // Mapeo directo y simplificado de pilares
                     let pillar = 'Reputación'; // Valor por defecto
                     
-                    // Mapeo manual de patrones específicos a pilares estándar
+                    // Solo usamos los pilares que realmente existen en el CSV
                     const pilarMappings = [
-                        { pattern: '❤️', pillar: 'Reputación' },
-                        { pattern: '💙', pillar: 'Oferta' },
-                        { pattern: '💜', pillar: 'Tráfico' },
-                        { pattern: '💛', pillar: 'Servicio' },
-                        { pattern: '💗', pillar: 'Data driven' },
-                        { pattern: '🟠', pillar: 'Logística' },
-                        { pattern: '🤔', pillar: 'Experiencia' },
-                        { pattern: '💰', pillar: 'Costos' }
+                        { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación' },
+                        { pattern: 'Oferta', emoji: '💙', pillar: 'Oferta' },
+                        { pattern: 'Tráfico', emoji: '💜', pillar: 'Tráfico' },
+                        { pattern: 'Servicio', emoji: '💛', pillar: 'Servicio' },
+                        { pattern: 'Data driven', emoji: '💗', pillar: 'Data driven' }
                     ];
                     
-                    if (data.Pilar) {
-                        // Buscar coincidencia en el mapeo
+                    if (data.Pilar && data.Pilar !== 'Pilar') {
+                        // Primero intentamos con el emoji
+                        let found = false;
                         for (const mapping of pilarMappings) {
-                            if (data.Pilar.includes(mapping.pattern)) {
+                            if (data.Pilar.includes(mapping.emoji)) {
                                 pillar = mapping.pillar;
+                                found = true;
                                 break;
+                            }
+                        }
+                        
+                        // Si no encontramos por emoji, buscamos por nombre
+                        if (!found) {
+                            for (const mapping of pilarMappings) {
+                                if (data.Pilar.includes(mapping.pattern)) {
+                                    pillar = mapping.pillar;
+                                    found = true;
+                                    break;
+                                }
                             }
                         }
                         
@@ -270,11 +290,14 @@ async function fetchAllGameQuestions() {
             dbConnected: true
         };
         
+        // Solo usamos los pilares que realmente existen en el CSV
+        const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
+        
         // Inicializar estructura para todas las dificultades y pilares
         for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
             allQuestions.byDifficultyAndPillar[difficulty] = {};
             
-            for (const pillar of ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven']) {
+            for (const pillar of validPillars) {
                 allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
             }
         }
@@ -297,24 +320,21 @@ async function fetchAllGameQuestions() {
             }
         }
         
-        // Completar con preguntas de muestra si no hay suficientes
+        // Verificamos si tenemos preguntas suficientes en la base
+        let allPillarsHaveFiveQuestions = true;
+        
+        // Solo usamos los pilares que realmente existen en el CSV
         for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
-            for (const pillar of ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven']) {
-                const questions = allQuestions.byDifficultyAndPillar[difficulty][pillar];
-                
-                // Si no hay al menos 5 preguntas para esta combinación, agregar preguntas de muestra
-                if (questions.length < 5) {
-                    const sampleQuestions = getSampleQuestions([pillar], difficulty);
-                    
-                    // Agregar solo las preguntas de muestra necesarias
-                    const neededSamples = 5 - questions.length;
-                    allQuestions.byDifficultyAndPillar[difficulty][pillar] = [
-                        ...questions,
-                        ...sampleQuestions.slice(0, neededSamples)
-                    ];
+            for (const pillar of validPillars) {
+                if (!allQuestions.byDifficultyAndPillar[difficulty][pillar] || 
+                    allQuestions.byDifficultyAndPillar[difficulty][pillar].length < 5) {
+                    allPillarsHaveFiveQuestions = false;
+                    console.log(`Advertencia: No hay suficientes preguntas para ${pillar} en dificultad ${difficulty}`);
                 }
             }
         }
+        
+        // No utilizamos preguntas de muestra, solo informamos si no hay suficientes preguntas
         
         return allQuestions;
     } catch (error) {
@@ -354,7 +374,8 @@ function getSampleQuestions(pillars, difficulty) {
 // Obtener la estructura completa de preguntas de muestra
 function getSampleQuestionsResult() {
     const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
-    const pillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven'];
+    // Solo usamos los pilares que realmente existen en el CSV
+    const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
     
     const result = {
         byDifficultyAndPillar: {},
@@ -362,13 +383,13 @@ function getSampleQuestionsResult() {
         dbConnected: false
     };
     
-    // Crear estructura para cada dificultad y pilar
+    // Crear estructura para cada dificultad y pilar válido
     for (const difficulty of difficulties) {
         result.byDifficultyAndPillar[difficulty] = {};
         
-        for (const pillar of pillars) {
-            // Generar 5 preguntas de muestra para cada combinación
-            result.byDifficultyAndPillar[difficulty][pillar] = getSampleQuestions([pillar], difficulty);
+        for (const pillar of validPillars) {
+            // En caso de error, dejamos el arreglo vacío para mostrar un mensaje adecuado
+            result.byDifficultyAndPillar[difficulty][pillar] = [];
         }
     }
     
@@ -383,19 +404,20 @@ function getSampleScores(limit = 5) {
         'Pedro Gómez', 'Sofía Díaz', 'Fernando Castro', 'Valentina Torres'
     ];
     
-    const samplePillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven'];
+    // Solo usamos los pilares que realmente existen en el CSV
+    const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
     
     return Array.from({ length: limit }, (_, i) => {
-        const prize = Math.floor(Math.random() * 5) + 1; // 1 a 5 chances
-        const round = Math.floor(Math.random() * 5) + 1; // Ronda 1 a 5
-        const pillarIndex = Math.floor(Math.random() * samplePillars.length);
+        const score = Math.floor(Math.random() * 5) + 1; // 1 a 5 chances
+        const maxRound = Math.floor(Math.random() * 5) + 1; // Ronda 1 a 5
+        const pillarIndex = Math.floor(Math.random() * validPillars.length);
         
         return {
             name: sampleNames[i % sampleNames.length],
             phone: `1591${Math.floor(1000000 + Math.random() * 9000000)}`,
-            prize,
-            round,
-            pillar: samplePillars[pillarIndex],
+            prize: score, // Para mantener compatibilidad
+            round: maxRound, // Para mantener compatibilidad
+            pillar: validPillars[pillarIndex],
             date: new Date(Date.now() - Math.floor(Math.random() * 10) * 86400000).toISOString()
         };
     }).sort((a, b) => b.prize - a.prize || b.round - a.round);

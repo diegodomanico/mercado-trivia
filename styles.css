@@ -145,7 +145,8 @@ button {
 .logo {
     max-width: 150px;
     height: auto;
-    margin-bottom: var(--space-medium);
+    margin: 0 auto var(--space-medium) auto;
+    display: block;
 }
 
 .loading-animation {
