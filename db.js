@@ -150,11 +150,11 @@ async function loadQuestionsFromCSV(csvFilePath) {
                     
                     // Solo usamos los pilares que realmente existen en el CSV
                     const pilarMappings = [
-                        { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación' },
-                        { pattern: 'Oferta', emoji: '💙', pillar: 'Oferta' },
-                        { pattern: 'Tráfico', emoji: '💜', pillar: 'Tráfico' },
-                        { pattern: 'Servicio', emoji: '💛', pillar: 'Servicio' },
-                        { pattern: 'Data driven', emoji: '💗', pillar: 'Data driven' }
+                        { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación ❤️' },
+                        { pattern: 'Oferta', emoji: '💙', pillar: 'Oferta 💙' },
+                        { pattern: 'Tráfico', emoji: '💜', pillar: 'Tráfico 💜' },
+                        { pattern: 'Servicio', emoji: '💛', pillar: 'Servicio 💛' },
+                        { pattern: 'Data driven', emoji: '💗', pillar: 'Data driven 💗' }
                     ];
                     
                     if (data.Pilar && data.Pilar !== 'Pilar') {
@@ -291,7 +291,7 @@ async function fetchAllGameQuestions() {
         };
         
         // Solo usamos los pilares que realmente existen en el CSV
-        const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
+        const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
         
         // Inicializar estructura para todas las dificultades y pilares
         for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {

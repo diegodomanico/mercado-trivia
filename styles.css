@@ -12,12 +12,12 @@
     --warning-orange: #F19F4D;
     --danger-red: #F44336;
     
-    /* Pillar Colors */
-    --reputacion-color: #FF9800;
-    --oferta-color: #4CAF50;
-    --logistica-color: #2196F3;
-    --experiencia-color: #9C27B0;
-    --costos-color: #F44336;
+    /* Pillar Colors - adaptados a los pilares que usamos */
+    --reputacion-color: #FF9800; /* Reputación ❤️ */
+    --oferta-color: #4CAF50; /* Oferta 💙 */
+    --servicio-color: #FFC107; /* Servicio 💛 */
+    --trafico-color: #9C27B0; /* Tráfico 💜 */
+    --data-driven-color: #E91E63; /* Data driven 💗 */
     
     /* Font sizes */
     --font-small: 14px;
@@ -487,24 +487,24 @@ input:focus {
 }
 
 /* Theme colors for each pillar */
-.reputación-theme {
+.reputación-theme, .reputación-❤️-theme {
     border-left: 5px solid var(--reputacion-color);
 }
 
-.oferta-theme {
+.oferta-theme, .oferta-💙-theme {
     border-left: 5px solid var(--oferta-color);
 }
 
-.logística-theme {
-    border-left: 5px solid var(--logistica-color);
+.servicio-theme, .servicio-💛-theme {
+    border-left: 5px solid var(--servicio-color);
 }
 
-.experiencia-theme {
-    border-left: 5px solid var(--experiencia-color);
+.tráfico-theme, .tráfico-💜-theme {
+    border-left: 5px solid var(--trafico-color);
 }
 
-.costos-theme {
-    border-left: 5px solid var(--costos-color);
+.data-driven-theme, .data-driven-💗-theme {
+    border-left: 5px solid var(--data-driven-color);
 }
 
 /* Prize Ladder */

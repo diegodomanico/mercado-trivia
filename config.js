@@ -42,16 +42,13 @@ const GAME_STRUCTURE = {
         'Experto'
     ],
     
-    // Pillars
+    // Pillars - solo usamos los que están en el CSV
     pillars: [
-        'Reputación',
-        'Oferta',
-        'Logística',
-        'Experiencia',
-        'Costos',
-        'Servicio',
-        'Tráfico',
-        'Data driven'
+        'Reputación ❤️',
+        'Oferta 💙',
+        'Servicio 💛',
+        'Tráfico 💜',
+        'Data driven 💗'
     ],
     
     // Total number of rounds

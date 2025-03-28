@@ -436,7 +436,17 @@ function loadQuestion() {
     
     // Set pillar color for question container
     document.querySelector('.question-container').className = 'question-container';
-    document.querySelector('.question-container').classList.add(`${gameState.player.currentPillar.toLowerCase()}-theme`);
+    
+    // Convertir el nombre del pilar a una clase CSS válida (eliminando emoji y espacios)
+    const pillarClass = gameState.player.currentPillar
+        .split(' ')[0]           // Solo tomar la primera palabra (ej: "Reputación" de "Reputación ❤️")
+        .toLowerCase()           // Convertir a minúsculas
+        .normalize("NFD")        // Normalizar caracteres acentuados
+        .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+        + '-theme';
+    
+    console.log(`Aplicando clase de pilar: ${pillarClass}`);
+    document.querySelector('.question-container').classList.add(pillarClass);
     
     // Update answers
     elements.answers.forEach((answer, index) => {
@@ -1059,6 +1069,10 @@ function updatePrizeLadder() {
             level.classList.add('current');
         }
     });
+    
+    // Asegurar que el nivel actual en la barra superior coincida con el del ladder
+    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+    elements.currentDifficulty.textContent = `Nivel: ${currentDifficulty}`;
 }
 
 // Format currency (changed to show chances instead of money amount)
