@@ -1,10 +1,10 @@
 // API Endpoints
 const API_ENDPOINTS = {
-    apiKey: '/api/airtable-key',
     checkPhone: (phone) => `/api/check-phone/${phone}`,
     questions: '/api/questions',
     scores: '/api/scores',
-    topScores: '/api/top-scores'
+    topScores: '/api/top-scores',
+    loadQuestionsFromCSV: '/api/load-questions-from-csv'
 };
 
 // Game configuration

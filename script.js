@@ -125,7 +125,7 @@ async function initGame() {
     
     // Set loading status for API connection
     elements.statusIcon.className = 'status-icon loading';
-    elements.statusText.textContent = 'Verificando conexión a Airtable...';
+    elements.statusText.textContent = 'Verificando conexión a la base de datos...';
     elements.startGameButton.disabled = true;
     
     try {
@@ -201,7 +201,7 @@ async function loadAllQuestions() {
         
         // Check if we have enough questions
         if (!hasEnoughQuestions()) {
-            throw new Error('No hay suficientes preguntas para jugar. Por favor agrega más preguntas en Airtable.');
+            throw new Error('No hay suficientes preguntas para jugar. Por favor agrega más preguntas a la base de datos.');
         }
         
         return data;
@@ -213,12 +213,12 @@ async function loadAllQuestions() {
     }
 }
 
-// Update Airtable Connection Status
+// Update Database Connection Status
 function updateAirtableConnectionStatus(data, error = null) {
     if (error) {
         // Connection error - pero seguimos permitiendo jugar con preguntas de muestra
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Error de conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.statusText.textContent = 'Error de conexión a la base de datos. Jugando con preguntas de muestra.';
         elements.startGameButton.disabled = false;
         return;
     }
@@ -226,24 +226,24 @@ function updateAirtableConnectionStatus(data, error = null) {
     if (!data) {
         // No data - pero seguimos permitiendo jugar con preguntas de muestra
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'No hay conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.statusText.textContent = 'No hay conexión a la base de datos. Jugando con preguntas de muestra.';
         elements.startGameButton.disabled = false;
         return;
     }
     
-    // Ahora siempre permitimos jugar - incluso sin preguntas reales de Airtable
+    // Ahora siempre permitimos jugar - incluso sin preguntas reales de la base de datos
     const minRealQuestionsNeeded = 5;
-    if (data.airtableConnected && data.realQuestionsCount >= minRealQuestionsNeeded) {
+    if (data.dbConnected && data.realQuestionsCount >= minRealQuestionsNeeded) {
         elements.statusIcon.className = 'status-icon connected';
-        elements.statusText.textContent = `Conectado a Airtable (${data.realQuestionsCount} preguntas reales)`;
+        elements.statusText.textContent = `Conectado a la base de datos (${data.realQuestionsCount} preguntas reales)`;
         elements.startGameButton.disabled = false;
-    } else if (data.airtableConnected) {
+    } else if (data.dbConnected) {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = `Airtable con pocas preguntas (${data.realQuestionsCount} reales). Usando preguntas de muestra.`;
+        elements.statusText.textContent = `Base de datos con pocas preguntas (${data.realQuestionsCount} reales). Usando preguntas de muestra.`;
         elements.startGameButton.disabled = false;
     } else {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Sin conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.statusText.textContent = 'Sin conexión a la base de datos. Jugando con preguntas de muestra.';
         elements.startGameButton.disabled = false;
     }
 }
@@ -316,10 +316,15 @@ async function checkPhoneAndStartGame(e) {
     
     try {
         // Check if phone has already played
-        // Si la validación falla porque Airtable no está conectado, permitimos jugar de todos modos
+        // Si la validación falla porque la base de datos no está conectada, permitimos jugar de todos modos
         let isValid = true;
         try {
-            isValid = await validatePhone(phone);
+            const response = await fetch(API_ENDPOINTS.checkPhone(phone));
+            if (!response.ok) {
+                throw new Error(`Error al verificar teléfono: ${response.status}`);
+            }
+            const data = await response.json();
+            isValid = data.valid;
         } catch (phoneError) {
             console.warn('Error validando el teléfono:', phoneError);
             console.warn('Permitiendo jugar de todos modos');
