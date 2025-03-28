@@ -119,7 +119,7 @@ elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
 elements.nextRoundButton.addEventListener('click', startNextRound);
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
-elements.errorOkBtn.addEventListener('click', closeModals);
+elements.errorOkBtn.addEventListener('click', handleErrorModalClose);
 
 // Initialize Game
 async function initGame() {
@@ -1135,6 +1135,16 @@ function closeModals() {
     elements.audienceModal.classList.add('hide');
     elements.errorModal.classList.add('hide');
     elements.overlay.classList.add('hide');
+}
+
+// Handle error modal close specifically
+function handleErrorModalClose() {
+    // Ocultar el modal de error
+    elements.errorModal.classList.add('hide');
+    elements.overlay.classList.add('hide');
+    
+    // Volver a la pantalla inicial
+    showScreen(elements.startScreen);
 }
 
 // Show the leaderboard
