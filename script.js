@@ -12,6 +12,11 @@ const elements = {
     errorMessage: document.getElementById('error-message'),
     retryButton: document.getElementById('retry-button'),
     
+    // Error Modal
+    errorModal: document.getElementById('error-modal'),
+    errorText: document.getElementById('error-text'),
+    errorOkBtn: document.getElementById('error-ok-btn'),
+    
     // Start Screen
     playerNameInput: document.getElementById('player-name'),
     playerPhoneInput: document.getElementById('player-phone'),
@@ -114,6 +119,7 @@ elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
 elements.nextRoundButton.addEventListener('click', startNextRound);
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
+elements.errorOkBtn.addEventListener('click', closeModals);
 
 // Initialize Game
 async function initGame() {
@@ -332,7 +338,7 @@ async function checkPhoneAndStartGame(e) {
         }
         
         if (!isValid) {
-            elements.phoneError.textContent = 'Este número ya participó en el juego';
+            elements.phoneError.textContent = 'Este número ya participó en el juego. Cada número solo puede participar una vez.';
             elements.phoneError.classList.remove('hide');
             elements.playerPhoneInput.classList.add('input-error');
             return;
@@ -350,7 +356,10 @@ async function checkPhoneAndStartGame(e) {
         startGame();
     } catch (error) {
         console.error('Error checking phone:', error);
-        alert('Error al verificar el número de teléfono. Por favor intenta de nuevo.');
+        // Mostrar mensaje de error en un modal en lugar de alert
+        elements.errorText.textContent = 'Error al verificar el número de teléfono. Por favor intenta de nuevo.';
+        elements.errorModal.classList.remove('hide');
+        elements.overlay.classList.remove('hide');
     }
 }
 
@@ -1119,6 +1128,7 @@ function showConfetti() {
 function closeModals() {
     elements.expertModal.classList.add('hide');
     elements.audienceModal.classList.add('hide');
+    elements.errorModal.classList.add('hide');
     elements.overlay.classList.add('hide');
 }
 
