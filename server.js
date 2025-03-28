@@ -160,7 +160,7 @@ async function fetchAllGameQuestions() {
         };
         
         // Get all pillars
-        const pillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'];
+        const pillars = ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven'];
         
         // Initialize empty arrays for each pillar and difficulty
         pillars.forEach(pillar => {
@@ -302,7 +302,7 @@ async function fetchAllGameQuestions() {
     } catch (error) {
         console.error('Error fetching questions from Airtable:', error);
         const sampleData = getSampleQuestions(
-            ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'],
+            ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven'],
             'Fácil'
         );
         result.byDifficultyAndPillar = sampleData.byDifficultyAndPillar;
@@ -574,7 +574,7 @@ function getSampleScores(limit = 5) {
             phone: `1155${i}${i}${i}${i}${i}${i}`,
             score: Math.floor(Math.random() * 5) + 1, // 1-5 chances
             maxRound: Math.floor(Math.random() * 5) + 1, // Rounds 1-5
-            finalPillar: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio'][Math.floor(Math.random() * 6)],
+            finalPillar: ['Reputación', 'Oferta', 'Logística', 'Experiencia', 'Costos', 'Servicio', 'Tráfico', 'Data driven'][Math.floor(Math.random() * 8)],
             date: new Date(Date.now() - Math.floor(Math.random() * 10) * 86400000).toISOString() // Random date within last 10 days
         });
     }
