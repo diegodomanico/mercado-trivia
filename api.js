@@ -2,7 +2,7 @@
 
 // Airtable constants
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
-const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
+const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_QUIZ';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
 // Cache for API key
@@ -96,31 +96,58 @@ async function fetchQuestions(pillars, difficulty) {
             data.records.forEach(record => {
                 const fields = record.fields;
                 
-                // Verificar y usar los campos OpcionA/B/C/D que son los correctos en Airtable
+                // Verificar y usar los varios campos posibles para opciones
                 if (fields.Pregunta && 
-                    ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
-                     (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4)) && 
+                   ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
+                    (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) ||
+                    (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) ||
+                    (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) ||
+                    (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
+                    (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) && 
                     fields.RespuestaCorrecta) {
                     
-                    // Determine which option fields to use
-                    const useABCD = fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD;
+                    // Get options in the correct format
+                    function getOptions(fields) {
+                        // Check for fields named OpcionA, OpcionB, etc.
+                        if (fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) {
+                            return [fields.OpcionA, fields.OpcionB, fields.OpcionC, fields.OpcionD];
+                        }
+                        
+                        // Check for fields named Opcion1, Opcion2, etc.
+                        if (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) {
+                            return [fields.Opcion1, fields.Opcion2, fields.Opcion3, fields.Opcion4];
+                        }
+                        
+                        // Check for fields named Opción A, Opción B, etc.
+                        if (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) {
+                            return [fields["Opción A"], fields["Opción B"], fields["Opción C"], fields["Opción D"]];
+                        }
+                        
+                        // Check for fields named Opción 1, Opción 2, etc.
+                        if (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) {
+                            return [fields["Opción 1"], fields["Opción 2"], fields["Opción 3"], fields["Opción 4"]];
+                        }
+                        
+                        // Check for fields named Opcion A, Opcion B, etc.
+                        if (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) {
+                            return [fields["Opcion A"], fields["Opcion B"], fields["Opcion C"], fields["Opcion D"]];
+                        }
+                        
+                        // Check for fields named Opcion 1, Opcion 2, etc.
+                        if (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"]) {
+                            return [fields["Opcion 1"], fields["Opcion 2"], fields["Opcion 3"], fields["Opcion 4"]];
+                        }
+                        
+                        // Default to empty array (shouldn't be reached due to the if check in the parent function)
+                        return ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
+                    }
                     
                     const question = {
                         id: record.id,
                         pillar: fields.Pilar,
                         difficulty: fields.Dificultad,
                         text: fields.Pregunta,
-                        options: useABCD ? [
-                            fields.OpcionA,
-                            fields.OpcionB,
-                            fields.OpcionC,
-                            fields.OpcionD
-                        ] : [
-                            fields.Opcion1,
-                            fields.Opcion2,
-                            fields.Opcion3,
-                            fields.Opcion4
-                        ],
+                        options: getOptions(fields),
                         correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
                     };
                     

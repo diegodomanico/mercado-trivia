@@ -117,7 +117,13 @@ async function fetchAllGameQuestions() {
     try {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
         const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
-        const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PREGUNTAS';
+        const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_QUIZ';
+        
+        console.log(`Usando API KEY: ${AIRTABLE_API_KEY ? "DISPONIBLE" : "NO DISPONIBLE"}`);
+        // Imprimimos la versión truncada de la API Key para debug (solo primeros 3 caracteres)
+        if (AIRTABLE_API_KEY) {
+            console.log(`API KEY (primeros 3 caracteres): ${AIRTABLE_API_KEY.substring(0, 3)}...`);
+        }
         
         // Create a response object with connection status
         const result = {
@@ -188,7 +194,15 @@ async function fetchAllGameQuestions() {
             data.records.forEach(record => {
                 const fields = record.fields;
                 
-                if (fields.Pregunta && fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD && fields.RespuestaCorrecta && fields.Pilar && fields.Dificultad) {
+                // Revisamos todas las combinaciones posibles de nombres de campos
+                if (fields.Pregunta && 
+                   ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
+                    (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) ||
+                    (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) ||
+                    (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) ||
+                    (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
+                    (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) &&
+                    fields.RespuestaCorrecta && fields.Pilar && fields.Dificultad) {
                     const pillar = fields.Pilar;
                     const difficulty = fields.Dificultad;
                     
@@ -198,12 +212,7 @@ async function fetchAllGameQuestions() {
                             pillar: pillar,
                             difficulty: difficulty,
                             text: fields.Pregunta,
-                            options: [
-                                fields.OpcionA,
-                                fields.OpcionB,
-                                fields.OpcionC,
-                                fields.OpcionD
-                            ],
+                            options: getOptionsFromFields(fields),
                             correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
                         };
                         
@@ -249,9 +258,14 @@ async function fetchAllGameQuestions() {
         
         // Count real questions from Airtable vs. sample questions
         let realQuestions = 0;
+        // Debug para ver qué IDs de preguntas hay en el sistema
+        console.log("PREGUNTAS DISPONIBLES:");
         pillars.forEach(pillar => {
             ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'].forEach(difficulty => {
-                allQuestions.byDifficultyAndPillar[difficulty][pillar].forEach(question => {
+                const questions = allQuestions.byDifficultyAndPillar[difficulty][pillar];
+                questions.forEach(question => {
+                    console.log(`ID: ${question.id}, Tipo: ${question.id.startsWith('sample-') ? 'Muestra' : 'Real'}, Pillar: ${pillar}, Dificultad: ${difficulty}`);
+                    // Solo contamos preguntas que no son de muestra (no empiezan con "sample-")
                     if (!question.id.startsWith('sample-')) {
                         realQuestions++;
                     }
@@ -548,6 +562,42 @@ function getSampleScores(limit = 5) {
     }
     
     return sampleScores;
+}
+
+// Helper para obtener las opciones de los diferentes formatos de campos
+function getOptionsFromFields(fields) {
+    // Check for fields named OpcionA, OpcionB, etc.
+    if (fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) {
+        return [fields.OpcionA, fields.OpcionB, fields.OpcionC, fields.OpcionD];
+    }
+    
+    // Check for fields named Opcion1, Opcion2, etc.
+    if (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) {
+        return [fields.Opcion1, fields.Opcion2, fields.Opcion3, fields.Opcion4];
+    }
+    
+    // Check for fields named Opción A, Opción B, etc.
+    if (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) {
+        return [fields["Opción A"], fields["Opción B"], fields["Opción C"], fields["Opción D"]];
+    }
+    
+    // Check for fields named Opción 1, Opción 2, etc.
+    if (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) {
+        return [fields["Opción 1"], fields["Opción 2"], fields["Opción 3"], fields["Opción 4"]];
+    }
+    
+    // Check for fields named Opcion A, Opcion B, etc.
+    if (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) {
+        return [fields["Opcion A"], fields["Opcion B"], fields["Opcion C"], fields["Opcion D"]];
+    }
+    
+    // Check for fields named Opcion 1, Opcion 2, etc.
+    if (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"]) {
+        return [fields["Opcion 1"], fields["Opcion 2"], fields["Opcion 3"], fields["Opcion 4"]];
+    }
+    
+    // Default to simple array (shouldn't be reached due to the if check in the parent function)
+    return ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
 }
 
 // Start the server

@@ -216,35 +216,35 @@ async function loadAllQuestions() {
 // Update Airtable Connection Status
 function updateAirtableConnectionStatus(data, error = null) {
     if (error) {
-        // Connection error
+        // Connection error - pero seguimos permitiendo jugar con preguntas de muestra
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Error de conexión a Airtable: ' + error.message;
-        elements.startGameButton.disabled = true;
+        elements.statusText.textContent = 'Error de conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.startGameButton.disabled = false;
         return;
     }
     
     if (!data) {
-        // No data
+        // No data - pero seguimos permitiendo jugar con preguntas de muestra
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'No hay conexión a Airtable.';
-        elements.startGameButton.disabled = true;
+        elements.statusText.textContent = 'No hay conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.startGameButton.disabled = false;
         return;
     }
     
-    // Check if we have real Airtable data - need at least 10 questions for all categories
-    const minRealQuestionsNeeded = 10;
+    // Ahora siempre permitimos jugar - incluso sin preguntas reales de Airtable
+    const minRealQuestionsNeeded = 5;
     if (data.airtableConnected && data.realQuestionsCount >= minRealQuestionsNeeded) {
         elements.statusIcon.className = 'status-icon connected';
         elements.statusText.textContent = `Conectado a Airtable (${data.realQuestionsCount} preguntas reales)`;
         elements.startGameButton.disabled = false;
     } else if (data.airtableConnected) {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = `Conexión a Airtable insuficiente (solo ${data.realQuestionsCount} preguntas reales, se necesitan ${minRealQuestionsNeeded})`;
-        elements.startGameButton.disabled = true;
+        elements.statusText.textContent = `Airtable con pocas preguntas (${data.realQuestionsCount} reales). Usando preguntas de muestra.`;
+        elements.startGameButton.disabled = false;
     } else {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Sin conexión a Airtable - no se puede jugar';
-        elements.startGameButton.disabled = true;
+        elements.statusText.textContent = 'Sin conexión a Airtable. Jugando con preguntas de muestra.';
+        elements.startGameButton.disabled = false;
     }
 }
 
@@ -254,9 +254,9 @@ function hasEnoughQuestions() {
         return false;
     }
     
-    // Check if we have at least 5 questions per pillar for each difficulty level
+    // En esta versión, permitimos que el juego funcione incluso con 0 preguntas reales
+    // siempre habrá al menos 5 preguntas de muestra por cada categoría y dificultad
     let realQuestionCount = 0;
-    let hasRealQuestions = true;
     
     for (const difficulty of GAME_STRUCTURE.difficultyLevels) {
         for (const pillar of GAME_STRUCTURE.pillars) {
@@ -269,17 +269,21 @@ function hasEnoughQuestions() {
                 
                 if (!questions || realQuestions.length < GAME_CONFIG.questionsPerRound) {
                     console.warn(`Not enough real questions for ${pillar} at ${difficulty} level. Need ${GAME_CONFIG.questionsPerRound}, have ${realQuestions.length}`);
-                    hasRealQuestions = false;
+                    // Ya no fallamos aquí, solo advertimos
                 }
-            } else {
-                hasRealQuestions = false;
             }
         }
     }
     
     console.log(`Total real questions count: ${realQuestionCount}`);
-    // We'll no longer accept sample questions as valid
-    return hasRealQuestions;
+    
+    // El juego siempre podrá funcionar porque tenemos preguntas de muestra
+    // Actualizamos el contador de preguntas reales para mostrar en la UI
+    if (gameState.allQuestions) {
+        gameState.allQuestions.realQuestionsCount = realQuestionCount;
+    }
+    
+    return true;
 }
 
 // Check Phone Number and Start Game
@@ -312,7 +316,15 @@ async function checkPhoneAndStartGame(e) {
     
     try {
         // Check if phone has already played
-        const isValid = await validatePhone(phone);
+        // Si la validación falla porque Airtable no está conectado, permitimos jugar de todos modos
+        let isValid = true;
+        try {
+            isValid = await validatePhone(phone);
+        } catch (phoneError) {
+            console.warn('Error validando el teléfono:', phoneError);
+            console.warn('Permitiendo jugar de todos modos');
+            isValid = true;
+        }
         
         if (!isValid) {
             elements.phoneError.textContent = 'Este número ya participó en el juego';
