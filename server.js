@@ -118,7 +118,7 @@ async function fetchAllGameQuestions() {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
         // Verificamos de nuevo el ID de base y nombre de tabla
         const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
-        const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_QUIZ';
+        const AIRTABLE_TABLE_NAME = 'tblHRC5T7cSuaDGeq';
         
         console.log(`Usando API KEY: ${AIRTABLE_API_KEY ? "DISPONIBLE" : "NO DISPONIBLE"}`);
         // Imprimimos la versión truncada de la API Key para debug (solo primeros 3 caracteres)
@@ -204,20 +204,37 @@ async function fetchAllGameQuestions() {
                     (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
                     (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) &&
                     fields.RespuestaCorrecta && fields.Pilar && fields.Dificultad) {
-                    const pillar = fields.Pilar;
-                    const difficulty = fields.Dificultad;
+                    // Extraer el nombre del pilar sin emojis
+                    let pillarName = fields.Pilar;
+                    // Limpiamos el campo de pilar para eliminar emojis y caracteres especiales
+                    for (const p of pillars) {
+                        if (pillarName.includes(p)) {
+                            pillarName = p;
+                            break;
+                        }
+                    }
                     
-                    if (pillars.includes(pillar) && allQuestions.byDifficultyAndPillar[difficulty]) {
+                    // Extraer dificultad sin emojis
+                    let difficultyName = fields.Dificultad;
+                    const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
+                    for (const d of difficulties) {
+                        if (difficultyName.includes(d)) {
+                            difficultyName = d;
+                            break;
+                        }
+                    }
+                    
+                    if (pillars.includes(pillarName) && allQuestions.byDifficultyAndPillar[difficultyName]) {
                         const question = {
                             id: record.id,
-                            pillar: pillar,
-                            difficulty: difficulty,
+                            pillar: pillarName,
+                            difficulty: difficultyName,
                             text: fields.Pregunta,
                             options: getOptionsFromFields(fields),
                             correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
                         };
                         
-                        allQuestions.byDifficultyAndPillar[difficulty][pillar].push(question);
+                        allQuestions.byDifficultyAndPillar[difficultyName][pillarName].push(question);
                         allQuestions.total++;
                     }
                 }

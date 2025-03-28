@@ -1,8 +1,8 @@
 // API Integration for Airtable
 
-// Airtable constants - ID correcto de la base según el enlace
+// Airtable constants - ID correcto de la base y tabla según prueba exitosa
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
-const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_QUIZ';
+const AIRTABLE_QUESTIONS_TABLE = 'tblHRC5T7cSuaDGeq';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
 // Cache for API key
@@ -70,9 +70,10 @@ async function fetchQuestions(pillars, difficulty) {
         
         const questions = [];
         
-        // Construct filter formula for Airtable
-        const pillarFilter = pillars.map(pillar => `{Pilar}="${pillar}"`).join(',');
-        const filterFormula = encodeURIComponent(`AND({Dificultad}="${difficulty}", OR(${pillarFilter}))`);
+        // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
+        const pillarFilter = pillars.map(pillar => `SEARCH("${pillar}", {Pilar})`).join(',');
+        const difficultyFilter = `SEARCH("${difficulty}", {Dificultad})`;
+        const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
         
         // Construct URL for Airtable API
         const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_QUESTIONS_TABLE}?filterByFormula=${filterFormula}`;
@@ -142,10 +143,30 @@ async function fetchQuestions(pillars, difficulty) {
                         return ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
                     }
                     
+                    // Extraer el nombre del pilar sin emojis
+                    let pillarName = fields.Pilar;
+                    // Limpiamos el campo de pillar para eliminar emojis y caracteres especiales
+                    for (const p of GAME_STRUCTURE.pillars) {
+                        if (pillarName.includes(p)) {
+                            pillarName = p;
+                            break;
+                        }
+                    }
+                    
+                    // Extraer dificultad sin emojis
+                    let difficultyName = fields.Dificultad;
+                    const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
+                    for (const d of difficulties) {
+                        if (difficultyName.includes(d)) {
+                            difficultyName = d;
+                            break;
+                        }
+                    }
+                    
                     const question = {
                         id: record.id,
-                        pillar: fields.Pilar,
-                        difficulty: fields.Dificultad,
+                        pillar: pillarName,
+                        difficulty: difficultyName,
                         text: fields.Pregunta,
                         options: getOptions(fields),
                         correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
