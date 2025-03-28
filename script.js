@@ -322,8 +322,8 @@ async function checkPhoneAndStartGame(e) {
     
     try {
         // Check if phone has already played
-        // Si la validación falla porque la base de datos no está conectada, permitimos jugar de todos modos
-        let isValid = true;
+        // IMPORTANTE: Ya no permitimos jugar si hay un error en la validación
+        let isValid = false;
         try {
             const response = await fetch(API_ENDPOINTS.checkPhone(phone));
             if (!response.ok) {
@@ -333,8 +333,8 @@ async function checkPhoneAndStartGame(e) {
             isValid = data.valid;
         } catch (phoneError) {
             console.warn('Error validando el teléfono:', phoneError);
-            console.warn('Permitiendo jugar de todos modos');
-            isValid = true;
+            // Ahora mostramos error y no permitimos jugar cuando hay error
+            throw new Error('Error al verificar el teléfono en la base de datos');
         }
         
         if (!isValid) {
@@ -356,10 +356,15 @@ async function checkPhoneAndStartGame(e) {
         startGame();
     } catch (error) {
         console.error('Error checking phone:', error);
-        // Mostrar mensaje de error en un modal en lugar de alert
-        elements.errorText.textContent = 'Error al verificar el número de teléfono. Por favor intenta de nuevo.';
+        // Mostrar mensaje de error específico en un modal
+        if (error.message.includes('base de datos')) {
+            elements.errorText.textContent = 'Error al conectar con la base de datos. Por favor intenta de nuevo más tarde.';
+        } else {
+            elements.errorText.textContent = 'Error al verificar el número de teléfono. Por favor intenta de nuevo.';
+        }
         elements.errorModal.classList.remove('hide');
         elements.overlay.classList.remove('hide');
+        return; // Asegurarnos de que no continúe
     }
 }
 
