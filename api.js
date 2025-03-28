@@ -76,7 +76,7 @@ async function fetchQuestions(pillars, difficulty) {
         const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
         
         // Construct URL for Airtable API
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_QUESTIONS_TABLE}?filterByFormula=${filterFormula}`;
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_QUESTIONS_TABLE}?filterByFormula=${filterFormula}&maxRecords=100`;
         
         // Fetch questions from Airtable
         const response = await fetch(url, {
@@ -105,7 +105,7 @@ async function fetchQuestions(pillars, difficulty) {
                     (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) ||
                     (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
                     (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) && 
-                    fields.RespuestaCorrecta) {
+                    fields.RespuestaCorrecta !== undefined) {
                     
                     // Get options in the correct format
                     function getOptions(fields) {

@@ -49,7 +49,9 @@ const GAME_STRUCTURE = {
         'Logística',
         'Experiencia',
         'Costos',
-        'Servicio'
+        'Servicio',
+        'Tráfico',
+        'Data driven'
     ],
     
     // Total number of rounds
