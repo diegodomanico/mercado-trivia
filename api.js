@@ -1,8 +1,8 @@
 // API Integration for Airtable
 
-// Airtable constants - actualizamos ID de base y tablas
-const AIRTABLE_BASE_ID = 'appqpx1yzSgAOBlB3';
-const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
+// Airtable constants - ID correcto de la base según el enlace
+const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
+const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_QUIZ';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
 // Cache for API key

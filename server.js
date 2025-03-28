@@ -84,7 +84,7 @@ async function validatePhone(phone) {
     try {
         const cleanPhone = phone.replace(/\D/g, '');
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-        const AIRTABLE_BASE_ID = 'appqpx1yzSgAOBlB3';
+        const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
         const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PUNTAJES';
         
         const filterFormula = `{Telefono}="${cleanPhone}"`;
@@ -117,8 +117,8 @@ async function fetchAllGameQuestions() {
     try {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
         // Verificamos de nuevo el ID de base y nombre de tabla
-        const AIRTABLE_BASE_ID = 'appqpx1yzSgAOBlB3';
-        const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PREGUNTAS';
+        const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
+        const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_QUIZ';
         
         console.log(`Usando API KEY: ${AIRTABLE_API_KEY ? "DISPONIBLE" : "NO DISPONIBLE"}`);
         // Imprimimos la versión truncada de la API Key para debug (solo primeros 3 caracteres)
@@ -299,7 +299,7 @@ async function fetchAllGameQuestions() {
 async function fetchTopScores(limit) {
     try {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-        const AIRTABLE_BASE_ID = 'appqpx1yzSgAOBlB3';
+        const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
         const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PUNTAJES';
         
         if (!AIRTABLE_API_KEY) {
@@ -362,7 +362,7 @@ async function fetchTopScores(limit) {
 async function saveScore(scoreData) {
     try {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-        const AIRTABLE_BASE_ID = 'appqpx1yzSgAOBlB3';
+        const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
         const AIRTABLE_TABLE_NAME = 'MELIXP_GAME_QUIEN_PUNTAJES';
         
         if (!AIRTABLE_API_KEY) {
