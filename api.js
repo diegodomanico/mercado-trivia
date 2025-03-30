@@ -642,6 +642,7 @@ async function validatePhone(phone) {
         const cleanPhone = phone.replace(/\D/g, '');
         
         // Construct the URL with the FILTER formula to check if the phone exists
+        // Usamos el nombre de campo correcto en español para el teléfono
         const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula={Telefono}="${cleanPhone}"`;
         
         // Make the request to Airtable
@@ -693,19 +694,13 @@ async function saveScore(scoreData) {
                 records: [
                     {
                         fields: {
-                            // Intentamos con nombres de campo en inglés y español
+                            // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Name: scoreData.name,
                             Telefono: scoreData.phone,
-                            Phone: scoreData.phone,
                             Premio: scoreData.prize,
-                            Prize: scoreData.prize,
-                            "Nivel Máximo": scoreData.maxRound,
-                            "Max Level": scoreData.maxRound,
+                            "Nivel Maximo": scoreData.maxRound,
                             "Pilar Final": scoreData.finalPillar,
-                            "Final Pillar": scoreData.finalPillar,
-                            Fecha: new Date().toISOString(),
-                            Date: new Date().toISOString()
+                            Fecha: new Date().toISOString()
                         }
                     }
                 ]
@@ -770,8 +765,8 @@ async function fetchTopScores(limit = 5) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
-            // Construct the URL with sorting by prize in descending order
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Prize&sort%5B0%5D%5Bdirection%5D=desc`;
+            // Construct the URL with sorting by Premio (Prize) in descending order
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Premio&sort%5B0%5D%5Bdirection%5D=desc`;
             
             // Make the request to Airtable
             const response = await fetch(url, {
@@ -790,15 +785,15 @@ async function fetchTopScores(limit = 5) {
             
             // Transform Airtable records to our score format
             const scores = data.records.map(record => {
-                // Intentar obtener los campos en español o inglés
+                // Usar solamente los nombres de campo en español
                 return {
                     id: record.id,
-                    name: record.fields.Name || record.fields.Nombre || "Jugador",
-                    phone: record.fields.Phone || record.fields.Telefono || "000000000",
-                    prize: record.fields.Prize || record.fields.Premio || 0,
-                    maxRound: record.fields["Max Level"] || record.fields["Nivel Máximo"] || 1,
-                    finalPillar: record.fields["Final Pillar"] || record.fields["Pilar Final"] || "Desconocido",
-                    date: record.fields.Date || record.fields.Fecha || new Date().toISOString()
+                    name: record.fields.Nombre || "Jugador",
+                    phone: record.fields.Telefono || "000000000",
+                    prize: record.fields.Premio || 0,
+                    maxRound: record.fields["Nivel Maximo"] || 1,
+                    finalPillar: record.fields["Pilar Final"] || "Desconocido",
+                    date: record.fields.Fecha || new Date().toISOString()
                 };
             });
             
