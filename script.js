@@ -319,7 +319,9 @@ async function checkPhoneAndStartGame(e) {
         // IMPORTANTE: Ya no permitimos jugar si hay un error en la validación
         let isValid = false;
         try {
-            const response = await fetch(API_ENDPOINTS.checkPhone(phone));
+            // Asegurar que se envía como string
+            const phoneStr = String(phone);
+            const response = await fetch(API_ENDPOINTS.checkPhone(phoneStr));
             if (!response.ok) {
                 throw new Error(`Error al verificar teléfono: ${response.status}`);
             }
@@ -344,7 +346,7 @@ async function checkPhoneAndStartGame(e) {
         
         // Store player data
         gameState.player.name = name;
-        gameState.player.phone = phone;
+        gameState.player.phone = String(phone); // Aseguramos que sea string
         
         // Start the game
         startGame();
@@ -1219,7 +1221,7 @@ async function saveScore(name, prize, maxRound, finalPillar) {
         
         const scoreData = {
             name: name,
-            phone: gameState.player.phone.toString(),
+            phone: String(gameState.player.phone), // Aseguramos que siempre sea string
             score: prize,
             chances: chances, // Agregamos el campo de chances explícitamente
             maxRound: maxRound,

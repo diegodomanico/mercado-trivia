@@ -624,23 +624,13 @@ function generateSampleQuestions(pillars, difficulty) {
  */
 async function validatePhone(phone) {
     try {
-        // Para resolver el error 422, eliminamos temporalmente la validación real
-        // mientras se configura correctamente Airtable
-        // En producción, esto debería validar que el teléfono no exista ya en la base de datos
-        
-        console.log(`Validando teléfono: ${phone}`);
-        
-        // Simplemente retornamos true para permitir continuar con el juego
-        // hasta que se resuelva la configuración de Airtable
-        return true;
-        
-        /* 
-        // Código original de validación - lo mantenemos comentado para implementación posterior
         // Get the API key
         const apiKey = await getAirtableApiKey();
         
-        // Clean the phone number (remove non-digits)
-        const cleanPhone = phone.replace(/\D/g, '');
+        // Clean the phone number and ensure it's a string
+        const cleanPhone = String(phone).replace(/\D/g, '');
+        
+        console.log(`Validando teléfono: ${cleanPhone}`);
         
         // Construct the URL with the FILTER formula to check if the phone exists
         // Usamos el nombre de campo correcto en español para el teléfono
@@ -656,7 +646,9 @@ async function validatePhone(phone) {
         });
         
         if (!response.ok) {
-            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
+            console.error(`Error verificando teléfono: ${response.status} ${response.statusText}`);
+            // Si hay un error en la API, permitimos continuar para no bloquear el juego
+            return true;
         }
         
         const data = await response.json();
@@ -665,7 +657,6 @@ async function validatePhone(phone) {
         const isValid = data.records.length === 0;
         
         return isValid;
-        */
     } catch (error) {
         console.error('Error validating phone:', error);
         // En lugar de propagar el error, retornamos true
@@ -697,7 +688,7 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Telefono: scoreData.phone,
+                            Telefono: String(scoreData.phone), // Forzar que sea string
                             Premio: scoreData.score, // Ahora usamos .score
                             Chances: scoreData.chances, // Agregamos el campo de chances explícitamente
                             "Nivel Maximo": scoreData.maxRound,
@@ -735,7 +726,7 @@ async function saveScore(scoreData) {
                 id: 'temp-' + Date.now(),
                 fields: {
                     Nombre: scoreData.name,
-                    Telefono: scoreData.phone,
+                    Telefono: String(scoreData.phone),
                     Premio: scoreData.score,
                     Chances: scoreData.chances,
                     "Nivel Maximo": scoreData.maxRound,
