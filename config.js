@@ -4,7 +4,7 @@ const API_ENDPOINTS = {
     questions: '/api/questions',
     scores: '/api/scores',
     topScores: '/api/top-scores',
-    loadQuestionsFromCSV: '/api/load-questions-from-csv'
+    apiKey: '/api/airtable-key'
 };
 
 // Game configuration
@@ -84,4 +84,13 @@ const EXPERT_REASONS = {
         "La verdad es que estoy dividido entre un par de opciones, pero me inclino por esta.",
         "Es difícil estar seguro, pero vamos con esta respuesta."
     ]
+};
+
+// Export all configuration
+module.exports = {
+    API_ENDPOINTS,
+    GAME_CONFIG,
+    GAME_STRUCTURE,
+    EXPERT_ADVICE_TEMPLATES,
+    EXPERT_REASONS
 };

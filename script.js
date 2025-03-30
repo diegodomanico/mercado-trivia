@@ -222,36 +222,47 @@ async function loadAllQuestions() {
 // Update Database Connection Status
 function updateAirtableConnectionStatus(data, error = null) {
     if (error) {
-        // Connection error - pero seguimos permitiendo jugar con preguntas de muestra
+        // Connection error - no permitimos jugar sin Airtable
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Error de conexión a la base de datos. Jugando con preguntas de muestra.';
-        elements.startGameButton.disabled = false;
+        elements.statusText.textContent = 'Error de conexión a Airtable. No se puede iniciar el juego.';
+        elements.startGameButton.disabled = true;
         return;
     }
     
-    if (!data) {
-        // No data - pero seguimos permitiendo jugar con preguntas de muestra
+    if (!data || !data.total || data.total === 0) {
+        // No data o insuficientes preguntas - no permitimos jugar
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'No hay conexión a la base de datos. Jugando con preguntas de muestra.';
-        elements.startGameButton.disabled = false;
+        elements.statusText.textContent = 'No hay suficientes preguntas en Airtable. No se puede iniciar el juego.';
+        elements.startGameButton.disabled = true;
         return;
     }
     
-    // Ahora siempre permitimos jugar - incluso sin preguntas reales de la base de datos
-    const minRealQuestionsNeeded = 5;
-    if (data.dbConnected && data.realQuestionsCount >= minRealQuestionsNeeded) {
-        elements.statusIcon.className = 'status-icon connected';
-        elements.statusText.textContent = `Conectado a la base de datos (${data.realQuestionsCount} preguntas reales)`;
-        elements.startGameButton.disabled = false;
-    } else if (data.dbConnected) {
-        elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = `Base de datos con pocas preguntas (${data.realQuestionsCount} reales). Usando preguntas de muestra.`;
-        elements.startGameButton.disabled = false;
-    } else {
-        elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Sin conexión a la base de datos. Jugando con preguntas de muestra.';
-        elements.startGameButton.disabled = false;
+    // Verificar si tenemos suficientes preguntas para cada pilar y dificultad
+    const minQuestionsPerRound = GAME_CONFIG.questionsPerRound;
+    const pillars = GAME_STRUCTURE.pillars;
+    let insufficientQuestions = false;
+    
+    for (const difficulty of Object.keys(data.byDifficultyAndPillar)) {
+        for (const pillar of pillars) {
+            const questions = data.byDifficultyAndPillar[difficulty][pillar];
+            if (!questions || questions.length < minQuestionsPerRound) {
+                insufficientQuestions = true;
+                console.error(`Insuficientes preguntas para ${pillar} en dificultad ${difficulty}: ${questions ? questions.length : 0}/${minQuestionsPerRound}`);
+            }
+        }
     }
+    
+    if (insufficientQuestions) {
+        elements.statusIcon.className = 'status-icon disconnected';
+        elements.statusText.textContent = 'Faltan preguntas en algunas categorías. No se puede iniciar el juego.';
+        elements.startGameButton.disabled = true;
+        return;
+    }
+    
+    // Todo correcto - permitimos jugar
+    elements.statusIcon.className = 'status-icon connected';
+    elements.statusText.textContent = `Conectado a Airtable (${data.total} preguntas)`;
+    elements.startGameButton.disabled = false;
 }
 
 // Check if we have enough questions
@@ -260,33 +271,16 @@ function hasEnoughQuestions() {
         return false;
     }
     
-    // En esta versión, permitimos que el juego funcione incluso con 0 preguntas reales
-    // siempre habrá al menos 5 preguntas de muestra por cada categoría y dificultad
-    let realQuestionCount = 0;
-    
+    // Verificar si hay suficientes preguntas para cada pilar y dificultad
     for (const difficulty of GAME_STRUCTURE.difficultyLevels) {
         for (const pillar of GAME_STRUCTURE.pillars) {
             const questions = gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar];
             
-            // Count how many real questions (not sample) we have
-            if (questions) {
-                const realQuestions = questions.filter(q => !q.id.startsWith('sample-'));
-                realQuestionCount += realQuestions.length;
-                
-                if (!questions || realQuestions.length < GAME_CONFIG.questionsPerRound) {
-                    console.warn(`Not enough real questions for ${pillar} at ${difficulty} level. Need ${GAME_CONFIG.questionsPerRound}, have ${realQuestions.length}`);
-                    // Ya no fallamos aquí, solo advertimos
-                }
+            if (!questions || questions.length < GAME_CONFIG.questionsPerRound) {
+                console.error(`Insuficientes preguntas para ${pillar} en dificultad ${difficulty}: ${questions ? questions.length : 0}/${GAME_CONFIG.questionsPerRound}`);
+                return false;
             }
         }
-    }
-    
-    console.log(`Total real questions count: ${realQuestionCount}`);
-    
-    // El juego siempre podrá funcionar porque tenemos preguntas de muestra
-    // Actualizamos el contador de preguntas reales para mostrar en la UI
-    if (gameState.allQuestions) {
-        gameState.allQuestions.realQuestionsCount = realQuestionCount;
     }
     
     return true;

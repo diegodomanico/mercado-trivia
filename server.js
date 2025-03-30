@@ -3,14 +3,14 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Importar funciones de la base de datos
-const { 
-    validatePhone, 
-    fetchAllGameQuestions, 
-    saveScore, 
-    fetchTopScores,
-    loadQuestionsFromCSV
-} = require('./db');
+// Importar funciones de API para Airtable
+const {
+    fetchQuestions,
+    fetchAllGameQuestions,
+    validatePhone,
+    saveScore,
+    fetchTopScores
+} = require('./api');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -74,26 +74,21 @@ app.get('/api/top-scores', async (req, res) => {
     }
 });
 
-// Endpoint para cargar preguntas desde CSV
-app.get('/api/load-questions-from-csv', async (req, res) => {
-    try {
-        // Ruta al archivo CSV de preguntas
-        const csvPath = path.join(__dirname, 'attached_assets', 'MELIXP_GAME_QUIEN_PREGUNTAS-Grid view (1).csv');
-        const result = await loadQuestionsFromCSV(csvPath);
-        res.json(result);
-    } catch (error) {
-        console.error('Error cargando preguntas desde CSV:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
+// Ya no necesitamos este endpoint porque obtenemos la clave directamente del entorno
+// app.get('/api/airtable-key', (req, res) => {
+//     try {
+//         if (!process.env.AIRTABLE_API_KEY) {
+//             throw new Error('AIRTABLE_API_KEY not set in environment variables');
+//         }
+//         res.json({ key: process.env.AIRTABLE_API_KEY });
+//     } catch (error) {
+//         console.error('Error obteniendo API key:', error);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
 
 // Iniciar el servidor
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-    
-    // Cargar automáticamente las preguntas desde el CSV al iniciar
-    const csvPath = path.join(__dirname, 'attached_assets', 'MELIXP_GAME_QUIEN_PREGUNTAS-Grid view (1).csv');
-    loadQuestionsFromCSV(csvPath)
-        .then(() => console.log('Iniciada carga de preguntas desde CSV'))
-        .catch(err => console.error('Error iniciando carga de CSV:', err));
+    console.log('Usando Airtable para obtener preguntas y almacenar datos');
 });

@@ -1,5 +1,8 @@
 // API Integration for Airtable
 
+// Import game configuration
+const { GAME_STRUCTURE, GAME_CONFIG, API_ENDPOINTS } = require('./config');
+
 // Airtable constants - ID correcto de la base y tabla según prueba exitosa
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
 const AIRTABLE_QUESTIONS_TABLE = 'tblHRC5T7cSuaDGeq';
@@ -17,7 +20,7 @@ function validateApiKeys() {
 }
 
 /**
- * Gets the Airtable API key from the server
+ * Gets the Airtable API key from the environment variables
  * @returns {Promise<string>} The API key
  */
 async function getAirtableApiKey() {
@@ -27,23 +30,13 @@ async function getAirtableApiKey() {
             return airtableApiKey;
         }
         
-        // Otherwise, fetch it from the server
-        const response = await fetch(API_ENDPOINTS.apiKey);
-        
-        if (!response.ok) {
-            throw new Error(`Error fetching API key: ${response.status} ${response.statusText}`);
+        // Get the API key directly from environment (set in .env file)
+        if (process.env.AIRTABLE_API_KEY) {
+            airtableApiKey = process.env.AIRTABLE_API_KEY;
+            return airtableApiKey;
         }
         
-        const data = await response.json();
-        
-        if (!data.key) {
-            throw new Error('API key not found in response');
-        }
-        
-        // Cache the key
-        airtableApiKey = data.key;
-        
-        return airtableApiKey;
+        throw new Error('Airtable API key not found in environment variables');
     } catch (error) {
         console.error('Error getting Airtable API key:', error);
         
@@ -64,15 +57,15 @@ async function fetchQuestions(pillars, difficulty) {
         const apiKey = await getAirtableApiKey();
         
         if (!apiKey) {
-            console.warn('No API key available, using sample questions');
-            return generateSampleQuestions(pillars, difficulty);
+            console.error('No API key available');
+            throw new Error('Airtable API key not available');
         }
         
         const questions = [];
         
         // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
-        const pillarFilter = pillars.map(pillar => `SEARCH("${pillar}", {Pilar})`).join(',');
-        const difficultyFilter = `SEARCH("${difficulty}", {Dificultad})`;
+        const pillarFilter = pillars.map(pillar => `SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar})`).join(',');
+        const difficultyFilter = `SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad}))`;
         const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
         
         // Construct URL for Airtable API
@@ -87,7 +80,7 @@ async function fetchQuestions(pillars, difficulty) {
         
         if (!response.ok) {
             console.error(`Error fetching questions: ${response.status} ${response.statusText}`);
-            return generateSampleQuestions(pillars, difficulty);
+            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -177,10 +170,15 @@ async function fetchQuestions(pillars, difficulty) {
             });
         }
         
+        // Return the questions or throw error if none found
+        if (questions.length === 0) {
+            throw new Error(`No questions found in Airtable for pillar(s) ${pillars.join(', ')} and difficulty ${difficulty}`);
+        }
+        
         return questions;
     } catch (error) {
         console.error('Error fetching questions from Airtable:', error);
-        return generateSampleQuestions(pillars, difficulty);
+        throw error;
     }
 }
 
@@ -216,58 +214,38 @@ async function fetchAllGameQuestions() {
         
         // Fetch questions for each difficulty level
         for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
-            const questionsForDifficulty = await fetchQuestions(pillars, difficulty);
-            
-            // Organize questions by pillar
-            questionsForDifficulty.forEach(question => {
-                const pillar = question.pillar;
+            try {
+                const questionsForDifficulty = await fetchQuestions(pillars, difficulty);
                 
-                if (pillars.includes(pillar)) {
-                    allQuestions.byDifficultyAndPillar[difficulty][pillar].push(question);
-                    allQuestions.total++;
-                }
-            });
-            
-            // Check if we have enough questions for each pillar
-            const needsMoreQuestions = pillars.some(pillar => {
-                return allQuestions.byDifficultyAndPillar[difficulty][pillar].length < GAME_CONFIG.questionsPerRound;
-            });
-            
-            // If any pillar doesn't have enough questions, generate more sample questions
-            if (needsMoreQuestions) {
-                pillars.forEach(pillar => {
-                    const currentQuestions = allQuestions.byDifficultyAndPillar[difficulty][pillar];
+                // Organize questions by pillar
+                questionsForDifficulty.forEach(question => {
+                    const pillar = question.pillar;
                     
-                    if (currentQuestions.length < GAME_CONFIG.questionsPerRound) {
-                        // Generate additional sample questions
-                        const additionalQuestions = generateSampleQuestions([pillar], difficulty);
-                        const neededCount = GAME_CONFIG.questionsPerRound - currentQuestions.length;
-                        
-                        // Add only as many as needed to reach the minimum
-                        for (let i = 0; i < Math.min(neededCount, additionalQuestions.length); i++) {
-                            allQuestions.byDifficultyAndPillar[difficulty][pillar].push(additionalQuestions[i]);
-                            allQuestions.total++;
-                        }
+                    if (pillars.includes(pillar)) {
+                        allQuestions.byDifficultyAndPillar[difficulty][pillar].push(question);
+                        allQuestions.total++;
                     }
                 });
+                
+                // Check if we have enough questions for each pillar
+                const insufficientPillars = pillars.filter(pillar => 
+                    allQuestions.byDifficultyAndPillar[difficulty][pillar].length < GAME_CONFIG.questionsPerRound
+                );
+                
+                if (insufficientPillars.length > 0) {
+                    console.error(`Insuficientes preguntas para dificultad ${difficulty} en pilares: ${insufficientPillars.join(', ')}`);
+                    throw new Error(`Insuficientes preguntas en Airtable para dificultad ${difficulty} en pilares: ${insufficientPillars.join(', ')}`);
+                }
+            } catch (err) {
+                console.error(`Error obteniendo preguntas para dificultad ${difficulty}:`, err);
+                throw new Error(`No se pudieron obtener suficientes preguntas para el nivel ${difficulty}`);
             }
         }
         
         return allQuestions;
     } catch (error) {
         console.error('Error fetching all game questions:', error);
-        
-        // In case of error, return sample questions
-        return {
-            total: 0,
-            byDifficultyAndPillar: {
-                'Fácil': generateSampleQuestionsForAllPillars('Fácil'),
-                'Media': generateSampleQuestionsForAllPillars('Media'),
-                'Difícil': generateSampleQuestionsForAllPillars('Difícil'),
-                'Muy Difícil': generateSampleQuestionsForAllPillars('Muy Difícil'),
-                'Experto': generateSampleQuestionsForAllPillars('Experto')
-            }
-        };
+        throw new Error('No se pudieron cargar las preguntas desde Airtable: ' + error.message);
     }
 }
 
@@ -600,20 +578,34 @@ function generateSampleQuestions(pillars, difficulty) {
  */
 async function validatePhone(phone) {
     try {
+        // Get the API key
+        const apiKey = await getAirtableApiKey();
+        
         // Clean the phone number (remove non-digits)
         const cleanPhone = phone.replace(/\D/g, '');
         
-        // Check phone via server endpoint to avoid exposing API key
-        const response = await fetch(API_ENDPOINTS.checkPhone(cleanPhone));
+        // Construct the URL with the FILTER formula to check if the phone exists
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula={telefono}="${cleanPhone}"`;
+        
+        // Make the request to Airtable
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
         
         if (!response.ok) {
-            throw new Error(`Phone validation error: ${response.status} ${response.statusText}`);
+            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        // Return if the phone is valid (not already used)
-        return data.valid;
+        // If records exist with this phone, it's already been used
+        const isValid = data.records.length === 0;
+        
+        return isValid;
     } catch (error) {
         console.error('Error validating phone:', error);
         throw error;
@@ -627,23 +619,44 @@ async function validatePhone(phone) {
  */
 async function saveScore(scoreData) {
     try {
-        // Send score via server endpoint
-        const response = await fetch(API_ENDPOINTS.scores, {
+        // Get the API key
+        const apiKey = await getAirtableApiKey();
+        
+        // Format the data for Airtable
+        const airtableData = {
+            records: [
+                {
+                    fields: {
+                        nombre: scoreData.name,
+                        telefono: scoreData.phone,
+                        premio: scoreData.prize,
+                        nivel_maximo: scoreData.maxRound,
+                        pilar_final: scoreData.finalPillar,
+                        fecha: new Date().toISOString()
+                    }
+                }
+            ]
+        };
+        
+        // Send to Airtable
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(scoreData)
+            body: JSON.stringify(airtableData)
         });
         
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error saving score response:', errorText);
-            throw new Error(`Error saving score: ${response.status} ${response.statusText}`);
+            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
-        return result;
+        return result.records[0];
     } catch (error) {
         console.error('Error saving score:', error);
         throw error;
@@ -657,17 +670,54 @@ async function saveScore(scoreData) {
  */
 async function fetchTopScores(limit = 5) {
     try {
-        // Fetch top scores via server endpoint
-        const response = await fetch(`${API_ENDPOINTS.topScores}?limit=${limit}`);
+        // Get the API key
+        const apiKey = await getAirtableApiKey();
+        
+        // Construct the URL with sorting by prize in descending order
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=premio&sort%5B0%5D%5Bdirection%5D=desc`;
+        
+        // Make the request to Airtable
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
         
         if (!response.ok) {
-            throw new Error(`Error fetching top scores: ${response.status} ${response.statusText}`);
+            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
         }
         
-        const scores = await response.json();
+        const data = await response.json();
+        
+        // Transform Airtable records to our score format
+        const scores = data.records.map(record => ({
+            id: record.id,
+            name: record.fields.nombre,
+            phone: record.fields.telefono,
+            prize: record.fields.premio,
+            maxRound: record.fields.nivel_maximo,
+            finalPillar: record.fields.pilar_final,
+            date: record.fields.fecha
+        }));
+        
         return scores;
     } catch (error) {
         console.error('Error fetching top scores:', error);
         throw error;
     }
 }
+
+// Export all necessary functions
+module.exports = {
+    validateApiKeys,
+    getAirtableApiKey,
+    fetchQuestions,
+    fetchAllGameQuestions,
+    generateSampleQuestions,
+    generateSampleQuestionsForAllPillars,
+    validatePhone,
+    saveScore,
+    fetchTopScores
+};
