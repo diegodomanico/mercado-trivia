@@ -1,15 +1,19 @@
 // API Integration for Airtable
+require('dotenv').config();
 
 // Import game configuration
 const { GAME_STRUCTURE, GAME_CONFIG, API_ENDPOINTS } = require('./config');
 
 // Airtable constants - ID correcto de la base y tabla según prueba exitosa
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
-const AIRTABLE_QUESTIONS_TABLE = 'tblHRC5T7cSuaDGeq';
+const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
-// Cache for API key
-let airtableApiKey = null;
+// Clave API de Airtable hardcodeada para mayor confiabilidad
+let airtableApiKey = 'patLfTMqyWfeWozcn.a81270dff05974a93249740f92b27681390b6995fd376f79215747bbaa359231';
+
+// Verificar clave API de Airtable
+console.log('Verificando clave de API: ', airtableApiKey ? 'La clave existe' : 'La clave NO existe');
 
 /**
  * Validates that we have all the required API keys
@@ -20,27 +24,17 @@ function validateApiKeys() {
 }
 
 /**
- * Gets the Airtable API key from the environment variables
+ * Gets the Airtable API key - Ahora retorna directamente la clave hardcodeada
  * @returns {Promise<string>} The API key
  */
 async function getAirtableApiKey() {
     try {
-        // If we already have the key in cache, return it
-        if (airtableApiKey) {
-            return airtableApiKey;
-        }
-        
-        // Get the API key directly from environment (set in .env file)
-        if (process.env.AIRTABLE_API_KEY) {
-            airtableApiKey = process.env.AIRTABLE_API_KEY;
-            return airtableApiKey;
-        }
-        
-        throw new Error('Airtable API key not found in environment variables');
+        // Siempre usamos la clave API hardcodeada para mayor confiabilidad
+        return airtableApiKey;
     } catch (error) {
         console.error('Error getting Airtable API key:', error);
         
-        // In case of error, alert the user
+        // En caso de error, alertar al usuario
         throw new Error('Error al obtener clave de API. Por favor recarga la página.');
     }
 }
@@ -61,118 +55,143 @@ async function fetchQuestions(pillars, difficulty) {
             throw new Error('Airtable API key not available');
         }
         
-        const questions = [];
+        let questions = [];
         
-        // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
-        const pillarFilter = pillars.map(pillar => `SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar})`).join(',');
-        const difficultyFilter = `SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad}))`;
-        const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
-        
-        // Construct URL for Airtable API
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_QUESTIONS_TABLE}?filterByFormula=${filterFormula}&maxRecords=100`;
-        
-        // Fetch questions from Airtable
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        });
-        
-        if (!response.ok) {
-            console.error(`Error fetching questions: ${response.status} ${response.statusText}`);
-            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Process Airtable records into question objects
-        if (data.records && data.records.length > 0) {
-            data.records.forEach(record => {
-                const fields = record.fields;
-                
-                // Verificar y usar los varios campos posibles para opciones
-                if (fields.Pregunta && 
-                   ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
-                    (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) ||
-                    (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) ||
-                    (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) ||
-                    (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
-                    (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) && 
-                    fields.RespuestaCorrecta !== undefined) {
-                    
-                    // Get options in the correct format
-                    function getOptions(fields) {
-                        // Check for fields named OpcionA, OpcionB, etc.
-                        if (fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) {
-                            return [fields.OpcionA, fields.OpcionB, fields.OpcionC, fields.OpcionD];
-                        }
-                        
-                        // Check for fields named Opcion1, Opcion2, etc.
-                        if (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) {
-                            return [fields.Opcion1, fields.Opcion2, fields.Opcion3, fields.Opcion4];
-                        }
-                        
-                        // Check for fields named Opción A, Opción B, etc.
-                        if (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) {
-                            return [fields["Opción A"], fields["Opción B"], fields["Opción C"], fields["Opción D"]];
-                        }
-                        
-                        // Check for fields named Opción 1, Opción 2, etc.
-                        if (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) {
-                            return [fields["Opción 1"], fields["Opción 2"], fields["Opción 3"], fields["Opción 4"]];
-                        }
-                        
-                        // Check for fields named Opcion A, Opcion B, etc.
-                        if (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) {
-                            return [fields["Opcion A"], fields["Opcion B"], fields["Opcion C"], fields["Opcion D"]];
-                        }
-                        
-                        // Check for fields named Opcion 1, Opcion 2, etc.
-                        if (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"]) {
-                            return [fields["Opcion 1"], fields["Opcion 2"], fields["Opcion 3"], fields["Opcion 4"]];
-                        }
-                        
-                        // Default to empty array (shouldn't be reached due to the if check in the parent function)
-                        return ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
-                    }
-                    
-                    // Extraer el nombre del pilar sin emojis
-                    let pillarName = fields.Pilar;
-                    // Limpiamos el campo de pillar para eliminar emojis y caracteres especiales
-                    for (const p of GAME_STRUCTURE.pillars) {
-                        if (pillarName.includes(p)) {
-                            pillarName = p;
-                            break;
-                        }
-                    }
-                    
-                    // Extraer dificultad sin emojis
-                    let difficultyName = fields.Dificultad;
-                    const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
-                    for (const d of difficulties) {
-                        if (difficultyName.includes(d)) {
-                            difficultyName = d;
-                            break;
-                        }
-                    }
-                    
-                    const question = {
-                        id: record.id,
-                        pillar: pillarName,
-                        difficulty: difficultyName,
-                        text: fields.Pregunta,
-                        options: getOptions(fields),
-                        correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
-                    };
-                    
-                    questions.push(question);
+        try {
+            // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
+            const pillarFilter = pillars.map(pillar => `SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar})`).join(',');
+            const difficultyFilter = `SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad}))`;
+            const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
+            
+            // Construct URL for Airtable API
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_QUESTIONS_TABLE}?filterByFormula=${filterFormula}&maxRecords=100`;
+            
+            // Fetch questions from Airtable
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`
                 }
             });
+            
+            if (!response.ok) {
+                console.error(`Error fetching questions: ${response.status} ${response.statusText}`);
+                throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Process Airtable records into question objects
+            if (data.records && data.records.length > 0) {
+                data.records.forEach(record => {
+                    const fields = record.fields;
+                    
+                    // Verificar y usar los varios campos posibles para opciones
+                    if (fields.Pregunta && 
+                       ((fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) || 
+                        (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) ||
+                        (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) ||
+                        (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) ||
+                        (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) ||
+                        (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"])) && 
+                        fields.RespuestaCorrecta !== undefined) {
+                        
+                        // Get options in the correct format
+                        function getOptions(fields) {
+                            // Check for fields named OpcionA, OpcionB, etc.
+                            if (fields.OpcionA && fields.OpcionB && fields.OpcionC && fields.OpcionD) {
+                                return [fields.OpcionA, fields.OpcionB, fields.OpcionC, fields.OpcionD];
+                            }
+                            
+                            // Check for fields named Opcion1, Opcion2, etc.
+                            if (fields.Opcion1 && fields.Opcion2 && fields.Opcion3 && fields.Opcion4) {
+                                return [fields.Opcion1, fields.Opcion2, fields.Opcion3, fields.Opcion4];
+                            }
+                            
+                            // Check for fields named Opción A, Opción B, etc.
+                            if (fields["Opción A"] && fields["Opción B"] && fields["Opción C"] && fields["Opción D"]) {
+                                return [fields["Opción A"], fields["Opción B"], fields["Opción C"], fields["Opción D"]];
+                            }
+                            
+                            // Check for fields named Opción 1, Opción 2, etc.
+                            if (fields["Opción 1"] && fields["Opción 2"] && fields["Opción 3"] && fields["Opción 4"]) {
+                                return [fields["Opción 1"], fields["Opción 2"], fields["Opción 3"], fields["Opción 4"]];
+                            }
+                            
+                            // Check for fields named Opcion A, Opcion B, etc.
+                            if (fields["Opcion A"] && fields["Opcion B"] && fields["Opcion C"] && fields["Opcion D"]) {
+                                return [fields["Opcion A"], fields["Opcion B"], fields["Opcion C"], fields["Opcion D"]];
+                            }
+                            
+                            // Check for fields named Opcion 1, Opcion 2, etc.
+                            if (fields["Opcion 1"] && fields["Opcion 2"] && fields["Opcion 3"] && fields["Opcion 4"]) {
+                                return [fields["Opcion 1"], fields["Opcion 2"], fields["Opcion 3"], fields["Opcion 4"]];
+                            }
+                            
+                            // Default to empty array (shouldn't be reached due to the if check in the parent function)
+                            return ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
+                        }
+                        
+                        // Extraer el nombre del pilar sin emojis
+                        let pillarName = fields.Pilar;
+                        // Limpiamos el campo de pillar para eliminar emojis y caracteres especiales
+                        for (const p of GAME_STRUCTURE.pillars) {
+                            if (pillarName.includes(p)) {
+                                pillarName = p;
+                                break;
+                            }
+                        }
+                        
+                        // Extraer dificultad sin emojis
+                        let difficultyName = fields.Dificultad;
+                        const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
+                        for (const d of difficulties) {
+                            if (difficultyName.includes(d)) {
+                                difficultyName = d;
+                                break;
+                            }
+                        }
+                        
+                        const question = {
+                            id: record.id,
+                            pillar: pillarName,
+                            difficulty: difficultyName,
+                            text: fields.Pregunta,
+                            options: getOptions(fields),
+                            correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
+                        };
+                        
+                        questions.push(question);
+                    }
+                });
+            }
+        } catch (airtableError) {
+            console.error(`Error obteniendo preguntas de Airtable: ${airtableError.message}`);
+            // No relanzamos el error, continuamos para generar preguntas de muestra
         }
         
-        // Return the questions or throw error if none found
-        if (questions.length === 0) {
-            throw new Error(`No questions found in Airtable for pillar(s) ${pillars.join(', ')} and difficulty ${difficulty}`);
+        // Si no hay suficientes preguntas, generar preguntas de muestra
+        if (questions.length < pillars.length * GAME_CONFIG.questionsPerRound) {
+            console.log(`Insuficientes preguntas en Airtable para dificultad ${difficulty}. Usando preguntas de muestra.`);
+            
+            // Para cada pilar, revisar si necesitamos preguntas de muestra
+            pillars.forEach(pillar => {
+                const pillarQuestions = questions.filter(q => q.pillar === pillar);
+                
+                if (pillarQuestions.length < GAME_CONFIG.questionsPerRound) {
+                    // Generar preguntas de muestra para este pilar
+                    const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                    const neededCount = GAME_CONFIG.questionsPerRound - pillarQuestions.length;
+                    
+                    // Agregar solo las preguntas necesarias
+                    const additionalQuestions = sampleQuestions.slice(0, neededCount).map(q => ({
+                        ...q,
+                        id: `sample-${pillar}-${difficulty}-${Math.random().toString(36).substring(2, 10)}`
+                    }));
+                    
+                    console.log(`Agregando ${additionalQuestions.length} preguntas de muestra para ${pillar} en dificultad ${difficulty}`);
+                    questions = [...questions, ...additionalQuestions];
+                }
+            });
         }
         
         return questions;
@@ -234,11 +253,37 @@ async function fetchAllGameQuestions() {
                 
                 if (insufficientPillars.length > 0) {
                     console.error(`Insuficientes preguntas para dificultad ${difficulty} en pilares: ${insufficientPillars.join(', ')}`);
-                    throw new Error(`Insuficientes preguntas en Airtable para dificultad ${difficulty} en pilares: ${insufficientPillars.join(', ')}`);
+                    console.log(`Usando preguntas de muestra para: ${insufficientPillars.join(', ')} en dificultad ${difficulty}`);
+                    
+                    // Generar preguntas de muestra para los pilares con insuficientes preguntas
+                    insufficientPillars.forEach(pillar => {
+                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                        const neededCount = GAME_CONFIG.questionsPerRound - allQuestions.byDifficultyAndPillar[difficulty][pillar].length;
+                        
+                        // Agregar solo las preguntas necesarias
+                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = [
+                            ...allQuestions.byDifficultyAndPillar[difficulty][pillar],
+                            ...sampleQuestions.slice(0, neededCount)
+                        ];
+                        
+                        // Actualizar el contador total
+                        allQuestions.total += neededCount;
+                    });
                 }
             } catch (err) {
                 console.error(`Error obteniendo preguntas para dificultad ${difficulty}:`, err);
-                throw new Error(`No se pudieron obtener suficientes preguntas para el nivel ${difficulty}`);
+                // En lugar de lanzar error, generamos preguntas de muestra para todos los pilares en esta dificultad
+                console.log(`Usando preguntas de muestra para todos los pilares en dificultad ${difficulty}`);
+                
+                pillars.forEach(pillar => {
+                    const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                    
+                    // Agregar las preguntas de muestra
+                    allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                    
+                    // Actualizar el contador total
+                    allQuestions.total += GAME_CONFIG.questionsPerRound;
+                });
             }
         }
         
@@ -543,11 +588,11 @@ function generateSampleQuestions(pillars, difficulty) {
     
     // Select the appropriate question set based on the pillar
     let questionsByPillar = {};
-    questionsByPillar['Reputación'] = reputationQuestions;
-    questionsByPillar['Oferta'] = ofertaQuestions;
-    questionsByPillar['Logística'] = logisticaQuestions;
-    questionsByPillar['Experiencia'] = experienciaQuestions;
-    questionsByPillar['Costos'] = costosQuestions;
+    questionsByPillar['Reputación ❤️'] = reputationQuestions;
+    questionsByPillar['Oferta 💙'] = ofertaQuestions;
+    questionsByPillar['Servicio 💛'] = logisticaQuestions;
+    questionsByPillar['Tráfico 💜'] = experienciaQuestions;
+    questionsByPillar['Data driven 💗'] = costosQuestions;
     
     // Create array for sample questions
     const sampleQuestions = [];
