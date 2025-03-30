@@ -630,7 +630,7 @@ async function validatePhone(phone) {
         const cleanPhone = phone.replace(/\D/g, '');
         
         // Construct the URL with the FILTER formula to check if the phone exists
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula={telefono}="${cleanPhone}"`;
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula={Phone}="${cleanPhone}"`;
         
         // Make the request to Airtable
         const response = await fetch(url, {
@@ -672,12 +672,13 @@ async function saveScore(scoreData) {
             records: [
                 {
                     fields: {
-                        nombre: scoreData.name,
-                        telefono: scoreData.phone,
-                        premio: scoreData.prize,
-                        nivel_maximo: scoreData.maxRound,
-                        pilar_final: scoreData.finalPillar,
-                        fecha: new Date().toISOString()
+                        // Usamos los nombres de campos en inglés que espera Airtable
+                        Name: scoreData.name,
+                        Phone: scoreData.phone,
+                        Prize: scoreData.prize,
+                        "Max Level": scoreData.maxRound,
+                        "Final Pillar": scoreData.finalPillar,
+                        Date: new Date().toISOString()
                     }
                 }
             ]
@@ -719,7 +720,7 @@ async function fetchTopScores(limit = 5) {
         const apiKey = await getAirtableApiKey();
         
         // Construct the URL with sorting by prize in descending order
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=premio&sort%5B0%5D%5Bdirection%5D=desc`;
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Prize&sort%5B0%5D%5Bdirection%5D=desc`;
         
         // Make the request to Airtable
         const response = await fetch(url, {
@@ -739,12 +740,12 @@ async function fetchTopScores(limit = 5) {
         // Transform Airtable records to our score format
         const scores = data.records.map(record => ({
             id: record.id,
-            name: record.fields.nombre,
-            phone: record.fields.telefono,
-            prize: record.fields.premio,
-            maxRound: record.fields.nivel_maximo,
-            finalPillar: record.fields.pilar_final,
-            date: record.fields.fecha
+            name: record.fields.Name,
+            phone: record.fields.Phone,
+            prize: record.fields.Prize,
+            maxRound: record.fields["Max Level"],
+            finalPillar: record.fields["Final Pillar"],
+            date: record.fields.Date
         }));
         
         return scores;

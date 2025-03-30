@@ -415,14 +415,25 @@ function prepareQuestionsForRound() {
     // Get difficulty for current round
     const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
     
-    // Get questions for current pillar and difficulty
-    const questionsForPillar = gameState.allQuestions.byDifficultyAndPillar[currentDifficulty][gameState.player.currentPillar];
+    // En lugar de seleccionar preguntas de un solo pilar, vamos a seleccionar una pregunta de cada pilar
+    gameState.currentRoundQuestions = [];
     
-    // Shuffle questions
-    const shuffledQuestions = shuffleArray([...questionsForPillar]);
+    // Obtener una pregunta de cada pilar para este nivel de dificultad
+    GAME_STRUCTURE.pillars.forEach(pillar => {
+        const pillarQuestions = gameState.allQuestions.byDifficultyAndPillar[currentDifficulty][pillar];
+        
+        // Si hay preguntas disponibles para este pilar, tomamos una
+        if (pillarQuestions && pillarQuestions.length > 0) {
+            // Seleccionar una pregunta aleatoria de este pilar
+            const randomIndex = Math.floor(Math.random() * pillarQuestions.length);
+            const selectedQuestion = pillarQuestions[randomIndex];
+            
+            gameState.currentRoundQuestions.push(selectedQuestion);
+        }
+    });
     
-    // Take the first QUESTIONS_PER_ROUND questions
-    gameState.currentRoundQuestions = shuffledQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+    // Mezclar las preguntas para que no siempre aparezcan en el mismo orden
+    gameState.currentRoundQuestions = shuffleArray(gameState.currentRoundQuestions);
     
     // Reset current question index
     gameState.player.currentQuestionIndex = 0;
@@ -432,6 +443,9 @@ function prepareQuestionsForRound() {
 function loadQuestion() {
     // Get the current question
     gameState.currentQuestion = gameState.currentRoundQuestions[gameState.player.currentQuestionIndex];
+    
+    // Actualizar el pilar actual según la pregunta que se está mostrando
+    gameState.player.currentPillar = gameState.currentQuestion.pillar;
     
     // Get current round difficulty
     const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
