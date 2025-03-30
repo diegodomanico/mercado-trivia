@@ -1196,7 +1196,7 @@ function updateLeaderboard(scores) {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${score.name}</td>
-            <td>${formatCurrency(score.score)}</td>
+            <td>${formatCurrency(score.chances !== undefined ? score.chances : Math.floor(score.score / 5))}</td>
             <td>${score.maxRound}</td>
             <td>${score.finalPillar}</td>
             <td>${formattedDate}</td>
@@ -1214,10 +1214,14 @@ function updateLeaderboard(scores) {
 // Save the player's score to the leaderboard
 async function saveScore(name, prize, maxRound, finalPillar) {
     try {
+        // Calcular el número de chances basado en preguntas correctas
+        const chances = Math.floor(gameState.player.questionsAnswered / 5);
+        
         const scoreData = {
             name: name,
             phone: gameState.player.phone.toString(),
             score: prize,
+            chances: chances, // Agregamos el campo de chances explícitamente
             maxRound: maxRound,
             finalPillar: finalPillar
         };

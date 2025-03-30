@@ -59,8 +59,9 @@ async function fetchQuestions(pillars, difficulty) {
         
         try {
             // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
-            const pillarFilter = pillars.map(pillar => `SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar})`).join(',');
-            const difficultyFilter = `SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad}))`;
+            // Airtable usa búsquedas sensibles a mayúsculas/minúsculas, adaptamos los filtros
+            const pillarFilter = pillars.map(pillar => `OR(SEARCH("${pillar}", {Pilar}), SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar}))`).join(',');
+            const difficultyFilter = `OR(SEARCH("${difficulty}", {Dificultad}), SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad})))`;
             const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
             
             // Construct URL for Airtable API
@@ -157,7 +158,7 @@ async function fetchQuestions(pillars, difficulty) {
                             difficulty: difficultyName,
                             text: fields.Pregunta,
                             options: getOptions(fields),
-                            correctIndex: parseInt(fields.RespuestaCorrecta) - 1 // Convert from 1-based to 0-based index
+                            correctIndex: parseInt(fields.RespuestaCorrecta) // ¡Atención! Los índices en Airtable/CSV ya están en base 0
                         };
                         
                         questions.push(question);
@@ -697,7 +698,8 @@ async function saveScore(scoreData) {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
                             Telefono: scoreData.phone,
-                            Premio: scoreData.prize,
+                            Premio: scoreData.score, // Ahora usamos .score
+                            Chances: scoreData.chances, // Agregamos el campo de chances explícitamente
                             "Nivel Maximo": scoreData.maxRound,
                             "Pilar Final": scoreData.finalPillar,
                             Fecha: new Date().toISOString()
@@ -732,12 +734,13 @@ async function saveScore(scoreData) {
             return {
                 id: 'temp-' + Date.now(),
                 fields: {
-                    Name: scoreData.name,
-                    Phone: scoreData.phone,
-                    Prize: scoreData.prize,
-                    "Max Level": scoreData.maxRound,
-                    "Final Pillar": scoreData.finalPillar,
-                    Date: new Date().toISOString()
+                    Nombre: scoreData.name,
+                    Telefono: scoreData.phone,
+                    Premio: scoreData.score,
+                    Chances: scoreData.chances,
+                    "Nivel Maximo": scoreData.maxRound,
+                    "Pilar Final": scoreData.finalPillar,
+                    Fecha: new Date().toISOString()
                 },
                 createdTime: new Date().toISOString()
             };
@@ -791,6 +794,7 @@ async function fetchTopScores(limit = 5) {
                     name: record.fields.Nombre || "Jugador",
                     phone: record.fields.Telefono || "000000000",
                     prize: record.fields.Premio || 0,
+                    chances: record.fields.Chances || 0, // Agregamos el campo Chances
                     maxRound: record.fields["Nivel Maximo"] || 1,
                     finalPillar: record.fields["Pilar Final"] || "Desconocido",
                     date: record.fields.Fecha || new Date().toISOString()
@@ -808,6 +812,7 @@ async function fetchTopScores(limit = 5) {
                     name: 'María Rodríguez',
                     phone: '1234567890',
                     prize: 2000,
+                    chances: 4, // 4 chances (5 preguntas = 1 chance)
                     maxRound: 5,
                     finalPillar: 'Reputación ❤️',
                     date: new Date().toISOString()
@@ -817,6 +822,7 @@ async function fetchTopScores(limit = 5) {
                     name: 'Juan Pérez',
                     phone: '0987654321',
                     prize: 1500,
+                    chances: 3, // 3 chances 
                     maxRound: 4,
                     finalPillar: 'Tráfico 💜',
                     date: new Date().toISOString()
@@ -826,6 +832,7 @@ async function fetchTopScores(limit = 5) {
                     name: 'Ana García',
                     phone: '5555555555',
                     prize: 1000,
+                    chances: 2, // 2 chances
                     maxRound: 3,
                     finalPillar: 'Oferta 💙',
                     date: new Date().toISOString()
@@ -835,6 +842,7 @@ async function fetchTopScores(limit = 5) {
                     name: 'Carlos López',
                     phone: '1231231234',
                     prize: 500,
+                    chances: 1, // 1 chance
                     maxRound: 2,
                     finalPillar: 'Servicio 💛',
                     date: new Date().toISOString()
@@ -844,6 +852,7 @@ async function fetchTopScores(limit = 5) {
                     name: 'Laura Martínez',
                     phone: '9879879876',
                     prize: 100,
+                    chances: 0, // 0 chances
                     maxRound: 1,
                     finalPillar: 'Data driven 💗',
                     date: new Date().toISOString()
