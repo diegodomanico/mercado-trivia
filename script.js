@@ -46,8 +46,8 @@ const elements = {
     resultPrize: document.getElementById('result-prize'),
     resultRound: document.getElementById('result-round'),
     resultPillar: document.getElementById('result-pillar'),
-    playAgainButton: document.getElementById('play-again'),
     viewLeaderboardButton: document.getElementById('view-leaderboard'),
+    viewLeaderboardStartButton: document.getElementById('view-leaderboard-start'),
     
     // Leaderboard Screen
     leaderboardLoading: document.getElementById('leaderboard-loading'),
@@ -113,8 +113,8 @@ elements.retryButton.addEventListener('click', initGame);
 elements.startGameButton.addEventListener('click', checkPhoneAndStartGame);
 elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
 elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
-elements.playAgainButton.addEventListener('click', resetAndStartGame);
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
+elements.viewLeaderboardStartButton.addEventListener('click', showLeaderboard);
 elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
 // Manejar el botón para continuar después de completar ronda o ganar chance
 elements.nextRoundButton.addEventListener('click', function() {
