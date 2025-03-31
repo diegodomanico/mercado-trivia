@@ -116,7 +116,19 @@ elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLif
 elements.playAgainButton.addEventListener('click', resetAndStartGame);
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
 elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
-elements.nextRoundButton.addEventListener('click', startNextRound);
+// Manejar el botón para continuar después de completar ronda o ganar chance
+elements.nextRoundButton.addEventListener('click', function() {
+    // Ocultar el modal
+    elements.roundCompleteModal.classList.add('hide');
+    elements.overlay.classList.add('hide');
+    
+    // Remover las clases de estilo que podrían estar presentes
+    elements.roundCompleteTitle.classList.remove('violet-text');
+    elements.roundCompleteTitle.classList.remove('winner-text');
+    
+    // Cargar la siguiente pregunta
+    loadQuestion();
+});
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
 elements.errorOkBtn.addEventListener('click', handleErrorModalClose);
@@ -713,17 +725,48 @@ function handleCorrectAnswer() {
     // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
         // Show round complete modal with custom message
-        elements.roundCompleteTitle.textContent = `¡Felicidades! 🎉`;
-        elements.roundCompleteMessage.textContent = `Has ganado 1 Chance por responder correctamente 5 preguntas.`;
+        elements.roundCompleteTitle.textContent = `¡HAS GANADO UNA CHANCE! 🎉`;
+        elements.roundCompleteTitle.classList.add('winner-text');
+        
+        // Play winner sound
+        if (typeof playSound === 'function') {
+            playSound('winner');
+        }
+        
+        // Show confetti
+        if (typeof showConfetti === 'function') {
+            showConfetti();
+        }
+        
+        // Increase difficulty level (move to next round)
+        const oldDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+        
+        // Increment round for increased difficulty
+        if (gameState.player.currentRound < GAME_STRUCTURE.totalRounds) {
+            gameState.player.currentRound++;
+        }
+        
+        const newDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+        
+        elements.roundCompleteMessage.textContent = 
+            `¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.
+             Ahora avanzarás al nivel ${newDifficulty} de dificultad. 
+             ¡Sigue así para ganar más chances!`;
         
         // Set button text
-        elements.nextRoundButton.textContent = 'Aceptar';
+        elements.nextRoundButton.textContent = 'Continuar';
         
         // Show the modal
         elements.roundCompleteModal.classList.remove('hide');
         elements.overlay.classList.remove('hide');
         
         // The nextRoundButton click event will hide the modal and continue the game
+        
+        // Update prize ladder to show current level
+        updatePrizeLadder();
+        
+        // Prepare questions for the new round
+        prepareQuestionsForRound();
     }
     
     // Update prizes
@@ -838,30 +881,8 @@ function completeRound() {
     elements.overlay.classList.remove('hide');
 }
 
-// Start the next round
-function startNextRound() {
-    // Hide the round complete modal
-    elements.roundCompleteModal.classList.add('hide');
-    elements.overlay.classList.add('hide');
-    
-    // Remove violet text class from the title
-    elements.roundCompleteTitle.classList.remove('violet-text');
-    
-    // Increment round
-    gameState.player.currentRound++;
-    
-    // Update prize ladder
-    updatePrizeLadder();
-    
-    // Select a new pillar
-    selectRandomPillar();
-    
-    // Prepare questions for the new round
-    prepareQuestionsForRound();
-    
-    // Load first question
-    loadQuestion();
-}
+// La función startNextRound ya no se utiliza porque fue reemplazada
+// por la función anónima en el event listener del botón nextRoundButton
 
 // End the game
 function endGame(isWinner) {

@@ -512,24 +512,23 @@ async function saveScore(scoreData) {
             console.log("Tipo de teléfono:", typeof scoreData.phone, "Valor:", scoreData.phone);
             
             // Formatear el teléfono para hacer que sea compatible con Airtable
-            // Airtable espera un formato específico para números de teléfono internacional
+            // Parece que Airtable está rechazando los teléfonos con prefijo internacional
+            // Vamos a guardar solo el número como texto plano sin formato especial
             let phoneValue = String(scoreData.phone).trim();
             
-            // Añadir prefijo de país si no lo tiene (Argentina +54)
-            if (!phoneValue.startsWith('+')) {
-                // Si comienza con 0, lo quitamos
-                if (phoneValue.startsWith('0')) {
-                    phoneValue = phoneValue.substring(1);
-                }
-                // Si comienza con 15, lo reemplazamos según formato argentino
-                if (phoneValue.startsWith('15')) {
-                    phoneValue = phoneValue.replace(/^15/, '');
-                }
-                // Agregar código de país si no existe
-                phoneValue = `+54${phoneValue}`;
+            // Eliminar cualquier carácter no numérico
+            phoneValue = phoneValue.replace(/\D/g, '');
+            
+            // Si comienza con 0, lo quitamos
+            if (phoneValue.startsWith('0')) {
+                phoneValue = phoneValue.substring(1);
+            }
+            // Si comienza con 15, lo reemplazamos según formato argentino
+            if (phoneValue.startsWith('15')) {
+                phoneValue = phoneValue.replace(/^15/, '');
             }
             
-            console.log("Teléfono formateado para Airtable:", phoneValue);
+            console.log(`Tipo de teléfono: ${typeof phoneValue} Valor: ${phoneValue}`);
             
             // Format the data for Airtable
             const airtableData = {
@@ -538,7 +537,7 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Telefono: phoneValue, // Teléfono con formato internacional
+                            Telefono: phoneValue, // Teléfono como cadena de texto plano sin formato especial
                             Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
                             Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
