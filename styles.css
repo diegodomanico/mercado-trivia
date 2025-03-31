@@ -726,26 +726,34 @@ input:focus {
 
 .facil-level {
     border-left: 5px solid var(--success-green);
+    background-color: rgba(57, 181, 74, 0.2);
 }
 
 .media-level {
     border-left: 5px solid var(--ml-yellow);
+    background-color: rgba(255, 230, 0, 0.2);
 }
 
 .dificil-level {
     border-left: 5px solid var(--danger-red);
+    background-color: rgba(244, 67, 54, 0.2);
 }
 
 .muy-dificil-level {
     border-left: 5px solid var(--warning-orange);
+    background-color: rgba(255, 152, 0, 0.2);
 }
 
 .complicada-level {
     border-left: 5px solid var(--ml-dark-gray);
+    background-color: var(--ml-dark-gray);
+    color: white;
 }
 
 .prize-level.current {
     background-color: var(--ml-yellow);
+    color: var(--ml-black);
+    font-weight: bold;
 }
 
 /* Results Screen */
