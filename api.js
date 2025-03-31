@@ -19,8 +19,14 @@ const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
 const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
-// Clave API de Airtable hardcodeada para mayor confiabilidad
-let airtableApiKey = 'patLfTMqyWfeWozcn.a81270dff05974a93249740f92b27681390b6995fd376f79215747bbaa359231';
+// Obtenemos la clave API de Airtable desde las variables de entorno
+let airtableApiKey = null;
+if (typeof process !== 'undefined' && process.env && process.env.AIRTABLE_API_KEY) {
+    airtableApiKey = process.env.AIRTABLE_API_KEY;
+} else if (typeof window !== 'undefined' && window.AIRTABLE_API_KEY) {
+    // Fallback para el navegador si se establece como una variable global
+    airtableApiKey = window.AIRTABLE_API_KEY;
+}
 
 // Verificar clave API de Airtable
 console.log('Verificando clave de API: ', airtableApiKey ? 'La clave existe' : 'La clave NO existe');
@@ -39,7 +45,7 @@ function validateApiKeys() {
  */
 async function getAirtableApiKey() {
     try {
-        // Siempre usamos la clave API hardcodeada para mayor confiabilidad
+        // Usamos la clave API que obtuvimos del entorno
         return airtableApiKey;
     } catch (error) {
         console.error('Error getting Airtable API key:', error);
@@ -526,8 +532,12 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            // Quitamos el campo Telefono que está causando el error 422
-                            Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
+                            // Intentamos varios nombres para el campo de puntaje
+                            Premio: Number(scoreData.score) || 0, // Intentamos primero con Premio
+                            Score: Number(scoreData.score) || 0, // Intentamos con Score
+                            Puntos: Number(scoreData.score) || 0, // Intentamos con Puntos
+                            Puntaje: Number(scoreData.score) || 0, // Intentamos con Puntaje
+                            Telefono: String(scoreData.phone).trim(), // Intentamos incluir el teléfono
                             Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
                             "Pilar Final": String(scoreData.finalPillar),
@@ -583,8 +593,11 @@ async function fetchTopScores(limit = 5) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
-            // Construct the URL with sorting by Premio (Prize) in descending order
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Premio&sort%5B0%5D%5Bdirection%5D=desc`;
+            // Probar diferentes campos para ordenar (Premio, Score, Puntos, Puntaje)
+            // Intentaremos primero con Premio, pero si falla, intentaremos los otros
+            // No podemos determinar cuál es el campo correcto hasta que tengamos una clave API válida
+            const sortField = 'Premio'; // Podría ser 'Score', 'Puntos', o 'Puntaje'
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=${sortField}&sort%5B0%5D%5Bdirection%5D=desc`;
             
             // Make the request to Airtable
             const response = await fetch(url, {
@@ -643,7 +656,8 @@ async function fetchTopScores(limit = 5) {
                     id: record.id,
                     name: record.fields.Nombre || "Jugador",
                     phone: record.fields.Telefono || "000000000", // Solo usamos "Telefono"
-                    prize: record.fields.Premio || 0,
+                    // Intentamos diferentes campos para el puntaje
+                    prize: record.fields.Premio || record.fields.Score || record.fields.Puntos || record.fields.Puntaje || 0,
                     chances: record.fields.Chances || 0, // Agregamos el campo Chances
                     maxRound: record.fields["Nivel Maximo"] || 1,
                     finalPillar: record.fields["Pilar Final"] || "Desconocido",
