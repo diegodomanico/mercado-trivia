@@ -120,6 +120,13 @@ elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
 elements.nextRoundButton.addEventListener('click', function() {
     console.log("Botón Continuar presionado");
     
+    // PRIMERO: Forzar la detención del temporizador en cualquier caso
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+        gameState.timer = null;
+        console.log("🛑 FORZANDO DETENCIÓN DEL TEMPORIZADOR al presionar Continuar");
+    }
+    
     // Verificar si el juego ha sido completado primero
     if (gameState.gameCompleted || gameState.playerWon) {
         console.log("Juego completado con éxito. Mostrando pantalla final.");
@@ -152,8 +159,8 @@ elements.nextRoundButton.addEventListener('click', function() {
         stopConfetti();
     }
     
-    // Siempre asegurarnos de que el temporizador esté detenido antes de cargar una nueva pregunta
-    stopTimer();
+    // Reactivar el juego para continuar
+    gameState.gameActive = true;
     
     // Cargar la siguiente pregunta
     loadQuestion();
@@ -165,7 +172,7 @@ elements.nextRoundButton.addEventListener('click', function() {
         const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
         gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
         startTimer();
-    }, 500); // Pequeño retraso para asegurar que la UI se actualice primero
+    }, 1000); // Aumentado el retraso para asegurar que la UI se actualice completamente
 });
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
@@ -767,8 +774,15 @@ function handleCorrectAnswer() {
     
     // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
-        // PRIMERO: Siempre asegurarse de que el temporizador esté detenido
-        stopTimer();
+        // SOLUCIÓN DRÁSTICA: Forzar la detención del temporizador directamente sin usar la función
+        if (gameState.timer) {
+            clearInterval(gameState.timer);
+            gameState.timer = null;
+            console.log("🚨 FORZANDO DETENCIÓN DIRECTA DEL TEMPORIZADOR");
+        }
+        
+        // Desactivar el juego durante la celebración para evitar que cualquier timer se active
+        gameState.gameActive = false;
         console.log("🛑 Temporizador detenido al ganar chance");
         
         // Verificar si ya se completó el nivel máximo del juego
@@ -1009,6 +1023,12 @@ function endGame(isWinner) {
 
 // Timer Functions
 function startTimer() {
+    // No iniciar temporizador si el juego no está activo
+    if (!gameState.gameActive) {
+        console.log("⚠️ Intento de iniciar temporizador mientras el juego está inactivo. Ignorando.");
+        return;
+    }
+    
     // Clear any existing timer
     if (gameState.timer) {
         clearInterval(gameState.timer);
