@@ -688,7 +688,8 @@ function loadQuestion() {
     
     // Update answers
     elements.answers.forEach((answer, index) => {
-        answer.classList.remove('selected', 'correct', 'incorrect', 'disabled');
+        answer.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'reputacion-theme', 'oferta-theme', 'servicio-theme', 'trafico-theme', 'data-driven-theme');
+        answer.classList.add(pillarClass); // Agregar la clase del tema actual
         elements.answerTexts[index].textContent = gameState.currentQuestion.options[index];
     });
     
