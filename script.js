@@ -126,6 +126,11 @@ elements.nextRoundButton.addEventListener('click', function() {
     elements.roundCompleteTitle.classList.remove('violet-text');
     elements.roundCompleteTitle.classList.remove('winner-text');
     
+    // Detener la animación de confetis si está activa
+    if (typeof stopConfetti === 'function') {
+        stopConfetti();
+    }
+    
     // Cargar la siguiente pregunta
     loadQuestion();
 });
@@ -1242,6 +1247,12 @@ function showScreen(screen) {
     elements.resultsScreen.classList.add('hide');
     elements.leaderboardScreen.classList.add('hide');
     
+    // Detener la animación de confeti si existe y está funcionando
+    // excepto cuando vamos a la pantalla de resultados para un ganador
+    if (typeof stopConfetti === 'function' && !(screen === elements.resultsScreen && gameState.player.currentRound >= GAME_STRUCTURE.totalRounds)) {
+        stopConfetti();
+    }
+    
     // Show the requested screen
     screen.classList.remove('hide');
 }
@@ -1314,6 +1325,11 @@ function closeModals() {
     elements.audienceModal.classList.add('hide');
     elements.errorModal.classList.add('hide');
     elements.overlay.classList.add('hide');
+    
+    // Asegurarnos de detener los confetis si están activos
+    if (typeof stopConfetti === 'function') {
+        stopConfetti();
+    }
 }
 
 // Handle error modal close specifically
@@ -1321,6 +1337,11 @@ function handleErrorModalClose() {
     // Ocultar el modal de error
     elements.errorModal.classList.add('hide');
     elements.overlay.classList.add('hide');
+    
+    // Detener la animación de confetis si está activa
+    if (typeof stopConfetti === 'function') {
+        stopConfetti();
+    }
     
     // Volver a la pantalla inicial
     showScreen(elements.startScreen);
@@ -1476,6 +1497,11 @@ function resetAndStartGame() {
     elements.playerNameInput.value = '';
     elements.playerPhoneInput.value = '';
     elements.playerPhoneInput.classList.remove('input-error');
+    
+    // Detener cualquier animación de confeti
+    if (typeof stopConfetti === 'function') {
+        stopConfetti();
+    }
     
     // Show start screen
     showScreen(elements.startScreen);
