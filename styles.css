@@ -351,6 +351,7 @@ input:focus {
     border-radius: var(--border-radius-medium);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     color: var(--ml-dark-gray);
+    font-size: calc(var(--font-small) - 1px);
 }
 
 .game-instructions h3 {
@@ -360,18 +361,19 @@ input:focus {
 }
 
 .game-instructions ul {
-    padding-left: var(--space-large);
+    padding-left: 0;
 }
 
 .game-instructions li {
     margin-bottom: var(--space-medium);
     position: relative;
     font-weight: bold;
-    padding-left: 30px;
+    padding-left: 0;
+    list-style-type: none;
 }
 
 .game-instructions li::before {
-    content: '🎮';
+    content: '';
     position: absolute;
     left: 0;
     top: 0;
@@ -511,6 +513,7 @@ input:focus {
     font-weight: bold;
     margin-bottom: var(--space-large);
     line-height: 1.4;
+    color: var(--ml-black);
 }
 
 .answers {
@@ -666,6 +669,7 @@ input:focus {
 .answer-text {
     font-size: var(--font-medium);
     transition: transform 0.2s ease;
+    color: var(--ml-black);
 }
 
 .answer:hover .answer-text {
