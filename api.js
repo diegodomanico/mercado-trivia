@@ -557,6 +557,8 @@ async function saveScore(scoreData) {
                             Puntaje: Number(scoreData.score) || 0, 
                             Telefono: String(scoreData.phone).trim(),
                             Chances: Number(scoreData.chances) || 0,
+                            "Preguntas Respondidas": Number(scoreData.questionsAnswered) || 0,
+                            "Tiempo Total (segs)": Number(scoreData.totalGameTimeSeconds) || 0,
                             "Nivel Maximo": String(scoreData.finalPillar), // Ahora contiene el nombre completo del nivel con emoji
                             Fecha: new Date().toISOString().slice(0, 16).replace('T', ' ') // Formato: YYYY-MM-DD HH:MM
                         }
@@ -610,9 +612,8 @@ async function fetchTopScores(limit = 5) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
-            // Usar el campo Puntaje para ordenar según la estructura confirmada del CSV
-            const sortField = 'Puntaje';
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=${sortField}&sort%5B0%5D%5Bdirection%5D=desc`;
+            // Ordenar primero por preguntas respondidas (descendente) y después por tiempo (ascendente)
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Preguntas%20Respondidas&sort%5B0%5D%5Bdirection%5D=desc&sort%5B1%5D%5Bfield%5D=Tiempo%20Total%20(segs)&sort%5B1%5D%5Bdirection%5D=asc`;
             
             // Make the request to Airtable
             const response = await fetch(url, {
@@ -634,6 +635,8 @@ async function fetchTopScores(limit = 5) {
                         phone: '',
                         prize: 0,
                         chances: 0,
+                        questionsAnswered: 0,
+                        totalGameTimeSeconds: 0,
                         maxRound: 0,
                         finalPillar: 'Sé el primero en completar el juego para aparecer aquí',
                         date: new Date().toISOString()
@@ -657,6 +660,8 @@ async function fetchTopScores(limit = 5) {
                         phone: '',
                         prize: 0,
                         chances: 0,
+                        questionsAnswered: 0,
+                        totalGameTimeSeconds: 0,
                         maxRound: 0,
                         finalPillar: 'Sé el primero en completar el juego para aparecer aquí',
                         date: new Date().toISOString()
@@ -673,6 +678,8 @@ async function fetchTopScores(limit = 5) {
                     phone: record.fields.Telefono || "000000000",
                     prize: record.fields.Puntaje || 0,
                     chances: record.fields.Chances || 0,
+                    questionsAnswered: record.fields["Preguntas Respondidas"] || 0,
+                    totalGameTimeSeconds: record.fields["Tiempo Total (segs)"] || 0,
                     maxRound: record.fields["Nivel Maximo"] || 1,
                     // Compatibilidad con registros antiguos: si el valor es un número, mostramos el nivel correspondiente
                     finalPillar: isNaN(record.fields["Nivel Maximo"]) ? 
@@ -693,6 +700,8 @@ async function fetchTopScores(limit = 5) {
                     phone: '',
                     prize: 0,
                     chances: 0,
+                    questionsAnswered: 0,
+                    totalGameTimeSeconds: 0,
                     maxRound: 0,
                     finalPillar: 'La tabla de posiciones estará disponible pronto',
                     date: new Date().toISOString()
@@ -709,6 +718,8 @@ async function fetchTopScores(limit = 5) {
                 phone: '',
                 prize: 0,
                 chances: 0,
+                questionsAnswered: 0,
+                totalGameTimeSeconds: 0,
                 maxRound: 0,
                 finalPillar: 'No se pudieron cargar los datos',
                 date: new Date().toISOString()

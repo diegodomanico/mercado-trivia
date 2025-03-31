@@ -21,6 +21,7 @@ const elements = {
     playerNameInput: document.getElementById('player-name'),
     playerPhoneInput: document.getElementById('player-phone'),
     phoneError: document.getElementById('phone-error'),
+    nameError: document.getElementById('name-error'),
     startGameButton: document.getElementById('start-game'),
     statusIcon: document.getElementById('status-icon'),
     statusText: document.getElementById('status-text'),
@@ -76,6 +77,10 @@ const elements = {
 const gameState = {
     // Game active status
     gameActive: false,
+    gameStartTime: null,
+    gameEndTime: null,
+    gameCompleted: false,
+    playerWon: false,
     
     // Timer
     timer: null,
@@ -97,6 +102,7 @@ const gameState = {
         questionsAnswered: 0,
         prize: 0,
         completedRounds: [],
+        totalGameTimeSeconds: 0,
         usedLifelines: {
             'fifty-fifty': false,
             'audience-help': false,
@@ -209,6 +215,8 @@ async function initGame() {
 function resetGameState() {
     // Reset game active status
     gameState.gameActive = false;
+    gameState.gameStartTime = null;
+    gameState.gameEndTime = null;
     gameState.gameCompleted = false;
     gameState.playerWon = false;
     
@@ -227,6 +235,7 @@ function resetGameState() {
         currentQuestionIndex: 0,
         questionsAnswered: 0,
         prize: 0,
+        totalGameTimeSeconds: 0,
         completedRounds: [],
         usedLifelines: {
             'fifty-fifty': false,
@@ -417,18 +426,29 @@ function hasEnoughQuestions() {
 async function checkPhoneAndStartGame(e) {
     e.preventDefault();
     
+    // Limpiar errores previos
+    elements.phoneError.classList.add('hide');
+    elements.playerPhoneInput.classList.remove('input-error');
+    elements.nameError.classList.add('hide');
+    elements.playerNameInput.classList.remove('input-error');
+    
     // Get player input
     const name = elements.playerNameInput.value.trim();
     const phone = elements.playerPhoneInput.value.trim();
     
-    // Validate input
+    // Validar el nombre
     if (!name) {
-        alert('Por favor ingresa tu nombre');
+        elements.nameError.textContent = 'Por favor ingresa tu nombre';
+        elements.nameError.classList.remove('hide');
+        elements.playerNameInput.classList.add('input-error');
         return;
     }
     
+    // Validar que el teléfono no esté vacío
     if (!phone) {
-        alert('Por favor ingresa tu número de teléfono');
+        elements.phoneError.textContent = 'Por favor ingresa tu número de teléfono';
+        elements.phoneError.classList.remove('hide');
+        elements.playerPhoneInput.classList.add('input-error');
         return;
     }
     
@@ -495,8 +515,9 @@ async function checkPhoneAndStartGame(e) {
 
 // Start the Game
 function startGame() {
-    // Set game as active
+    // Set game as active and record start time
     gameState.gameActive = true;
+    gameState.gameStartTime = new Date();
     
     // Reset lifelines UI
     elements.lifelines.forEach(lifeline => {
@@ -1006,8 +1027,16 @@ function completeRound() {
 
 // End the game
 function endGame(isWinner) {
-    // Set game as inactive
+    // Set game as inactive and record end time
     gameState.gameActive = false;
+    gameState.gameEndTime = new Date();
+    
+    // Calculate total game time in seconds
+    if (gameState.gameStartTime) {
+        const gameTimeMs = gameState.gameEndTime - gameState.gameStartTime;
+        gameState.player.totalGameTimeSeconds = Math.floor(gameTimeMs / 1000);
+        console.log(`Juego completado en ${gameState.player.totalGameTimeSeconds} segundos`);
+    }
     
     // Asegurarnos de que el temporizador esté detenido
     console.log("🛑 Deteniendo temporizador al finalizar juego");
@@ -1512,12 +1541,19 @@ function updateLeaderboard(scores) {
         const date = new Date(score.date);
         const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
         
+        // Determinar número de preguntas respondidas
+        const questionsAnswered = score.questionsAnswered || score.maxRound * 5 || 0;
+        
+        // Determinar tiempo de juego (si existe)
+        const gameTime = score.totalGameTimeSeconds ? `${score.totalGameTimeSeconds}s` : 'N/A';
+        
         // Create the row content
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${score.name}</td>
             <td>${formatCurrency(score.chances !== undefined ? score.chances : Math.floor(score.score / 5))}</td>
-            <td>${score.maxRound}</td>
+            <td>${questionsAnswered}</td>
+            <td>${gameTime}</td>
             <td>${score.finalPillar}</td>
             <td>${formattedDate}</td>
         `;
@@ -1543,6 +1579,8 @@ async function saveScore(name, prize, maxRound, finalPillar) {
             score: prize,
             chances: chances, // Agregamos el campo de chances explícitamente
             maxRound: maxRound,
+            questionsAnswered: gameState.player.questionsAnswered,
+            totalGameTimeSeconds: gameState.player.totalGameTimeSeconds || 0,
             finalPillar: finalPillar // Este campo ahora contiene el nivel de dificultad en lugar del pilar
         };
         
@@ -1609,7 +1647,7 @@ async function getLeaderboard() {
         // Show error message
         elements.leaderboardBody.innerHTML = `
             <tr>
-                <td colspan="6" class="error-message">
+                <td colspan="7" class="error-message">
                     Error al cargar la tabla de líderes. Inténtalo de nuevo más tarde.
                 </td>
             </tr>
