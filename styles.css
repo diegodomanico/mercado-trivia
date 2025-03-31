@@ -859,13 +859,15 @@ input:focus {
 
 .result-label {
     font-weight: bold;
-    color: var(--ml-gray);
+    color: var(--ml-black);
+    font-size: calc(var(--font-medium) + 1px);
 }
 
 .result-value {
     text-align: right;
     color: var(--ml-blue);
-    font-weight: 500;
+    font-weight: bold;
+    font-size: calc(var(--font-medium) + 1px);
 }
 
 .result-value.highlight {
