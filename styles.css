@@ -262,6 +262,8 @@ button {
     border-radius: 4px;
     background-color: #f8f8f8;
     width: 100%;
+    color: var(--ml-black);
+    font-weight: bold;
 }
 
 .form-buttons {
