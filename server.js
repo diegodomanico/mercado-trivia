@@ -93,18 +93,18 @@ app.get('/api/top-scores', async (req, res) => {
     }
 });
 
-// Ya no necesitamos este endpoint porque obtenemos la clave directamente del entorno
-// app.get('/api/airtable-key', (req, res) => {
-//     try {
-//         if (!process.env.AIRTABLE_API_KEY) {
-//             throw new Error('AIRTABLE_API_KEY not set in environment variables');
-//         }
-//         res.json({ key: process.env.AIRTABLE_API_KEY });
-//     } catch (error) {
-//         console.error('Error obteniendo API key:', error);
-//         res.status(500).json({ error: error.message });
-//     }
-// });
+// Restauramos este endpoint porque el frontend necesita la clave API
+app.get('/api/airtable-key', (req, res) => {
+    try {
+        if (!process.env.AIRTABLE_API_KEY) {
+            throw new Error('AIRTABLE_API_KEY not set in environment variables');
+        }
+        res.json({ key: process.env.AIRTABLE_API_KEY });
+    } catch (error) {
+        console.error('Error obteniendo API key:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Endpoint para cargar preguntas desde CSV
 app.post('/api/load-questions-csv', async (req, res) => {
