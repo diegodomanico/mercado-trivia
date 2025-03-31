@@ -547,20 +547,18 @@ async function saveScore(scoreData) {
             
             console.log(`Tipo de teléfono: ${typeof phoneValue} Valor: ${phoneValue}`);
             
-            // Format the data for Airtable - usando los nombres exactos según el CSV
+            // Format the data for Airtable - usando SOLO los campos que existen en la tabla
             const airtableData = {
                 records: [
                     {
                         fields: {
-                            // Usamos los nombres exactos de campos confirmados por el CSV
+                            // Solo usamos los campos confirmados que existen en la tabla
                             Nombre: scoreData.name,
-                            Puntaje: Number(scoreData.score) || 0, 
+                            Puntaje: Number(scoreData.questionsAnswered) || 0, // Usar questionsAnswered como puntaje 
                             Telefono: String(scoreData.phone).trim(),
                             Chances: Number(scoreData.chances) || 0,
-                            "Preguntas Respondidas": Number(scoreData.questionsAnswered) || 0,
-                            "Tiempo Total (segs)": Number(scoreData.totalGameTimeSeconds) || 0,
-                            "Nivel Maximo": String(scoreData.finalPillar), // Ahora contiene el nombre completo del nivel con emoji
-                            Fecha: new Date().toISOString().slice(0, 16).replace('T', ' ') // Formato: YYYY-MM-DD HH:MM
+                            "Nivel Maximo": String(scoreData.finalPillar), // Nombre completo del nivel con emoji
+                            Fecha: new Date().toISOString() // Airtable acepta formato ISO
                         }
                     }
                 ]
@@ -612,8 +610,8 @@ async function fetchTopScores(limit = 5) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
-            // Ordenar primero por preguntas respondidas (descendente) y después por tiempo (ascendente)
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Preguntas%20Respondidas&sort%5B0%5D%5Bdirection%5D=desc&sort%5B1%5D%5Bfield%5D=Tiempo%20Total%20(segs)&sort%5B1%5D%5Bdirection%5D=asc`;
+            // Ordenar por puntaje (descendente)
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=Puntaje&sort%5B0%5D%5Bdirection%5D=desc`;
             
             // Make the request to Airtable
             const response = await fetch(url, {
@@ -669,22 +667,18 @@ async function fetchTopScores(limit = 5) {
                 ];
             }
             
-            // Transform Airtable records to our score format
+            // Transform Airtable records to our score format (campos actualizados)
             const scores = data.records.map(record => {
-                // Usar solamente los nombres de campo confirmados según el CSV
                 return {
                     id: record.id,
                     name: record.fields.Nombre || "Jugador",
                     phone: record.fields.Telefono || "000000000",
-                    prize: record.fields.Puntaje || 0,
+                    prize: record.fields.Chances || 0, // Premio son las chances
                     chances: record.fields.Chances || 0,
-                    questionsAnswered: record.fields["Preguntas Respondidas"] || 0,
-                    totalGameTimeSeconds: record.fields["Tiempo Total (segs)"] || 0,
-                    maxRound: record.fields["Nivel Maximo"] || 1,
-                    // Compatibilidad con registros antiguos: si el valor es un número, mostramos el nivel correspondiente
-                    finalPillar: isNaN(record.fields["Nivel Maximo"]) ? 
-                        record.fields["Nivel Maximo"] : 
-                        convertirNumeroANivel(record.fields["Nivel Maximo"]),
+                    questionsAnswered: record.fields.Puntaje || 0, // Puntaje son las preguntas respondidas
+                    totalGameTimeSeconds: 0, // No tenemos este campo, dejamos en 0
+                    maxRound: 1, // Valor por defecto
+                    finalPillar: record.fields["Nivel Maximo"] || "Fácil 🟢", // Nivel máximo alcanzado
                     date: record.fields.Fecha || new Date().toISOString()
                 };
             });
