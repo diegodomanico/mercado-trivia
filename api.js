@@ -525,23 +525,19 @@ async function saveScore(scoreData) {
             
             console.log(`Tipo de teléfono: ${typeof phoneValue} Valor: ${phoneValue}`);
             
-            // Format the data for Airtable
+            // Format the data for Airtable - usando los nombres exactos según el CSV
             const airtableData = {
                 records: [
                     {
                         fields: {
-                            // Usamos solo nombres de campo en español basado en el error
+                            // Usamos los nombres exactos de campos confirmados por el CSV
                             Nombre: scoreData.name,
-                            // Intentamos varios nombres para el campo de puntaje
-                            Premio: Number(scoreData.score) || 0, // Intentamos primero con Premio
-                            Score: Number(scoreData.score) || 0, // Intentamos con Score
-                            Puntos: Number(scoreData.score) || 0, // Intentamos con Puntos
-                            Puntaje: Number(scoreData.score) || 0, // Intentamos con Puntaje
-                            Telefono: String(scoreData.phone).trim(), // Intentamos incluir el teléfono
-                            Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
+                            Puntaje: Number(scoreData.score) || 0, 
+                            Telefono: String(scoreData.phone).trim(),
+                            Chances: Number(scoreData.chances) || 0,
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
                             "Pilar Final": String(scoreData.finalPillar),
-                            Fecha: new Date().toISOString()
+                            Fecha: new Date().toISOString().slice(0, 16).replace('T', ' ') // Formato: YYYY-MM-DD HH:MM
                         }
                     }
                 ]
@@ -593,10 +589,8 @@ async function fetchTopScores(limit = 5) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
-            // Probar diferentes campos para ordenar (Premio, Score, Puntos, Puntaje)
-            // Intentaremos primero con Premio, pero si falla, intentaremos los otros
-            // No podemos determinar cuál es el campo correcto hasta que tengamos una clave API válida
-            const sortField = 'Premio'; // Podría ser 'Score', 'Puntos', o 'Puntaje'
+            // Usar el campo Puntaje para ordenar según la estructura confirmada del CSV
+            const sortField = 'Puntaje';
             const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?maxRecords=${limit}&sort%5B0%5D%5Bfield%5D=${sortField}&sort%5B0%5D%5Bdirection%5D=desc`;
             
             // Make the request to Airtable
@@ -651,14 +645,13 @@ async function fetchTopScores(limit = 5) {
             
             // Transform Airtable records to our score format
             const scores = data.records.map(record => {
-                // Usar solamente los nombres de campo en español
+                // Usar solamente los nombres de campo confirmados según el CSV
                 return {
                     id: record.id,
                     name: record.fields.Nombre || "Jugador",
-                    phone: record.fields.Telefono || "000000000", // Solo usamos "Telefono"
-                    // Intentamos diferentes campos para el puntaje
-                    prize: record.fields.Premio || record.fields.Score || record.fields.Puntos || record.fields.Puntaje || 0,
-                    chances: record.fields.Chances || 0, // Agregamos el campo Chances
+                    phone: record.fields.Telefono || "000000000",
+                    prize: record.fields.Puntaje || 0,
+                    chances: record.fields.Chances || 0,
                     maxRound: record.fields["Nivel Maximo"] || 1,
                     finalPillar: record.fields["Pilar Final"] || "Desconocido",
                     date: record.fields.Fecha || new Date().toISOString()
