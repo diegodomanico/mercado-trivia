@@ -19,7 +19,7 @@ const GAME_CONFIG = {
     },
     
     // Number of questions per pillar in each round
-    questionsPerRound: 5,
+    questionsPerRound: 1, // Ahora solo necesitamos 1 pregunta por pilar
     
     // Points awarded per difficulty level
     pointsPerDifficulty: {

@@ -50,20 +50,18 @@ app.get('/api/questions', async (req, res) => {
     try {
         const allQuestions = await fetchAllGameQuestions();
         
-        // Verificar si hay datos insuficientes
-        if (allQuestions.insufficientData) {
-            console.log('Datos insuficientes detectados en las preguntas');
+        // Verificar si hay datos suficientes
+        if (!allQuestions.total || allQuestions.total === 0) {
+            console.log('No se encontraron preguntas en Airtable');
             // Enviamos un código 200 pero con una propiedad que indique que faltan datos
-            // para que el cliente pueda mostrar un mensaje adecuado
-            allQuestions.error = 'No hay suficientes preguntas en Airtable para todos los pilares y dificultades.';
+            allQuestions.error = 'No hay preguntas disponibles en Airtable.';
         }
         
         res.json(allQuestions);
     } catch (error) {
         console.error('Error obteniendo preguntas:', error);
         res.status(500).json({ 
-            error: error.message,
-            insufficientData: true 
+            error: error.message
         });
     }
 });

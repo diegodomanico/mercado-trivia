@@ -175,15 +175,15 @@ async function fetchQuestions(pillars, difficulty) {
         }
         
         // Si no hay suficientes preguntas, reutilizar las existentes
-        if (questions.length < pillars.length * GAME_CONFIG.questionsPerRound) {
+        if (questions.length < pillars.length) {
             console.log(`Insuficientes preguntas en Airtable para dificultad ${difficulty}. Reutilizando preguntas.`);
             
-            // Para cada pilar, revisar si necesitamos más preguntas
+            // Para cada pilar, revisar si necesitamos más preguntas (al menos 1)
             pillars.forEach(pillar => {
                 const pillarQuestions = questions.filter(q => q.pillar === pillar);
                 
-                if (pillarQuestions.length < GAME_CONFIG.questionsPerRound) {
-                    const neededCount = GAME_CONFIG.questionsPerRound - pillarQuestions.length;
+                if (pillarQuestions.length < 1) {
+                    const neededCount = 1 - pillarQuestions.length;
                     
                     // Si tenemos al menos una pregunta, la reutilizamos
                     if (pillarQuestions.length > 0) {
@@ -265,9 +265,9 @@ async function fetchAllGameQuestions() {
                     }
                 });
                 
-                // Check if we have enough questions for each pillar
+                // Verificamos si hay al menos una pregunta para cada pilar
                 const insufficientPillars = pillars.filter(pillar => 
-                    allQuestions.byDifficultyAndPillar[difficulty][pillar].length < GAME_CONFIG.questionsPerRound
+                    allQuestions.byDifficultyAndPillar[difficulty][pillar].length < 1
                 );
                 
                 if (insufficientPillars.length > 0) {
@@ -277,7 +277,7 @@ async function fetchAllGameQuestions() {
                     // Reutilizar preguntas existentes para los pilares con insuficientes preguntas
                     insufficientPillars.forEach(pillar => {
                         const existingQuestions = allQuestions.byDifficultyAndPillar[difficulty][pillar];
-                        const neededCount = GAME_CONFIG.questionsPerRound - existingQuestions.length;
+                        const neededCount = 1 - existingQuestions.length;
                         
                         // Si hay preguntas existentes, las reutilizamos
                         if (existingQuestions.length > 0) {
@@ -300,9 +300,6 @@ async function fetchAllGameQuestions() {
                             // No usamos preguntas de muestra, reportamos la insuficiencia
                             console.log(`No hay preguntas para ${pillar} en dificultad ${difficulty}`);
                             allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
-                            
-                            // Agregamos una bandera para indicar datos insuficientes
-                            allQuestions.insufficientData = true;
                         }
                         
                         // Actualizar el contador total
@@ -337,7 +334,8 @@ async function fetchAllGameQuestions() {
                     if (questionsToReuse.length > 0) {
                         // Reutilizar preguntas de otras dificultades con nuevos IDs
                         const reusedQuestions = [];
-                        for (let i = 0; i < GAME_CONFIG.questionsPerRound; i++) {
+                        // Solo necesitamos una pregunta por pilar
+                        for (let i = 0; i < 1; i++) {
                             const sourceQuestion = questionsToReuse[i % questionsToReuse.length];
                             reusedQuestions.push({
                                 ...sourceQuestion,
@@ -352,13 +350,10 @@ async function fetchAllGameQuestions() {
                         // No usamos preguntas de muestra, reportamos la insuficiencia
                         console.log(`Insuficientes preguntas en Airtable para ${pillar} en dificultad ${difficulty}`);
                         allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
-                        
-                        // Agregamos una bandera para indicar datos insuficientes
-                        allQuestions.insufficientData = true;
                     }
                     
                     // Actualizar el contador total
-                    allQuestions.total += GAME_CONFIG.questionsPerRound;
+                    allQuestions.total += 1; // Solo necesitamos una pregunta por pilar
                 });
             }
         }

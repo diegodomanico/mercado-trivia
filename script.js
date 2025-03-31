@@ -197,10 +197,10 @@ async function loadAllQuestions() {
         // Parse response
         const data = await response.json();
         
-        // Verificar si hay un mensaje de error o datos insuficientes
-        if (data.error || data.insufficientData) {
-            console.error('Datos insuficientes detectados:', data.error);
-            throw new Error(data.error || 'Datos insuficientes en Airtable para jugar.');
+        // Verificar si hay un mensaje de error
+        if (data.error) {
+            console.error('Error en los datos:', data.error);
+            throw new Error(data.error || 'Error en Airtable al cargar los datos.');
         }
         
         // Store questions in game state
@@ -242,32 +242,66 @@ function updateAirtableConnectionStatus(data, error = null) {
         elements.startGameButton.disabled = true;
         return;
     }
-    
-    // Verificar si tenemos suficientes preguntas para cada pilar y dificultad
-    const minQuestionsPerRound = GAME_CONFIG.questionsPerRound;
+
+    // Verificar si tenemos al menos un pilar con preguntas para cada dificultad
+    let availablePillarsByDifficulty = {};
     const pillars = GAME_STRUCTURE.pillars;
-    let insufficientQuestions = false;
+    let insufficientDifficulties = [];
     
+    // Primero contamos cuántos pilares tienen al menos una pregunta por cada dificultad
     for (const difficulty of Object.keys(data.byDifficultyAndPillar)) {
+        availablePillarsByDifficulty[difficulty] = [];
+        
         for (const pillar of pillars) {
             const questions = data.byDifficultyAndPillar[difficulty][pillar];
-            if (!questions || questions.length < minQuestionsPerRound) {
-                insufficientQuestions = true;
-                console.error(`Insuficientes preguntas para ${pillar} en dificultad ${difficulty}: ${questions ? questions.length : 0}/${minQuestionsPerRound}`);
+            if (questions && questions.length > 0) {
+                availablePillarsByDifficulty[difficulty].push(pillar);
             }
+        }
+        
+        // Si no hay preguntas para ningún pilar en esta dificultad, es un problema
+        if (availablePillarsByDifficulty[difficulty].length === 0) {
+            insufficientDifficulties.push(difficulty);
         }
     }
     
-    if (insufficientQuestions) {
+    // Guardamos la información de pilares disponibles en el estado global
+    gameState.availablePillarsByDifficulty = availablePillarsByDifficulty;
+    
+    if (insufficientDifficulties.length > 0) {
         elements.statusIcon.className = 'status-icon disconnected';
-        elements.statusText.textContent = 'Faltan preguntas en algunas categorías. No se puede iniciar el juego.';
+        elements.statusText.textContent = `No hay preguntas para las siguientes dificultades: ${insufficientDifficulties.join(', ')}. Se necesita al menos un pilar con preguntas por cada dificultad.`;
         elements.startGameButton.disabled = true;
         return;
     }
     
+    // Contar el número total de preguntas disponibles
+    let totalQuestionsAvailable = 0;
+    let pillaresDisponibles = [];
+    
+    for (const difficulty in availablePillarsByDifficulty) {
+        if (availablePillarsByDifficulty[difficulty].length > 0) {
+            console.log(`Dificultad ${difficulty}: ${availablePillarsByDifficulty[difficulty].length} pilares disponibles`);
+            totalQuestionsAvailable += availablePillarsByDifficulty[difficulty].length;
+            
+            // Agregar los pilares únicos
+            availablePillarsByDifficulty[difficulty].forEach(pillar => {
+                if (!pillaresDisponibles.includes(pillar)) {
+                    pillaresDisponibles.push(pillar);
+                }
+            });
+        }
+    }
+    
     // Todo correcto - permitimos jugar
     elements.statusIcon.className = 'status-icon connected';
-    elements.statusText.textContent = `Conectado a Airtable (${data.total} preguntas)`;
+    
+    if (pillaresDisponibles.length < pillars.length) {
+        elements.statusText.textContent = `Conectado a Airtable (${data.total} preguntas). Nota: Solo hay preguntas para ${pillaresDisponibles.length} pilares: ${pillaresDisponibles.join(', ')}`;
+    } else {
+        elements.statusText.textContent = `Conectado a Airtable (${data.total} preguntas en ${pillaresDisponibles.length} pilares)`;
+    }
+    
     elements.startGameButton.disabled = false;
 }
 
@@ -277,18 +311,34 @@ function hasEnoughQuestions() {
         return false;
     }
     
-    // Verificar si hay suficientes preguntas para cada pilar y dificultad
+    // Verificar que al menos tengamos una pregunta para algún pilar en cada dificultad
+    let availablePillarsByDifficulty = {};
+    
+    // Primero identificamos qué pilares están disponibles en cada dificultad
     for (const difficulty of GAME_STRUCTURE.difficultyLevels) {
+        availablePillarsByDifficulty[difficulty] = [];
+        
         for (const pillar of GAME_STRUCTURE.pillars) {
             const questions = gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar];
             
-            if (!questions || questions.length < GAME_CONFIG.questionsPerRound) {
-                console.error(`Insuficientes preguntas para ${pillar} en dificultad ${difficulty}: ${questions ? questions.length : 0}/${GAME_CONFIG.questionsPerRound}`);
-                return false;
+            if (questions && questions.length >= 1) {
+                availablePillarsByDifficulty[difficulty].push(pillar);
+            } else {
+                console.warn(`No hay preguntas para ${pillar} en dificultad ${difficulty}. Se omitirá.`);
             }
+        }
+        
+        // Si no hay pilares disponibles para esta dificultad, es un problema
+        if (availablePillarsByDifficulty[difficulty].length === 0) {
+            console.error(`No hay ninguna pregunta para la dificultad ${difficulty}. Se necesita al menos un pilar con preguntas.`);
+            return false;
         }
     }
     
+    // Actualizar los pilares disponibles en el estado de juego para cada dificultad
+    gameState.availablePillarsByDifficulty = availablePillarsByDifficulty;
+    
+    console.log("Pilares disponibles por dificultad:", availablePillarsByDifficulty);
     return true;
 }
 
@@ -403,21 +453,39 @@ function startGame() {
 
 // Select a Random Pillar
 function selectRandomPillar() {
-    // Get all available pillars that haven't been completed in this round
-    const availablePillars = GAME_STRUCTURE.pillars.filter(pillar => {
+    // Get current difficulty
+    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+    
+    // Get all available pillars that:
+    // 1. Haven't been completed in this round
+    // 2. Tienen al menos una pregunta en esta dificultad
+    const availablePillars = (gameState.availablePillarsByDifficulty[currentDifficulty] || []).filter(pillar => {
         const pillarKey = `${gameState.player.currentRound}-${pillar}`;
         return !gameState.player.completedRounds.includes(pillarKey);
     });
     
-    // If all pillars have been completed, this should not happen but just in case
+    console.log(`Seleccionando pilar para dificultad ${currentDifficulty}. Pilares disponibles:`, availablePillars);
+    
+    // If all pillars have been completed, use the first available pillar
     if (availablePillars.length === 0) {
-        gameState.player.currentPillar = GAME_STRUCTURE.pillars[0];
+        // Si no hay pillares disponibles entre los no completados, tomar cualquiera disponible
+        if (gameState.availablePillarsByDifficulty[currentDifficulty] && 
+            gameState.availablePillarsByDifficulty[currentDifficulty].length > 0) {
+            
+            gameState.player.currentPillar = gameState.availablePillarsByDifficulty[currentDifficulty][0];
+            console.log(`Todos los pilares ya completados. Usando: ${gameState.player.currentPillar}`);
+        } else {
+            // Caso de emergencia - no debería ocurrir si hasEnoughQuestions() funciona correctamente
+            gameState.player.currentPillar = GAME_STRUCTURE.pillars[0];
+            console.log(`¡ADVERTENCIA! No hay pilares disponibles para esta dificultad. Usando valor por defecto.`);
+        }
         return;
     }
     
     // Select a random pillar from available ones
     const randomIndex = Math.floor(Math.random() * availablePillars.length);
     gameState.player.currentPillar = availablePillars[randomIndex];
+    console.log(`Pilar seleccionado: ${gameState.player.currentPillar}`);
 }
 
 // Prepare Questions for Round
@@ -460,8 +528,8 @@ function loadQuestion() {
     // Get current round difficulty
     const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
     
-    // Update question UI
-    elements.questionNumber.textContent = `Pregunta ${gameState.player.currentQuestionIndex + 1} de ${GAME_CONFIG.questionsPerRound}`;
+    // Update question UI - Usamos la longitud real de las preguntas disponibles
+    elements.questionNumber.textContent = `Pregunta ${gameState.player.currentQuestionIndex + 1} de ${gameState.currentRoundQuestions.length}`;
     elements.questionText.textContent = gameState.currentQuestion.text;
     elements.currentPillar.textContent = `Pilar: ${gameState.player.currentPillar}`;
     elements.currentDifficulty.textContent = `Nivel: ${currentDifficulty}`;
@@ -641,13 +709,27 @@ function handleWrongAnswer() {
 
 // Check if all pillars have been completed in the current round
 function checkAllPillarsComplete() {
+    // Get current difficulty
+    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+    
+    // Get available pillars for this difficulty
+    const availablePillars = gameState.availablePillarsByDifficulty[currentDifficulty] || [];
+    
+    // Si no hay pilares disponibles, consideramos que ya están completos
+    if (availablePillars.length === 0) {
+        console.warn(`No hay pilares disponibles para la dificultad ${currentDifficulty}. Considerando ronda completada.`);
+        return true;
+    }
+    
     // Count how many pillars have been completed in this round
     const completedPillarsInRound = gameState.player.completedRounds.filter(key => 
         key.startsWith(`${gameState.player.currentRound}-`)
     ).length;
     
-    // Check if all pillars have been completed
-    return completedPillarsInRound >= GAME_STRUCTURE.pillars.length;
+    console.log(`Pilares completados: ${completedPillarsInRound}/${availablePillars.length}`);
+    
+    // Check if all available pillars have been completed
+    return completedPillarsInRound >= availablePillars.length;
 }
 
 // Select a new pillar and prepare questions
