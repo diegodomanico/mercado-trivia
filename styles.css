@@ -1,11 +1,15 @@
 /* Base Styles & Variables */
 :root {
-    /* Mercado Libre & DomUp Colors */
+    /* Mercado Libre & DomUp Colors - Updated based on logo */
     --ml-yellow: #FFE600;
     --ml-blue: #3483FA;
     --ml-violet: #7A1DEA;
-    --ml-gray: #333333;
+    --ml-light-violet: #9e60f7;
+    --ml-gray: #555555;
     --ml-light-gray: #EEEEEE;
+    --ml-dark-gray: #222222;
+    --ml-black: #111111;
+    --ml-white: #FFFFFF;
     
     /* UI Colors */
     --success-green: #39B54A;
@@ -46,8 +50,8 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f5f5f5;
-    color: var(--ml-gray);
+    background-color: var(--ml-black);
+    color: var(--ml-light-gray);
     line-height: 1.6;
 }
 
@@ -59,9 +63,9 @@ body {
 h1 {
     font-size: var(--font-xlarge);
     margin-bottom: var(--space-large);
-    color: var(--ml-violet);
+    color: var(--ml-light-violet);
     text-align: center;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     letter-spacing: 0.5px;
 }
 
@@ -87,7 +91,7 @@ p {
     font-size: var(--font-medium);
     margin-bottom: var(--space-large);
     text-align: center;
-    color: var(--ml-gray);
+    color: var(--ml-light-gray);
     font-weight: 500;
 }
 
@@ -102,7 +106,7 @@ button {
 }
 
 .cta-button {
-    background-color: var(--ml-blue);
+    background-color: var(--ml-violet);
     color: white;
     padding: var(--space-medium) var(--space-large);
     border-radius: var(--border-radius-medium);
@@ -128,7 +132,7 @@ button {
 }
 
 .cta-button:hover {
-    background-color: var(--ml-violet);
+    background-color: var(--ml-light-violet);
     transform: translateY(-3px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
@@ -143,9 +147,9 @@ button {
 }
 
 .secondary-button {
-    background-color: white;
-    color: var(--ml-blue);
-    border: 2px solid var(--ml-blue);
+    background-color: var(--ml-white);
+    color: var(--ml-violet);
+    border: 2px solid var(--ml-violet);
     padding: var(--space-small) var(--space-medium);
     border-radius: var(--border-radius-medium);
     font-weight: 600;
@@ -153,9 +157,11 @@ button {
 }
 
 .secondary-button:hover {
-    background-color: rgba(52, 131, 250, 0.1);
-    color: var(--ml-violet);
-    border-color: var(--ml-violet);
+    background-color: rgba(122, 29, 234, 0.1);
+    color: var(--ml-light-violet);
+    border-color: var(--ml-light-violet);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(122, 29, 234, 0.2);
 }
 
 /* Screen Layout */
@@ -196,14 +202,14 @@ button {
 }
 
 .logo {
-    max-width: 150px;
+    max-width: 100%;
+    width: 100%;
     height: auto;
     margin: 0 auto var(--space-medium) auto;
     display: block;
-    /* Centrar logo horizontalmente en todo el ancho disponible */
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
+    /* Logo recortado para que no sea tan alto */
+    object-fit: contain;
+    max-height: 120px;
 }
 
 .loading-animation {
@@ -236,12 +242,13 @@ button {
 
 /* Start Screen */
 .start-container {
-    background-color: white;
+    background-color: var(--ml-black);
     border-radius: var(--border-radius-large);
     padding: var(--space-large);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     max-width: 600px;
     width: 100%;
+    border: 2px solid var(--ml-violet);
 }
 
 .player-form {
@@ -339,8 +346,17 @@ input:focus {
 
 .game-instructions {
     margin-top: var(--space-large);
-    padding-top: var(--space-large);
-    border-top: 1px solid var(--ml-light-gray);
+    padding: var(--space-large);
+    background-color: var(--ml-white);
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    color: var(--ml-dark-gray);
+}
+
+.game-instructions h3 {
+    color: var(--ml-violet);
+    margin-bottom: var(--space-medium);
+    text-align: center;
 }
 
 .game-instructions ul {
@@ -348,7 +364,17 @@ input:focus {
 }
 
 .game-instructions li {
-    margin-bottom: var(--space-small);
+    margin-bottom: var(--space-medium);
+    position: relative;
+    font-weight: bold;
+    padding-left: 30px;
+}
+
+.game-instructions li::before {
+    content: '🎮';
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 /* Game Screen */
