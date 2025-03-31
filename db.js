@@ -157,9 +157,10 @@ async function loadQuestionsFromCSV(csvFilePath) {
                     
                     
                     // Mapeo directo y simplificado de pilares
-                    let pillar = 'Reputación'; // Valor por defecto
+                    let pillar = 'Reputación ❤️'; // Valor por defecto
                     
                     // Solo usamos los pilares que realmente existen en el CSV
+                    // Nota: Hay un doble espacio en "Reputación  ❤️" en el CSV
                     const pilarMappings = [
                         { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación ❤️' },
                         { pattern: 'Oferta', emoji: '💙', pillar: 'Oferta 💙' },
@@ -169,10 +170,13 @@ async function loadQuestionsFromCSV(csvFilePath) {
                     ];
                     
                     if (data.Pilar && data.Pilar !== 'Pilar') {
+                        // Normalizamos el pilar eliminando espacios extras
+                        const normalizedPilar = data.Pilar.replace(/\s+/g, ' ').trim();
+                        
                         // Primero intentamos con el emoji
                         let found = false;
                         for (const mapping of pilarMappings) {
-                            if (data.Pilar.includes(mapping.emoji)) {
+                            if (normalizedPilar.includes(mapping.emoji)) {
                                 pillar = mapping.pillar;
                                 found = true;
                                 break;
@@ -182,7 +186,7 @@ async function loadQuestionsFromCSV(csvFilePath) {
                         // Si no encontramos por emoji, buscamos por nombre
                         if (!found) {
                             for (const mapping of pilarMappings) {
-                                if (data.Pilar.includes(mapping.pattern)) {
+                                if (normalizedPilar.includes(mapping.pattern)) {
                                     pillar = mapping.pillar;
                                     found = true;
                                     break;
@@ -190,7 +194,8 @@ async function loadQuestionsFromCSV(csvFilePath) {
                             }
                         }
                         
-                        console.log(`CSV row #${count}: Pilar "${data.Pilar}" mapeado a "${pillar}"`);
+                        // Log para cada asignación de pilar
+                        console.log(`CSV row #${count}: Pilar "${data.Pilar}" (normalizado: "${normalizedPilar}") mapeado a "${pillar}"`);
                     }
                     
                     // Verificar si la pregunta tiene todos los datos necesarios
