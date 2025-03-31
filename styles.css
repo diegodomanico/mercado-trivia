@@ -533,6 +533,27 @@ input:focus {
     overflow: hidden;
 }
 
+/* Colores de fondo para las respuestas según el tema/pilar */
+.answer.reputacion-theme {
+    background-color: rgba(255, 152, 0, 0.05);
+}
+
+.answer.oferta-theme {
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.answer.servicio-theme {
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+.answer.trafico-theme {
+    background-color: rgba(156, 39, 176, 0.05);
+}
+
+.answer.data-driven-theme {
+    background-color: rgba(233, 30, 99, 0.05);
+}
+
 .answer:before {
     content: '';
     position: absolute;
@@ -691,6 +712,26 @@ input:focus {
 
 .prize-level:last-child {
     border-bottom: none;
+}
+
+.facil-level {
+    border-left: 5px solid var(--success-green);
+}
+
+.media-level {
+    border-left: 5px solid var(--ml-yellow);
+}
+
+.dificil-level {
+    border-left: 5px solid var(--danger-red);
+}
+
+.muy-dificil-level {
+    border-left: 5px solid var(--warning-orange);
+}
+
+.complicada-level {
+    border-left: 5px solid var(--ml-dark-gray);
 }
 
 .prize-level.current {

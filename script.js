@@ -316,7 +316,7 @@ function updateAirtableConnectionStatus(data, error = null) {
     const pillars = GAME_STRUCTURE.pillars;
     let insufficientDifficulties = [];
     
-    // Primero contamos cuántos pilares tienen al menos una pregunta por cada dificultad
+    // Primero contamos cuántos temas tienen al menos una pregunta por cada dificultad
     for (const difficulty of Object.keys(data.byDifficultyAndPillar)) {
         availablePillarsByDifficulty[difficulty] = [];
         
@@ -333,7 +333,7 @@ function updateAirtableConnectionStatus(data, error = null) {
         }
     }
     
-    // Guardamos la información de pilares disponibles en el estado global
+    // Guardamos la información de temas disponibles en el estado global
     gameState.availablePillarsByDifficulty = availablePillarsByDifficulty;
     
     if (insufficientDifficulties.length > 0) {
@@ -408,14 +408,14 @@ function hasEnoughQuestions() {
             }
         }
         
-        // Si no hay pilares disponibles para esta dificultad, es un problema
+        // Si no hay temas disponibles para esta dificultad, es un problema
         if (availablePillarsByDifficulty[difficulty].length === 0) {
             console.error(`No hay ninguna pregunta para la dificultad ${difficulty}. Se necesita al menos un pilar con preguntas.`);
             return false;
         }
     }
     
-    // Actualizar los pilares disponibles en el estado de juego para cada dificultad
+    // Actualizar los temas disponibles en el estado de juego para cada dificultad
     gameState.availablePillarsByDifficulty = availablePillarsByDifficulty;
     
     console.log("Pilares disponibles por dificultad:", availablePillarsByDifficulty);
@@ -669,7 +669,7 @@ function loadQuestion() {
     // Update question UI - Usamos la longitud real de las preguntas disponibles
     elements.questionNumber.textContent = `Pregunta ${gameState.player.currentQuestionIndex + 1} de ${gameState.currentRoundQuestions.length}`;
     elements.questionText.textContent = gameState.currentQuestion.text;
-    elements.currentPillar.textContent = `Pilar: ${gameState.player.currentPillar}`;
+    elements.currentPillar.textContent = `TEMA: ${gameState.player.currentPillar}`;
     elements.currentDifficulty.textContent = `Nivel: ${currentDifficulty}`;
     
     // Set pillar color for question container
@@ -929,9 +929,9 @@ function checkAllPillarsComplete() {
     // Get available pillars for this difficulty
     const availablePillars = gameState.availablePillarsByDifficulty[currentDifficulty] || [];
     
-    // Si no hay pilares disponibles, consideramos que ya están completos
+    // Si no hay temas disponibles, consideramos que ya están completos
     if (availablePillars.length === 0) {
-        console.warn(`No hay pilares disponibles para la dificultad ${currentDifficulty}. Considerando ronda completada.`);
+        console.warn(`No hay temas disponibles para la dificultad ${currentDifficulty}. Considerando ronda completada.`);
         return true;
     }
     
@@ -971,9 +971,9 @@ function showPillarChangeModal() {
         return;
     }
     
-    elements.roundCompleteTitle.textContent = `¡Cambiando de Pilar! 🔄`;
+    elements.roundCompleteTitle.textContent = `¡Cambiando de TEMA! 🔄`;
     elements.roundCompleteMessage.textContent = 
-        `Ahora jugarás con preguntas del pilar ${gameState.player.currentPillar}. ¡Mantén el buen desempeño!`;
+        `Ahora jugarás con preguntas del tema ${gameState.player.currentPillar}. ¡Mantén el buen desempeño!`;
     
     elements.roundCompleteModal.classList.remove('hide');
     elements.overlay.classList.remove('hide');
@@ -1014,7 +1014,7 @@ function completeRound() {
     elements.roundCompleteTitle.textContent = `¡Ronda ${gameState.player.currentRound} Completada! 🎉`;
     elements.roundCompleteTitle.classList.add('violet-text');
     elements.roundCompleteMessage.textContent = 
-        `¡Felicidades! Has completado todos los pilares de la dificultad ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}. 
+        `¡Felicidades! Has completado todos los temas de la dificultad ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}. 
         Tienes ${formatCurrency(gameState.player.prize)} para participar en sorteos.
         ¡Prepárate para la siguiente ronda!`;
     
