@@ -170,27 +170,47 @@ async function fetchQuestions(pillars, difficulty) {
             // No relanzamos el error, continuamos para generar preguntas de muestra
         }
         
-        // Si no hay suficientes preguntas, generar preguntas de muestra
+        // Si no hay suficientes preguntas, reutilizar las existentes
         if (questions.length < pillars.length * GAME_CONFIG.questionsPerRound) {
-            console.log(`Insuficientes preguntas en Airtable para dificultad ${difficulty}. Usando preguntas de muestra.`);
+            console.log(`Insuficientes preguntas en Airtable para dificultad ${difficulty}. Reutilizando preguntas.`);
             
-            // Para cada pilar, revisar si necesitamos preguntas de muestra
+            // Para cada pilar, revisar si necesitamos más preguntas
             pillars.forEach(pillar => {
                 const pillarQuestions = questions.filter(q => q.pillar === pillar);
                 
                 if (pillarQuestions.length < GAME_CONFIG.questionsPerRound) {
-                    // Generar preguntas de muestra para este pilar
-                    const sampleQuestions = generateSampleQuestions([pillar], difficulty);
                     const neededCount = GAME_CONFIG.questionsPerRound - pillarQuestions.length;
                     
-                    // Agregar solo las preguntas necesarias
-                    const additionalQuestions = sampleQuestions.slice(0, neededCount).map(q => ({
-                        ...q,
-                        id: `sample-${pillar}-${difficulty}-${Math.random().toString(36).substring(2, 10)}`
-                    }));
-                    
-                    console.log(`Agregando ${additionalQuestions.length} preguntas de muestra para ${pillar} en dificultad ${difficulty}`);
-                    questions = [...questions, ...additionalQuestions];
+                    // Si tenemos al menos una pregunta, la reutilizamos
+                    if (pillarQuestions.length > 0) {
+                        const reusedQuestions = [];
+                        
+                        for (let i = 0; i < neededCount; i++) {
+                            const sourceQuestion = pillarQuestions[i % pillarQuestions.length];
+                            // Crear una copia con ID único
+                            reusedQuestions.push({
+                                ...sourceQuestion,
+                                id: `reused-${sourceQuestion.id}-${Date.now()}-${i}`
+                            });
+                        }
+                        
+                        console.log(`Reutilizando ${reusedQuestions.length} preguntas para ${pillar} en dificultad ${difficulty}`);
+                        questions = [...questions, ...reusedQuestions];
+                    } else {
+                        // Si no hay ninguna pregunta para este pilar, buscamos en otras dificultades
+                        console.log(`No hay preguntas para ${pillar} en dificultad ${difficulty}, buscando en otras dificultades`);
+                        
+                        // Implementaremos este caso en la siguiente iteración (manejo de caso extremo)
+                        // Por ahora, solo como último recurso, usamos preguntas de muestra
+                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                        const additionalQuestions = sampleQuestions.slice(0, neededCount).map(q => ({
+                            ...q,
+                            id: `sample-${pillar}-${difficulty}-${Math.random().toString(36).substring(2, 10)}`
+                        }));
+                        
+                        console.log(`Usando ${additionalQuestions.length} preguntas de muestra para ${pillar} (último recurso)`);
+                        questions = [...questions, ...additionalQuestions];
+                    }
                 }
             });
         }
@@ -254,18 +274,36 @@ async function fetchAllGameQuestions() {
                 
                 if (insufficientPillars.length > 0) {
                     console.error(`Insuficientes preguntas para dificultad ${difficulty} en pilares: ${insufficientPillars.join(', ')}`);
-                    console.log(`Usando preguntas de muestra para: ${insufficientPillars.join(', ')} en dificultad ${difficulty}`);
+                    console.log(`Reutilizando preguntas existentes para: ${insufficientPillars.join(', ')} en dificultad ${difficulty}`);
                     
-                    // Generar preguntas de muestra para los pilares con insuficientes preguntas
+                    // Reutilizar preguntas existentes para los pilares con insuficientes preguntas
                     insufficientPillars.forEach(pillar => {
-                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
-                        const neededCount = GAME_CONFIG.questionsPerRound - allQuestions.byDifficultyAndPillar[difficulty][pillar].length;
+                        const existingQuestions = allQuestions.byDifficultyAndPillar[difficulty][pillar];
+                        const neededCount = GAME_CONFIG.questionsPerRound - existingQuestions.length;
                         
-                        // Agregar solo las preguntas necesarias
-                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = [
-                            ...allQuestions.byDifficultyAndPillar[difficulty][pillar],
-                            ...sampleQuestions.slice(0, neededCount)
-                        ];
+                        // Si hay preguntas existentes, las reutilizamos
+                        if (existingQuestions.length > 0) {
+                            const reusedQuestions = [];
+                            for (let i = 0; i < neededCount; i++) {
+                                const sourceQuestion = existingQuestions[i % existingQuestions.length];
+                                // Crear una copia con ID único
+                                reusedQuestions.push({
+                                    ...sourceQuestion,
+                                    id: `reused-${sourceQuestion.id}-${Date.now()}-${i}`
+                                });
+                            }
+                            
+                            // Agregar las preguntas reutilizadas
+                            allQuestions.byDifficultyAndPillar[difficulty][pillar] = [
+                                ...existingQuestions,
+                                ...reusedQuestions
+                            ];
+                        } else {
+                            // Si no hay ninguna, usamos preguntas de muestra (último recurso)
+                            console.log(`No hay preguntas para reutilizar en pilar ${pillar}, usando muestra`);
+                            const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                            allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                        }
                         
                         // Actualizar el contador total
                         allQuestions.total += neededCount;
@@ -273,14 +311,49 @@ async function fetchAllGameQuestions() {
                 }
             } catch (err) {
                 console.error(`Error obteniendo preguntas para dificultad ${difficulty}:`, err);
-                // En lugar de lanzar error, generamos preguntas de muestra para todos los pilares en esta dificultad
-                console.log(`Usando preguntas de muestra para todos los pilares en dificultad ${difficulty}`);
+                // Intentar buscar preguntas de otras dificultades para reutilizar
+                console.log(`Buscando preguntas de otras dificultades para reutilizar en ${difficulty}`);
+                
+                // Buscar en las otras dificultades ya cargadas para encontrar preguntas por pilar
+                const otherDifficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'].filter(d => d !== difficulty);
                 
                 pillars.forEach(pillar => {
-                    const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                    // Intentar encontrar preguntas en otras dificultades para este pilar
+                    let questionsToReuse = [];
                     
-                    // Agregar las preguntas de muestra
-                    allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                    // Buscar en cada dificultad
+                    for (const otherDiff of otherDifficulties) {
+                        const questions = allQuestions.byDifficultyAndPillar[otherDiff] && 
+                                         allQuestions.byDifficultyAndPillar[otherDiff][pillar] || [];
+                        
+                        if (questions.length > 0) {
+                            questionsToReuse = [...questionsToReuse, ...questions];
+                            if (questionsToReuse.length >= GAME_CONFIG.questionsPerRound) {
+                                break; // Ya tenemos suficientes
+                            }
+                        }
+                    }
+                    
+                    if (questionsToReuse.length > 0) {
+                        // Reutilizar preguntas de otras dificultades con nuevos IDs
+                        const reusedQuestions = [];
+                        for (let i = 0; i < GAME_CONFIG.questionsPerRound; i++) {
+                            const sourceQuestion = questionsToReuse[i % questionsToReuse.length];
+                            reusedQuestions.push({
+                                ...sourceQuestion,
+                                difficulty: difficulty, // Cambiar a la dificultad actual
+                                id: `reused-${sourceQuestion.id}-${Date.now()}-${i}`
+                            });
+                        }
+                        
+                        console.log(`Reutilizando ${reusedQuestions.length} preguntas para ${pillar} en dificultad ${difficulty}`);
+                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = reusedQuestions;
+                    } else {
+                        // Si no hay ninguna pregunta para reutilizar, usar muestra como último recurso
+                        console.log(`No hay preguntas para reutilizar en ${pillar}, usando muestra`);
+                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
+                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                    }
                     
                     // Actualizar el contador total
                     allQuestions.total += GAME_CONFIG.questionsPerRound;
@@ -681,6 +754,12 @@ async function saveScore(scoreData) {
             // Get the API key
             const apiKey = await getAirtableApiKey();
             
+            // Investigar el tipo de campo Telefono en Airtable
+            console.log("Tipo de teléfono:", typeof scoreData.phone, "Valor:", scoreData.phone);
+            
+            // Formatear el teléfono para probar diferentes opciones
+            const phoneValue = String(scoreData.phone).trim();
+            
             // Format the data for Airtable
             const airtableData = {
                 records: [
@@ -688,16 +767,19 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Telefono: String(scoreData.phone), // Forzar que sea string
-                            Premio: scoreData.score, // Ahora usamos .score
-                            Chances: scoreData.chances, // Agregamos el campo de chances explícitamente
-                            "Nivel Maximo": scoreData.maxRound,
-                            "Pilar Final": scoreData.finalPillar,
+                            Telefono: phoneValue, // Teléfono formateado como texto
+                            Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
+                            Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
+                            "Nivel Maximo": Number(scoreData.maxRound) || 1,
+                            "Pilar Final": String(scoreData.finalPillar),
                             Fecha: new Date().toISOString()
                         }
                     }
                 ]
             };
+            
+            // Log para diagnóstico
+            console.log("Enviando datos a Airtable:", JSON.stringify(airtableData, null, 2));
             
             // Send to Airtable
             const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}`;
