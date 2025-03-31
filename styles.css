@@ -207,9 +207,8 @@ button {
     height: auto;
     margin: 0 auto var(--space-medium) auto;
     display: block;
-    /* Logo recortado para que no sea tan alto */
     object-fit: contain;
-    max-height: 120px;
+    max-height: none;
 }
 
 .loading-animation {
@@ -402,6 +401,7 @@ input:focus {
 #player-name-display {
     font-weight: bold;
     font-size: var(--font-medium);
+    color: var(--ml-black);
 }
 
 #current-prize {
@@ -417,6 +417,7 @@ input:focus {
 
 #current-difficulty, #current-pillar {
     font-weight: bold;
+    color: var(--ml-black);
 }
 
 .lifelines {
