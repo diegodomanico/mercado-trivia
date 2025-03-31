@@ -197,6 +197,12 @@ async function loadAllQuestions() {
         // Parse response
         const data = await response.json();
         
+        // Verificar si hay un mensaje de error o datos insuficientes
+        if (data.error || data.insufficientData) {
+            console.error('Datos insuficientes detectados:', data.error);
+            throw new Error(data.error || 'Datos insuficientes en Airtable para jugar.');
+        }
+        
         // Store questions in game state
         gameState.allQuestions = data;
         
@@ -317,7 +323,6 @@ async function checkPhoneAndStartGame(e) {
     try {
         // Check if phone has already played
         // IMPORTANTE: Ya no permitimos jugar si hay un error en la validación
-        let isValid = false;
         try {
             // Asegurar que se envía como string
             const phoneStr = String(phone);
@@ -326,15 +331,18 @@ async function checkPhoneAndStartGame(e) {
                 throw new Error(`Error al verificar teléfono: ${response.status}`);
             }
             const data = await response.json();
-            isValid = data.valid;
+            
+            if (!data.valid) {
+                // Mostramos el mensaje de error personalizado que viene del servidor
+                elements.phoneError.textContent = data.message || 'Este número ya participó en el juego. Cada número solo puede participar una vez.';
+                elements.phoneError.classList.remove('hide');
+                elements.playerPhoneInput.classList.add('input-error');
+                return;
+            }
         } catch (phoneError) {
             console.warn('Error validando el teléfono:', phoneError);
             // Ahora mostramos error y no permitimos jugar cuando hay error
-            throw new Error('Error al verificar el teléfono en la base de datos');
-        }
-        
-        if (!isValid) {
-            elements.phoneError.textContent = 'Este número ya participó en el juego. Cada número solo puede participar una vez.';
+            elements.phoneError.textContent = 'Error al verificar el teléfono en la base de datos. Intenta nuevamente.';
             elements.phoneError.classList.remove('hide');
             elements.playerPhoneInput.classList.add('input-error');
             return;

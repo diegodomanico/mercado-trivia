@@ -1,8 +1,18 @@
 // API Integration for Airtable
-require('dotenv').config();
-
-// Import game configuration
-const { GAME_STRUCTURE, GAME_CONFIG, API_ENDPOINTS } = require('./config');
+// Compatibilidad con Node.js y navegador
+// Verifica si estamos en Node.js (sin usar funciones autoejecutables)
+if (typeof window === 'undefined' && typeof process !== 'undefined') {
+    // Solo en Node.js
+    require('dotenv').config();
+    
+    // Import game configuration en Node.js
+    const config = require('./config');
+    // Esto solo se ejecuta en Node.js, así que es seguro
+    GAME_STRUCTURE = config.GAME_STRUCTURE;
+    GAME_CONFIG = config.GAME_CONFIG;
+    API_ENDPOINTS = config.API_ENDPOINTS;
+}
+// En el navegador, no hacemos nada porque config.js ya definió las variables
 
 // Airtable constants - ID correcto de la base y tabla según prueba exitosa
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
@@ -194,16 +204,10 @@ async function fetchQuestions(pillars, difficulty) {
                         // Si no hay ninguna pregunta para este pilar, buscamos en otras dificultades
                         console.log(`No hay preguntas para ${pillar} en dificultad ${difficulty}, buscando en otras dificultades`);
                         
-                        // Implementaremos este caso en la siguiente iteración (manejo de caso extremo)
-                        // Por ahora, solo como último recurso, usamos preguntas de muestra
-                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
-                        const additionalQuestions = sampleQuestions.slice(0, neededCount).map(q => ({
-                            ...q,
-                            id: `sample-${pillar}-${difficulty}-${Math.random().toString(36).substring(2, 10)}`
-                        }));
-                        
-                        console.log(`Usando ${additionalQuestions.length} preguntas de muestra para ${pillar} (último recurso)`);
-                        questions = [...questions, ...additionalQuestions];
+                        // No usamos preguntas de muestra, solo reportamos la insuficiencia
+                        console.log(`No hay suficientes preguntas en Airtable para ${pillar} en dificultad ${difficulty}`);
+                        // No agregamos preguntas de muestra
+                        // questions permanece sin cambios
                     }
                 }
             });
@@ -293,10 +297,12 @@ async function fetchAllGameQuestions() {
                                 ...reusedQuestions
                             ];
                         } else {
-                            // Si no hay ninguna, usamos preguntas de muestra (último recurso)
-                            console.log(`No hay preguntas para reutilizar en pilar ${pillar}, usando muestra`);
-                            const sampleQuestions = generateSampleQuestions([pillar], difficulty);
-                            allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                            // No usamos preguntas de muestra, reportamos la insuficiencia
+                            console.log(`No hay preguntas para ${pillar} en dificultad ${difficulty}`);
+                            allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
+                            
+                            // Agregamos una bandera para indicar datos insuficientes
+                            allQuestions.insufficientData = true;
                         }
                         
                         // Actualizar el contador total
@@ -343,10 +349,12 @@ async function fetchAllGameQuestions() {
                         console.log(`Reutilizando ${reusedQuestions.length} preguntas para ${pillar} en dificultad ${difficulty}`);
                         allQuestions.byDifficultyAndPillar[difficulty][pillar] = reusedQuestions;
                     } else {
-                        // Si no hay ninguna pregunta para reutilizar, usar muestra como último recurso
-                        console.log(`No hay preguntas para reutilizar en ${pillar}, usando muestra`);
-                        const sampleQuestions = generateSampleQuestions([pillar], difficulty);
-                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = sampleQuestions.slice(0, GAME_CONFIG.questionsPerRound);
+                        // No usamos preguntas de muestra, reportamos la insuficiencia
+                        console.log(`Insuficientes preguntas en Airtable para ${pillar} en dificultad ${difficulty}`);
+                        allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
+                        
+                        // Agregamos una bandera para indicar datos insuficientes
+                        allQuestions.insufficientData = true;
                     }
                     
                     // Actualizar el contador total
@@ -363,331 +371,38 @@ async function fetchAllGameQuestions() {
 }
 
 /**
- * Generates sample questions for all pillars at a given difficulty
- * @param {String} difficulty - Difficulty level
- * @returns {Object} - Object with pillar keys and arrays of sample questions
+ * Función de marcador para mantener compatibilidad con el resto del código.
+ * Esta función ya no genera preguntas de ejemplo, solo devuelve un array vacío.
+ * @param {String} difficulty - Nivel de dificultad
+ * @returns {Object} - Objeto vacío
  */
 function generateSampleQuestionsForAllPillars(difficulty) {
+    console.warn('generateSampleQuestionsForAllPillars está obsoleta y no debe usarse');
     const result = {};
     
     GAME_STRUCTURE.pillars.forEach(pillar => {
-        result[pillar] = generateSampleQuestions([pillar], difficulty);
+        result[pillar] = [];
     });
     
     return result;
 }
 
 /**
- * Generates sample questions for testing when Airtable data is not available
- * @param {Array} pillars - List of pillars to generate questions for
- * @param {String} difficulty - Difficulty level to generate
- * @returns {Array} - Array of sample question objects
+ * Función de marcador para mantener compatibilidad con el resto del código.
+ * Esta función ya no genera preguntas de ejemplo, solo devuelve un array vacío.
+ * @param {Array} pillars - Lista de pilares
+ * @param {String} difficulty - Nivel de dificultad
+ * @returns {Array} - Array vacío
  */
 function generateSampleQuestions(pillars, difficulty) {
-    // Reputación sample questions
-    const reputationQuestions = [
-        {
-            text: "¿Cuál es el principal factor que impacta la reputación de un vendedor en Mercado Libre?",
-            options: [
-                "El precio de sus productos",
-                "La cantidad de ventas",
-                "La calificación y opiniones de los compradores",
-                "La antigüedad de la cuenta"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué métrica NO afecta directamente al nivel de reputación en Mercado Libre?",
-            options: [
-                "Tasa de reclamos",
-                "Tiempo de respuesta a preguntas",
-                "Cantidad de productos publicados",
-                "Cumplimiento en tiempo de envío"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Cuál es el tiempo recomendado para responder a las preguntas de los compradores?",
-            options: [
-                "En las primeras 24 horas",
-                "En los primeros 60 minutos",
-                "Dentro de una semana",
-                "En cualquier momento antes de la compra"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Qué práctica afecta más negativamente la reputación de un vendedor?",
-            options: [
-                "Cancelar ventas frecuentemente",
-                "No ofrecer envío gratis",
-                "Tener pocas fotos en las publicaciones",
-                "No responder preguntas antiguas"
-            ],
-            correctIndex: 0
-        },
-        {
-            text: "¿Qué debes hacer si un comprador realiza un reclamo injustificado?",
-            options: [
-                "Ignorarlo, eventualmente se cerrará solo",
-                "Responder de manera cordial y ofrecer una solución",
-                "Contactar directamente al comprador fuera de la plataforma",
-                "Cancelar la venta inmediatamente"
-            ],
-            correctIndex: 1
-        }
-    ];
-    
-    // Oferta sample questions
-    const ofertaQuestions = [
-        {
-            text: "¿Qué información NO debe faltar en una buena publicación?",
-            options: [
-                "Precio de los competidores",
-                "Especificaciones técnicas del producto",
-                "Historia de la marca",
-                "Nombre del proveedor"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Cuál es la cantidad recomendada de fotos por publicación?",
-            options: [
-                "1-2 fotos son suficientes",
-                "3-5 fotos",
-                "6-8 fotos",
-                "Más de 10 fotos"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué estrategia de precio es más efectiva en Mercado Libre?",
-            options: [
-                "Siempre el precio más bajo del mercado",
-                "Precios altos con descuentos frecuentes",
-                "Precios competitivos con buena calidad de servicio",
-                "Cambiar el precio diariamente según la competencia"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué tipo de foto principal genera más conversión en las publicaciones?",
-            options: [
-                "Foto del producto con fondo elaborado y texto",
-                "Foto con múltiples productos para mostrar variedad",
-                "Foto del producto sobre fondo blanco o neutro",
-                "Foto del producto siendo utilizado por un modelo"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué práctica es recomendada para la descripción del producto?",
-            options: [
-                "Textos breves con datos básicos",
-                "Contenido detallado con formato y listas",
-                "Usar mayúsculas para destacar información",
-                "Incluir condiciones de venta y políticas de devolución"
-            ],
-            correctIndex: 1
-        }
-    ];
-    
-    // Logística sample questions
-    const logisticaQuestions = [
-        {
-            text: "¿Cuál es la principal ventaja de ofrecer Mercado Envíos Full?",
-            options: [
-                "Es más económico para el vendedor",
-                "Permite envíos internacionales",
-                "El producto obtiene mejor posicionamiento y etiqueta de Full",
-                "Solo se puede usar para productos pequeños"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué ocurre si no despachas un producto dentro del plazo establecido?",
-            options: [
-                "Se cobra una multa económica",
-                "Afecta negativamente tu reputación",
-                "La publicación se pausa automáticamente",
-                "Nada, solo debes comunicarte con el comprador"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Cuál es el beneficio de configurar correctamente las dimensiones y peso del producto?",
-            options: [
-                "No hay ningún beneficio significativo",
-                "El comprador sabe exactamente qué va a recibir",
-                "El costo de envío se calcula correctamente",
-                "Es obligatorio para todas las categorías"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué método de envío suele tener mejor conversión en ventas?",
-            options: [
-                "Envío estándar a cargo del comprador",
-                "Envío gratis (a cargo del vendedor)",
-                "Retiro en persona",
-                "Envío a cargo del comprador con fechas flexibles"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Qué práctica es recomendada para el empaque de productos?",
-            options: [
-                "Usar el empaque más económico posible",
-                "Empacar de manera segura protegiendo el producto de daños",
-                "Siempre usar cajas de Mercado Libre",
-                "Cobrar el empaque por separado"
-            ],
-            correctIndex: 1
-        }
-    ];
-    
-    // Experiencia sample questions
-    const experienciaQuestions = [
-        {
-            text: "¿Cuál es la mejor práctica para gestionar devoluciones?",
-            options: [
-                "Evitar aceptar devoluciones",
-                "Aceptarlas solo si el producto tiene defectos",
-                "Procesar rápidamente y aprender de los motivos",
-                "Ofrecer reembolso parcial en vez de devolución"
-            ],
-            correctIndex: 2
-        },
-        {
-            text: "¿Qué debes hacer después de concretar una venta?",
-            options: [
-                "Esperar a que el comprador te contacte",
-                "Contactar al comprador para coordinar el envío",
-                "Solicitar calificación positiva",
-                "Ofrecer descuento en próximas compras"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Cuál es la mejor forma de gestionar los comentarios negativos?",
-            options: [
-                "Solicitar su eliminación a Mercado Libre",
-                "Responder de manera profesional y buscar soluciones",
-                "Ignorarlos para no darles importancia",
-                "Ofrecer siempre reembolso total"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Qué información es importante comunicar al comprador luego de la compra?",
-            options: [
-                "Solo la información que solicite",
-                "Los detalles del envío y tiempos estimados",
-                "Promociones de otros productos",
-                "Datos personales para contacto directo"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Qué elemento mejora más la experiencia de compra?",
-            options: [
-                "Incluir regalos con la compra",
-                "Envío inmediato y comunicación clara",
-                "Empaque lujoso",
-                "Llamar por teléfono al comprador"
-            ],
-            correctIndex: 1
-        }
-    ];
-    
-    // Costos sample questions
-    const costosQuestions = [
-        {
-            text: "¿Qué factor impacta más en la rentabilidad de una venta?",
-            options: [
-                "El costo del producto",
-                "La comisión de Mercado Libre",
-                "El costo de envío",
-                "El balance entre precio, comisión y costos operativos"
-            ],
-            correctIndex: 3
-        },
-        {
-            text: "¿Qué estrategia de precio es más efectiva para productos de baja rotación?",
-            options: [
-                "Reducir el precio hasta lograr la venta",
-                "Mantener el precio y ofrecer beneficios adicionales",
-                "Aumentar el precio para aparentar mayor calidad",
-                "Cancelar la publicación si no se vende rápido"
-            ],
-            correctIndex: 1
-        },
-        {
-            text: "¿Cómo afecta la suscripción a Mercado Shops a tus costos?",
-            options: [
-                "Aumenta el costo pero reduce comisiones",
-                "No impacta en los costos de manera significativa",
-                "Elimina por completo las comisiones por venta",
-                "Solo conviene para vendedores con alto volumen"
-            ],
-            correctIndex: 0
-        },
-        {
-            text: "¿Qué herramienta te ayuda a calcular la rentabilidad de tus productos?",
-            options: [
-                "Mercado Crédito",
-                "Calculadora de envíos",
-                "Mercado Ads",
-                "Calculadora de rentabilidad en el panel de vendedor"
-            ],
-            correctIndex: 3
-        },
-        {
-            text: "¿Qué estrategia de publicidad ofrece mejor retorno de inversión?",
-            options: [
-                "Publicitar todos los productos por igual",
-                "Invertir en los productos con mayor margen de ganancia",
-                "No usar publicidad y enfocarse en precio bajo",
-                "Publicitar solo productos nuevos"
-            ],
-            correctIndex: 1
-        }
-    ];
-    
-    // Select the appropriate question set based on the pillar
-    let questionsByPillar = {};
-    questionsByPillar['Reputación ❤️'] = reputationQuestions;
-    questionsByPillar['Oferta 💙'] = ofertaQuestions;
-    questionsByPillar['Servicio 💛'] = logisticaQuestions;
-    questionsByPillar['Tráfico 💜'] = experienciaQuestions;
-    questionsByPillar['Data driven 💗'] = costosQuestions;
-    
-    // Create array for sample questions
-    const sampleQuestions = [];
-    
-    // Add sample questions for each requested pillar
-    pillars.forEach((pillar, pillarIndex) => {
-        if (questionsByPillar[pillar]) {
-            questionsByPillar[pillar].forEach((q, index) => {
-                sampleQuestions.push({
-                    id: `sample-${pillar}-${difficulty}-${index}`,
-                    pillar: pillar,
-                    difficulty: difficulty,
-                    text: q.text,
-                    options: q.options,
-                    correctIndex: q.correctIndex
-                });
-            });
-        }
-    });
-    
-    return sampleQuestions;
+    console.warn('generateSampleQuestions está obsoleta y no debe usarse');
+    return [];
 }
 
 /**
  * Validates a phone number against the Airtable database
  * @param {String} phone - Phone number to validate
- * @returns {Promise<boolean>} - True if phone is valid (not already used)
+ * @returns {Promise<Object>} - Object with { valid: boolean, message: string }
  */
 async function validatePhone(phone) {
     try {
@@ -699,36 +414,76 @@ async function validatePhone(phone) {
         
         console.log(`Validando teléfono: ${cleanPhone}`);
         
-        // Construct the URL with the FILTER formula to check if the phone exists
-        // Usamos el nombre de campo correcto en español para el teléfono
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula={Telefono}="${cleanPhone}"`;
+        // Probar diferentes formatos para Airtable
+        const phoneFormats = [
+            cleanPhone,                  // Formato simple: 1151331242
+            `+${cleanPhone}`,            // Con signo +: +1151331242
+            `+54${cleanPhone}`           // Con prefijo país: +541151331242
+        ];
         
-        // Make the request to Airtable
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
+        let isValid = true;
+        let existingRecords = null;
+        
+        // Intentar todos los formatos de teléfono
+        for (const phoneFormat of phoneFormats) {
+            // Construct the URL with the FILTER formula to check if the phone exists
+            // Usamos el nombre de campo correcto en español para el teléfono
+            // Usamos OR para buscar con diferentes formatos de telefono
+            const filterFormula = encodeURIComponent(`{Telefono}="${phoneFormat}"`);
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula=${filterFormula}`;
+            
+            console.log(`Verificando formato de teléfono: ${phoneFormat}`);
+            
+            // Make the request to Airtable
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.error(`Error verificando teléfono: ${response.status} ${response.statusText}`);
+                continue; // Intentar con el siguiente formato
             }
-        });
-        
-        if (!response.ok) {
-            console.error(`Error verificando teléfono: ${response.status} ${response.statusText}`);
-            // Si hay un error en la API, permitimos continuar para no bloquear el juego
-            return true;
+            
+            const data = await response.json();
+            
+            // If records exist with this phone, it's already been used
+            if (data.records && data.records.length > 0) {
+                isValid = false;
+                existingRecords = data.records;
+                break; // Encontramos una coincidencia, no necesitamos buscar más
+            }
         }
         
-        const data = await response.json();
+        if (!isValid && existingRecords) {
+            // Obtener detalles del registro existente para el mensaje personalizado
+            const record = existingRecords[0];
+            const fields = record.fields;
+            const nombre = fields.Nombre || 'Usuario';
+            const premio = fields.Premio || 0;
+            const chances = fields.Chances || 0;
+            const fecha = new Date(fields.Fecha).toLocaleDateString('es-AR') || 'fecha previa';
+            
+            return {
+                valid: false,
+                message: `El número ${phone} ya participó anteriormente (${nombre}, ${fecha}) y obtuvo ${premio} premio y ${chances} chances. Cada participante puede jugar una sola vez.`
+            };
+        }
         
-        // If records exist with this phone, it's already been used
-        const isValid = data.records.length === 0;
-        
-        return isValid;
+        return {
+            valid: true,
+            message: ''
+        };
     } catch (error) {
         console.error('Error validating phone:', error);
-        // En lugar de propagar el error, retornamos true
-        // para permitir que el juego continúe
-        return true;
+        // En caso de error, reportamos el problema
+        return {
+            valid: false, 
+            message: `Error en la validación: ${error.message}. Por favor, intenta con otro número de teléfono.`
+        };
     }
 }
 
@@ -812,31 +567,14 @@ async function saveScore(scoreData) {
             const result = await response.json();
             return result.records[0];
         } catch (airtableError) {
-            console.error('Error guardando en Airtable, usando respuesta simulada:', airtableError);
-            
-            // Devolver un objeto similar al que devolvería Airtable para que la app siga funcionando
-            return {
-                id: 'temp-' + Date.now(),
-                fields: {
-                    Nombre: scoreData.name,
-                    Telefono: String(scoreData.phone),
-                    Premio: scoreData.score,
-                    Chances: scoreData.chances,
-                    "Nivel Maximo": scoreData.maxRound,
-                    "Pilar Final": scoreData.finalPillar,
-                    Fecha: new Date().toISOString()
-                },
-                createdTime: new Date().toISOString()
-            };
+            console.error('Error guardando en Airtable:', airtableError);
+            // No devolvemos datos simulados, sino que propagamos el error
+            throw new Error(`Error al guardar puntaje en Airtable: ${airtableError.message}`);
         }
     } catch (error) {
         console.error('Error guardando puntaje:', error);
-        // En lugar de propagar el error, retornamos un objeto simulado
-        return {
-            id: 'error-' + Date.now(),
-            fields: scoreData,
-            createdTime: new Date().toISOString()
-        };
+        // Propagamos el error para que se maneje adecuadamente en el cliente
+        throw error;
     }
 }
 
@@ -887,61 +625,20 @@ async function fetchTopScores(limit = 5) {
             
             return scores;
         } catch (airtableError) {
-            console.error('Error al obtener puntajes de Airtable, usando datos de ejemplo:', airtableError);
-            
-            // Si falla Airtable, devolvemos datos de ejemplo para que la app siga funcionando
+            console.error('Error al obtener puntajes de Airtable:', airtableError);
+            // No devolvemos datos de ejemplo, solo un array vacío con mensaje
             return [
                 {
-                    id: 'sample-1',
-                    name: 'María Rodríguez',
-                    phone: '1234567890',
-                    prize: 2000,
-                    chances: 4, // 4 chances (5 preguntas = 1 chance)
-                    maxRound: 5,
-                    finalPillar: 'Reputación ❤️',
-                    date: new Date().toISOString()
-                },
-                {
-                    id: 'sample-2',
-                    name: 'Juan Pérez',
-                    phone: '0987654321',
-                    prize: 1500,
-                    chances: 3, // 3 chances 
-                    maxRound: 4,
-                    finalPillar: 'Tráfico 💜',
-                    date: new Date().toISOString()
-                },
-                {
-                    id: 'sample-3',
-                    name: 'Ana García',
-                    phone: '5555555555',
-                    prize: 1000,
-                    chances: 2, // 2 chances
-                    maxRound: 3,
-                    finalPillar: 'Oferta 💙',
-                    date: new Date().toISOString()
-                },
-                {
-                    id: 'sample-4',
-                    name: 'Carlos López',
-                    phone: '1231231234',
-                    prize: 500,
-                    chances: 1, // 1 chance
-                    maxRound: 2,
-                    finalPillar: 'Servicio 💛',
-                    date: new Date().toISOString()
-                },
-                {
-                    id: 'sample-5',
-                    name: 'Laura Martínez',
-                    phone: '9879879876',
-                    prize: 100,
-                    chances: 0, // 0 chances
-                    maxRound: 1,
-                    finalPillar: 'Data driven 💗',
+                    id: 'error',
+                    name: 'Error de conexión',
+                    phone: '',
+                    prize: 0,
+                    chances: 0,
+                    maxRound: 0,
+                    finalPillar: 'No se pudieron cargar los datos de Airtable',
                     date: new Date().toISOString()
                 }
-            ].slice(0, limit);
+            ];
         }
     } catch (error) {
         console.error('Error obteniendo mejores puntajes:', error);
@@ -951,14 +648,19 @@ async function fetchTopScores(limit = 5) {
 }
 
 // Export all necessary functions
-module.exports = {
-    validateApiKeys,
-    getAirtableApiKey,
-    fetchQuestions,
-    fetchAllGameQuestions,
-    generateSampleQuestions,
-    generateSampleQuestionsForAllPillars,
-    validatePhone,
-    saveScore,
-    fetchTopScores
-};
+// En el navegador, las funciones ya están disponibles globalmente
+// Solo exportamos en Node.js
+if (typeof window === 'undefined' && typeof module !== 'undefined' && module.exports) {
+    // Entorno Node.js
+    module.exports = {
+        validateApiKeys,
+        getAirtableApiKey,
+        fetchQuestions,
+        fetchAllGameQuestions,
+        generateSampleQuestions,
+        generateSampleQuestionsForAllPillars,
+        validatePhone,
+        saveScore,
+        fetchTopScores
+    };
+}

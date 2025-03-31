@@ -31,11 +31,17 @@ app.get('/api/check-phone/:phone', async (req, res) => {
         const { phone } = req.params;
         const cleanPhone = phone.replace(/\D/g, '');
         
+        // El método validatePhone ahora devuelve un objeto { valid, message }
         const response = await validatePhone(cleanPhone);
-        res.json({ valid: response });
+        
+        // Enviar la respuesta completa (valid + message)
+        res.json(response);
     } catch (error) {
         console.error('Error verificando teléfono:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            valid: false, 
+            message: `Error al verificar el teléfono: ${error.message}` 
+        });
     }
 });
 
@@ -43,10 +49,22 @@ app.get('/api/check-phone/:phone', async (req, res) => {
 app.get('/api/questions', async (req, res) => {
     try {
         const allQuestions = await fetchAllGameQuestions();
+        
+        // Verificar si hay datos insuficientes
+        if (allQuestions.insufficientData) {
+            console.log('Datos insuficientes detectados en las preguntas');
+            // Enviamos un código 200 pero con una propiedad que indique que faltan datos
+            // para que el cliente pueda mostrar un mensaje adecuado
+            allQuestions.error = 'No hay suficientes preguntas en Airtable para todos los pilares y dificultades.';
+        }
+        
         res.json(allQuestions);
     } catch (error) {
         console.error('Error obteniendo preguntas:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            error: error.message,
+            insufficientData: true 
+        });
     }
 });
 
