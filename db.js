@@ -157,12 +157,12 @@ async function loadQuestionsFromCSV(csvFilePath) {
                     
                     
                     // Mapeo directo y simplificado de pilares
-                    let pillar = 'Reputación ❤️'; // Valor por defecto
+                    let pillar = 'Reputación  ❤️'; // Valor por defecto con dos espacios para coincidir con el CSV
                     
                     // Solo usamos los pilares que realmente existen en el CSV
                     // Nota: Hay un doble espacio en "Reputación  ❤️" en el CSV
                     const pilarMappings = [
-                        { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación ❤️' },
+                        { pattern: 'Reputación', emoji: '❤️', pillar: 'Reputación  ❤️' },
                         { pattern: 'Oferta', emoji: '💙', pillar: 'Oferta 💙' },
                         { pattern: 'Tráfico', emoji: '💜', pillar: 'Tráfico 💜' },
                         { pattern: 'Servicio', emoji: '💛', pillar: 'Servicio 💛' },
@@ -307,7 +307,7 @@ async function fetchAllGameQuestions() {
         };
         
         // Solo usamos los pilares que realmente existen en el CSV
-        const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
+        const validPillars = ['Reputación  ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
         
         // Inicializar estructura para todas las dificultades y pilares
         // Usar los mismos nombres que en config.js: ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀']
@@ -399,7 +399,7 @@ function getSampleQuestionsResult() {
     // Usar los mismos nombres que en config.js: ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀']
     const difficulties = ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'];
     // Solo usamos los pilares que realmente existen en el CSV
-    const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
+    const validPillars = ['Reputación  ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
     
     const result = {
         byDifficultyAndPillar: {},
@@ -429,7 +429,7 @@ function getSampleScores(limit = 5) {
     ];
     
     // Solo usamos los pilares que realmente existen en el CSV, con los emojis
-    const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
+    const validPillars = ['Reputación  ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
     
     return Array.from({ length: limit }, (_, i) => {
         const score = Math.floor(Math.random() * 5) + 1; // 1 a 5 chances

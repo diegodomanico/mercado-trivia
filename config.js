@@ -44,7 +44,7 @@ const GAME_STRUCTURE = {
     
     // Pillars - solo usamos los que están en el CSV
     pillars: [
-        'Reputación ❤️',
+        'Reputación  ❤️',  // Nota: tiene dos espacios para coincidir con el CSV
         'Oferta 💙',
         'Servicio 💛',
         'Tráfico 💜',

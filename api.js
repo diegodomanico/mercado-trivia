@@ -64,7 +64,14 @@ async function fetchQuestions(pillars, difficulty) {
         try {
             // Construct filter formula for Airtable - buscamos coincidencias parciales para pilares con emojis
             // Airtable usa búsquedas sensibles a mayúsculas/minúsculas, adaptamos los filtros
-            const pillarFilter = pillars.map(pillar => `OR(SEARCH("${pillar}", {Pilar}), SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar}))`).join(',');
+            // Manejo especial para "Reputación  ❤️" con dos espacios vs "Reputación ❤️" con un espacio
+            const pillarFilter = pillars.map(pillar => {
+                if (pillar === 'Reputación  ❤️') {
+                    return `OR(SEARCH("Reputación", {Pilar}), SEARCH("❤️", {Pilar}))`;
+                } else {
+                    return `OR(SEARCH("${pillar}", {Pilar}), SEARCH("${pillar.replace(/[❤️💙💛💜💗]/g, '')}", {Pilar}))`;
+                }
+            }).join(',');
             const difficultyFilter = `OR(SEARCH("${difficulty}", {Dificultad}), SEARCH("${difficulty.toLowerCase()}", LOWER({Dificultad})))`;
             const filterFormula = encodeURIComponent(`AND(${difficultyFilter}, OR(${pillarFilter}))`);
             
@@ -139,9 +146,12 @@ async function fetchQuestions(pillars, difficulty) {
                         // Extraer el nombre del pilar sin emojis
                         let pillarName = fields.Pilar;
                         // Limpiamos el campo de pillar para eliminar emojis y caracteres especiales
+                        // Nota: Las comparaciones deben considerar los dobles espacios presentes en "Reputación  ❤️"
                         for (const p of GAME_STRUCTURE.pillars) {
-                            if (pillarName.includes(p)) {
-                                pillarName = p;
+                            if (pillarName.includes(p) || 
+                                // Caso especial para "Reputación ❤️" con un espacio vs "Reputación  ❤️" con dos espacios
+                                (p === 'Reputación  ❤️' && pillarName.includes('Reputación') && pillarName.includes('❤️'))) {
+                                pillarName = p; // Usamos el nombre exacto de nuestros pilares definidos
                                 break;
                             }
                         }
