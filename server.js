@@ -12,7 +12,7 @@ const {
     fetchTopScores
 } = require('./api');
 
-// Importar función para cargar preguntas desde CSV
+// Mantenemos la importación para compatibilidad pero no la usaremos por defecto
 const { loadQuestionsFromCSV } = require('./db');
 
 const app = express();
@@ -106,7 +106,7 @@ app.get('/api/airtable-key', (req, res) => {
     }
 });
 
-// Endpoint para cargar preguntas desde CSV
+// Endpoint para cargar preguntas desde CSV (mantenido para compatibilidad)
 app.post('/api/load-questions-csv', async (req, res) => {
     try {
         const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
@@ -125,12 +125,34 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.log(`Servidor ejecutándose en el puerto ${PORT}`);
     console.log('Usando Airtable para obtener preguntas y almacenar datos');
     
-    // Cargar preguntas desde CSV al iniciar el servidor
+    // Cargar preguntas directamente desde Airtable al iniciar el servidor
     try {
-        const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
-        const result = await loadQuestionsFromCSV(csvFilePath);
-        console.log('Preguntas cargadas desde CSV:', result.message);
+        // Intentamos cargar desde Airtable primero
+        console.log('Cargando preguntas desde Airtable...');
+        const airtableQuestions = await fetchAllGameQuestions();
+        
+        if (airtableQuestions && airtableQuestions.total > 0) {
+            console.log(`Se cargaron ${airtableQuestions.total} preguntas desde Airtable`);
+        } else {
+            console.warn('No se pudieron cargar preguntas desde Airtable o no hay suficientes preguntas');
+            
+            // Como fallback, cargamos desde CSV
+            console.log('Intentando cargar desde CSV como respaldo...');
+            const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
+            const result = await loadQuestionsFromCSV(csvFilePath);
+            console.log('Preguntas cargadas desde CSV:', result.message);
+        }
     } catch (error) {
-        console.error('Error cargando preguntas desde CSV al iniciar:', error);
+        console.error('Error cargando preguntas al iniciar:', error);
+        
+        // Intentamos cargar desde CSV como respaldo
+        try {
+            console.log('Intentando cargar desde CSV como respaldo...');
+            const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
+            const result = await loadQuestionsFromCSV(csvFilePath);
+            console.log('Preguntas cargadas desde CSV:', result.message);
+        } catch (csvError) {
+            console.error('Error cargando preguntas desde CSV:', csvError);
+        }
     }
 });

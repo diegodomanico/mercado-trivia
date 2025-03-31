@@ -105,6 +105,20 @@ async function fetchTopScores(limit = 5) {
             [limit]
         );
         
+        // Si no hay datos, devolver mensaje informativo
+        if (result.rows.length === 0) {
+            return [{
+                name: 'Aún no hay datos',
+                phone: '',
+                prize: 0,
+                chances: 0,
+                round: 0,
+                maxRound: 0,
+                finalPillar: 'Sé el primero en completar el juego para aparecer aquí',
+                date: new Date().toISOString()
+            }];
+        }
+        
         return result.rows.map(row => ({
             name: row.name,
             phone: row.phone,
@@ -115,7 +129,17 @@ async function fetchTopScores(limit = 5) {
         }));
     } catch (error) {
         console.error('Error obteniendo mejores puntajes:', error);
-        return getSampleScores(limit);
+        // Si hay un error, devolver mensaje informativo en lugar de datos de muestra
+        return [{
+            name: 'Error al cargar puntajes',
+            phone: '',
+            prize: 0,
+            chances: 0,
+            round: 0,
+            maxRound: 0,
+            finalPillar: 'Intenta recargar la página',
+            date: new Date().toISOString()
+        }];
     }
 }
 
@@ -362,8 +386,27 @@ async function fetchAllGameQuestions() {
         return allQuestions;
     } catch (error) {
         console.error('Error obteniendo preguntas:', error);
-        // Si hay un error, devolver preguntas de muestra
-        return getSampleQuestionsResult();
+        // Si hay un error, devolver estructura vacía para informar al usuario, no datos de muestra
+        const difficulties = ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'];
+        const validPillars = ['Reputación  ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
+        
+        const result = {
+            byDifficultyAndPillar: {},
+            realQuestionsCount: 0,
+            dbConnected: false,
+            error: 'Error de conexión a la base de datos. Por favor, intenta más tarde.'
+        };
+        
+        // Crear estructura vacía para cada dificultad y pilar válido
+        for (const difficulty of difficulties) {
+            result.byDifficultyAndPillar[difficulty] = {};
+            
+            for (const pillar of validPillars) {
+                result.byDifficultyAndPillar[difficulty][pillar] = [];
+            }
+        }
+        
+        return result;
     }
 }
 
