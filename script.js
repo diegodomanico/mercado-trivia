@@ -1041,14 +1041,17 @@ function endGame(isWinner) {
     elements.resultPlayerPhone.textContent = gameState.player.phone;
     elements.resultPrize.textContent = formatCurrency(gameState.player.prize);
     elements.resultRound.textContent = `${gameState.player.questionsAnswered} de 25`;
-    elements.resultPillar.textContent = gameState.player.currentPillar;
     
-    // Save score to leaderboard
+    // Mostrar el nivel de dificultad alcanzado en lugar del pilar
+    const difficultyLevel = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+    elements.resultPillar.textContent = difficultyLevel;
+    
+    // Save score to leaderboard - now using the same difficulty level
     saveScore(
         gameState.player.name, 
         gameState.player.prize, 
         gameState.player.currentRound,
-        gameState.player.currentPillar
+        difficultyLevel
     );
     
     // Show results screen after a short delay
@@ -1540,7 +1543,7 @@ async function saveScore(name, prize, maxRound, finalPillar) {
             score: prize,
             chances: chances, // Agregamos el campo de chances explícitamente
             maxRound: maxRound,
-            finalPillar: finalPillar
+            finalPillar: finalPillar // Este campo ahora contiene el nivel de dificultad en lugar del pilar
         };
         
         console.log('Guardando puntuación:', JSON.stringify(scoreData));
