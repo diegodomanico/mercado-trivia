@@ -1545,14 +1545,31 @@ function updateLeaderboard(scores) {
         // Determinar tiempo de juego (si existe)
         const gameTime = score.totalGameTimeSeconds ? `${score.totalGameTimeSeconds}s` : 'N/A';
         
-        // Create the row content
+        // Generar HTML para el nivel con color según dificultad
+        let levelHtml = score.finalPillar;
+        
+        if (score.finalPillar) {
+            if (score.finalPillar.includes('Fácil')) {
+                levelHtml = `<span style="color: #4CAF50; font-weight: bold;">${score.finalPillar}</span>`;
+            } else if (score.finalPillar.includes('Menos fácil')) {
+                levelHtml = `<span style="color: #FFC107; font-weight: bold;">${score.finalPillar}</span>`;
+            } else if (score.finalPillar.includes('Difícil')) {
+                levelHtml = `<span style="color: #F44336; font-weight: bold;">${score.finalPillar}</span>`;
+            } else if (score.finalPillar.includes('Muy difícil')) {
+                levelHtml = `<span style="color: #FF5722; font-weight: bold;">${score.finalPillar}</span>`;
+            } else if (score.finalPillar.includes('Complicada')) {
+                levelHtml = `<span style="color: #9C27B0; font-weight: bold;">${score.finalPillar}</span>`;
+            }
+        }
+        
+        // Create the row content con estilos en línea para colores más fuertes
         row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${score.name}</td>
-            <td>${formatCurrency(score.chances !== undefined ? score.chances : Math.floor(score.score / 5))}</td>
-            <td>${questionsAnswered}</td>
+            <td style="color: var(--ml-violet); font-weight: bold;">${index + 1}</td>
+            <td style="font-weight: bold;">${score.name}</td>
+            <td style="color: #00FFFF; font-weight: bold;">${formatCurrency(score.chances !== undefined ? score.chances : Math.floor(score.score / 5))}</td>
+            <td style="color: #3483FA; font-weight: bold;">${questionsAnswered}</td>
             <td>${gameTime}</td>
-            <td>${score.finalPillar}</td>
+            <td>${levelHtml}</td>
             <td>${formattedDate}</td>
         `;
         
