@@ -432,9 +432,9 @@ async function validatePhone(phone) {
         // Intentar todos los formatos de teléfono
         for (const phoneFormat of phoneFormats) {
             // Construct the URL with the FILTER formula to check if the phone exists
-            // Búsqueda tanto en campo "Telefono" como en "Contacto" 
-            const filterOR = encodeURIComponent(`OR({Telefono}="${phoneFormat}",{Contacto}="${phoneFormat}")`);
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula=${filterOR}`;
+            // Búsqueda solo en campo "Telefono" ya que "Contacto" no existe
+            const filterFormula = encodeURIComponent(`{Telefono}="${phoneFormat}"`);
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula=${filterFormula}`;
             
             console.log(`Verificando formato de teléfono: ${phoneFormat}`);
             
@@ -526,7 +526,7 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Contacto: phoneValue, // Cambiamos "Telefono" por "Contacto" para evitar problemas
+                            Telefono: phoneValue, // Volvemos a usar "Telefono" en lugar de "Contacto"
                             Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
                             Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
@@ -607,7 +607,7 @@ async function fetchTopScores(limit = 5) {
                 return {
                     id: record.id,
                     name: record.fields.Nombre || "Jugador",
-                    phone: record.fields.Contacto || record.fields.Telefono || "000000000",
+                    phone: record.fields.Telefono || "000000000", // Solo usamos "Telefono"
                     prize: record.fields.Premio || 0,
                     chances: record.fields.Chances || 0, // Agregamos el campo Chances
                     maxRound: record.fields["Nivel Maximo"] || 1,

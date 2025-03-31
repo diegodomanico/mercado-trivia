@@ -131,6 +131,15 @@ elements.nextRoundButton.addEventListener('click', function() {
         stopConfetti();
     }
     
+    // Verificar si el juego ha sido completado
+    if (gameState.gameCompleted) {
+        console.log("Juego completado con éxito. Mostrando pantalla final.");
+        
+        // Llamar a endGame para ir a la pantalla de resultados
+        endGame(true);
+        return;
+    }
+    
     // Cargar la siguiente pregunta y reiniciar el temporizador
     // IMPORTANTE: Primero cargar la pregunta y luego iniciar el temporizador
     loadQuestion();
@@ -175,6 +184,7 @@ async function initGame() {
 function resetGameState() {
     // Reset game active status
     gameState.gameActive = false;
+    gameState.gameCompleted = false;
     
     // Clear timer
     if (gameState.timer) {
@@ -720,6 +730,9 @@ function checkAnswer(selectedIndex) {
 
 // Handle a correct answer
 function handleCorrectAnswer() {
+    // IMPORTANTE: Siempre detener el temporizador primero al responder correctamente
+    stopTimer();
+    
     // Increment question index
     gameState.player.currentQuestionIndex++;
     
@@ -735,8 +748,9 @@ function handleCorrectAnswer() {
     
     // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
-        // IMPORTANTE: Detener el temporizador para que no se agote el tiempo mientras se muestra el mensaje
-        stopTimer();
+        // Verificar si ya se completó el nivel máximo del juego
+        const isGameComplete = gameState.player.currentRound >= GAME_STRUCTURE.totalRounds && 
+                             (gameState.player.questionsAnswered / 5) >= 5; // 5 chances = juego completo
         
         // Show round complete modal with custom message
         elements.roundCompleteTitle.textContent = `¡HAS GANADO UNA CHANCE! 🎉`;
@@ -752,23 +766,43 @@ function handleCorrectAnswer() {
             showConfetti();
         }
         
-        // Increase difficulty level (move to next round)
-        const oldDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
-        
-        // Increment round for increased difficulty
-        if (gameState.player.currentRound < GAME_STRUCTURE.totalRounds) {
-            gameState.player.currentRound++;
+        // Texto del botón y mensaje según si es fin de juego o no
+        if (isGameComplete) {
+            // El juego ha sido completado
+            console.log("¡El jugador ha completado todos los niveles! Juego terminado.");
+            
+            elements.roundCompleteMessage.textContent = 
+                `¡FELICIDADES! Has completado el nivel ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}
+                y has ganado ${newChances} chances en total.
+                ¡Eres un Vendedor SUPER PRO de Mercado Libre!`;
+            
+            // Cambiar texto del botón
+            elements.nextRoundButton.textContent = 'Ver Resultados Finales';
+            
+            // Marcar para terminar el juego cuando presione el botón
+            gameState.gameCompleted = true;
+        } else {
+            // Increase difficulty level (move to next round)
+            const oldDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+            
+            // Increment round for increased difficulty (solo si no estamos en el último nivel)
+            if (gameState.player.currentRound < GAME_STRUCTURE.totalRounds) {
+                gameState.player.currentRound++;
+            }
+            
+            const newDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+            
+            elements.roundCompleteMessage.textContent = 
+                `¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.
+                 Ahora avanzarás al nivel ${newDifficulty} de dificultad. 
+                 ¡Sigue así para ganar más chances!`;
+            
+            // Set button text
+            elements.nextRoundButton.textContent = 'Continuar';
+            
+            // Prepare questions for the new round
+            prepareQuestionsForRound();
         }
-        
-        const newDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
-        
-        elements.roundCompleteMessage.textContent = 
-            `¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.
-             Ahora avanzarás al nivel ${newDifficulty} de dificultad. 
-             ¡Sigue así para ganar más chances!`;
-        
-        // Set button text
-        elements.nextRoundButton.textContent = 'Continuar';
         
         // Show the modal
         elements.roundCompleteModal.classList.remove('hide');
@@ -778,9 +812,6 @@ function handleCorrectAnswer() {
         
         // Update prize ladder to show current level
         updatePrizeLadder();
-        
-        // Prepare questions for the new round
-        prepareQuestionsForRound();
     }
     
     // Update prizes
@@ -1457,15 +1488,30 @@ async function saveScore(name, prize, maxRound, finalPillar) {
 // Get the leaderboard data from the server
 async function getLeaderboard() {
     try {
+        // Mostrar indicador de carga
+        elements.leaderboardLoading.classList.remove('hide');
+        elements.leaderboardTable.classList.add('hide');
+        
+        console.log("Cargando tabla de líderes...");
+        
         // Fetch the top scores from the server
         const response = await fetch(API_ENDPOINTS.topScores);
         
         if (!response.ok) {
+            console.error(`Error de servidor: ${response.status} ${response.statusText}`);
             throw new Error('Error al cargar la tabla de líderes');
         }
         
         // Parse the response
         const scores = await response.json();
+        
+        console.log("Datos de tabla de líderes recibidos:", scores);
+        
+        // Verificar si los datos son válidos
+        if (!Array.isArray(scores)) {
+            console.error("Los datos recibidos no son un array:", scores);
+            throw new Error('Formato de datos incorrecto');
+        }
         
         // Update the leaderboard with the scores
         updateLeaderboard(scores);
