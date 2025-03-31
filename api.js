@@ -536,7 +536,7 @@ async function saveScore(scoreData) {
                             Telefono: String(scoreData.phone).trim(),
                             Chances: Number(scoreData.chances) || 0,
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
-                            "Pilar Final": String(scoreData.finalPillar),
+                            "Pilar Final": String(scoreData.finalPillar), // Seguimos usando Pilar Final hasta que Airtable tenga el nuevo campo
                             Fecha: new Date().toISOString().slice(0, 16).replace('T', ' ') // Formato: YYYY-MM-DD HH:MM
                         }
                     }
@@ -653,7 +653,7 @@ async function fetchTopScores(limit = 5) {
                     prize: record.fields.Puntaje || 0,
                     chances: record.fields.Chances || 0,
                     maxRound: record.fields["Nivel Maximo"] || 1,
-                    finalPillar: record.fields["Pilar Final"] || "Desconocido",
+                    finalPillar: record.fields["Descripción de Nivel"] || record.fields["Pilar Final"] || "Desconocido",
                     date: record.fields.Fecha || new Date().toISOString()
                 };
             });
