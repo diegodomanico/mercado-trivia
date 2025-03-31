@@ -755,11 +755,8 @@ function checkAnswer(selectedIndex) {
     // Update UI to show correct/incorrect
     elements.answers[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
     
-    // Si la respuesta es correcta, mostrar cuál era la correcta
-    // Si es incorrecta, NO mostrar la respuesta correcta
-    if (isCorrect) {
-        elements.answers[correctIndex].classList.add('correct');
-    }
+    // Si la respuesta es correcta, mostrar que es correcta
+    // Si es incorrecta, NO mostrar cuál era la respuesta correcta
     
     // Play sound
     if (typeof playSound === 'function') {
