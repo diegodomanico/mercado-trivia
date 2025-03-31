@@ -131,19 +131,30 @@ async function loadQuestionsFromCSV(csvFilePath) {
             .on('data', (data) => {
                 try {
                     // Procesar cada fila del CSV
-                    // Asignar dificultad según el valor del CSV
-                    let difficulty = 'Fácil'; // Valor por defecto
-                    if (data.Dificultad && data.Dificultad.includes('Fácil')) {
-                        difficulty = 'Fácil';
-                    } else if (data.Dificultad && data.Dificultad.includes('Media')) {
-                        difficulty = 'Media';
-                    } else if (data.Dificultad && data.Dificultad.includes('Difícil')) {
-                        difficulty = 'Difícil';
-                    } else if (data.Dificultad && data.Dificultad.includes('Muy Difícil')) {
-                        difficulty = 'Muy Difícil';
-                    } else if (data.Dificultad && data.Dificultad.includes('Experto')) {
-                        difficulty = 'Experto';
+                    // Asignar dificultad según el valor del CSV - Ahora con emojis
+                    // Imprimimos los datos de dificultad para depuración
+                    console.log(`Valor de dificultad en CSV: "${data.Dificultad}"`);
+                    
+                    // Usar directamente los nombres con emojis como aparecen en GAME_STRUCTURE.difficultyLevels
+                    // Config.js tiene: 'Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'
+                    let difficulty = 'Fácil 🟢'; // Valor por defecto
+                    
+                    if (data.Dificultad) {
+                        if (data.Dificultad.includes('Fácil') || data.Dificultad.includes('Facil')) {
+                            difficulty = 'Fácil 🟢';
+                        } else if (data.Dificultad.includes('Menos fácil') || data.Dificultad.includes('Menos facil') || data.Dificultad.includes('Media')) {
+                            difficulty = 'Menos fácil 🟡';
+                        } else if (data.Dificultad.includes('Difícil') || data.Dificultad.includes('Dificil')) {
+                            difficulty = 'Difícil 🔴';
+                        } else if (data.Dificultad.includes('Muy difícil') || data.Dificultad.includes('Muy dificil') || data.Dificultad.includes('Muy Difícil')) {
+                            difficulty = 'Muy difícil 🔥';
+                        } else if (data.Dificultad.includes('Complicada') || data.Dificultad.includes('Experto')) {
+                            difficulty = 'Complicada 💀';
+                        }
                     }
+                    
+                    console.log(`Dificultad asignada: "${difficulty}"`);
+                    
                     
                     // Mapeo directo y simplificado de pilares
                     let pillar = 'Reputación'; // Valor por defecto
@@ -294,7 +305,9 @@ async function fetchAllGameQuestions() {
         const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
         
         // Inicializar estructura para todas las dificultades y pilares
-        for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
+        // Usar los mismos nombres que en config.js: ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀']
+        const difficultyLevels = ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'];
+        for (const difficulty of difficultyLevels) {
             allQuestions.byDifficultyAndPillar[difficulty] = {};
             
             for (const pillar of validPillars) {
@@ -324,12 +337,17 @@ async function fetchAllGameQuestions() {
         let allPillarsHaveFiveQuestions = true;
         
         // Solo usamos los pilares que realmente existen en el CSV
-        for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
+        for (const difficulty of difficultyLevels) {
             for (const pillar of validPillars) {
-                if (!allQuestions.byDifficultyAndPillar[difficulty][pillar] || 
-                    allQuestions.byDifficultyAndPillar[difficulty][pillar].length < 5) {
+                if (!allQuestions.byDifficultyAndPillar[difficulty][pillar]) {
+                    console.log(`ERROR: Estructura no iniciada para ${pillar} en dificultad ${difficulty}`);
                     allPillarsHaveFiveQuestions = false;
-                    console.log(`Advertencia: No hay suficientes preguntas para ${pillar} en dificultad ${difficulty}`);
+                    continue;
+                }
+                
+                if (allQuestions.byDifficultyAndPillar[difficulty][pillar].length < 1) {
+                    allPillarsHaveFiveQuestions = false;
+                    console.log(`Advertencia: No hay preguntas para ${pillar} en dificultad ${difficulty}`);
                 }
             }
         }
@@ -373,9 +391,10 @@ function getSampleQuestions(pillars, difficulty) {
 
 // Obtener la estructura completa de preguntas de muestra
 function getSampleQuestionsResult() {
-    const difficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'];
+    // Usar los mismos nombres que en config.js: ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀']
+    const difficulties = ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'];
     // Solo usamos los pilares que realmente existen en el CSV
-    const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
+    const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
     
     const result = {
         byDifficultyAndPillar: {},
@@ -404,8 +423,8 @@ function getSampleScores(limit = 5) {
         'Pedro Gómez', 'Sofía Díaz', 'Fernando Castro', 'Valentina Torres'
     ];
     
-    // Solo usamos los pilares que realmente existen en el CSV
-    const validPillars = ['Reputación', 'Oferta', 'Tráfico', 'Servicio', 'Data driven'];
+    // Solo usamos los pilares que realmente existen en el CSV, con los emojis
+    const validPillars = ['Reputación ❤️', 'Oferta 💙', 'Tráfico 💜', 'Servicio 💛', 'Data driven 💗'];
     
     return Array.from({ length: limit }, (_, i) => {
         const score = Math.floor(Math.random() * 5) + 1; // 1 a 5 chances

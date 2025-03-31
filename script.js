@@ -318,7 +318,19 @@ function hasEnoughQuestions() {
     for (const difficulty of GAME_STRUCTURE.difficultyLevels) {
         availablePillarsByDifficulty[difficulty] = [];
         
+        // Verificar que existan preguntas para esta dificultad
+        if (!gameState.allQuestions.byDifficultyAndPillar[difficulty]) {
+            console.warn(`No hay preguntas para la dificultad ${difficulty}`);
+            gameState.allQuestions.byDifficultyAndPillar[difficulty] = {};
+        }
+        
         for (const pillar of GAME_STRUCTURE.pillars) {
+            // Verificar que exista el pilar en esta dificultad
+            if (!gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar]) {
+                console.warn(`No hay categoría ${pillar} en dificultad ${difficulty}`);
+                gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar] = [];
+            }
+            
             const questions = gameState.allQuestions.byDifficultyAndPillar[difficulty][pillar];
             
             if (questions && questions.length >= 1) {
@@ -496,8 +508,20 @@ function prepareQuestionsForRound() {
     // En lugar de seleccionar preguntas de un solo pilar, vamos a seleccionar una pregunta de cada pilar
     gameState.currentRoundQuestions = [];
     
+    // Verificar que existan preguntas para esta dificultad
+    if (!gameState.allQuestions.byDifficultyAndPillar[currentDifficulty]) {
+        console.warn(`No hay preguntas para la dificultad ${currentDifficulty}`);
+        gameState.allQuestions.byDifficultyAndPillar[currentDifficulty] = {};
+    }
+    
     // Obtener una pregunta de cada pilar para este nivel de dificultad
     GAME_STRUCTURE.pillars.forEach(pillar => {
+        // Verificar que exista el pilar en esta dificultad
+        if (!gameState.allQuestions.byDifficultyAndPillar[currentDifficulty][pillar]) {
+            console.warn(`No hay categoría ${pillar} en dificultad ${currentDifficulty}`);
+            gameState.allQuestions.byDifficultyAndPillar[currentDifficulty][pillar] = [];
+        }
+        
         const pillarQuestions = gameState.allQuestions.byDifficultyAndPillar[currentDifficulty][pillar];
         
         // Si hay preguntas disponibles para este pilar, tomamos una
@@ -519,8 +543,42 @@ function prepareQuestionsForRound() {
 
 // Load the current question
 function loadQuestion() {
+    // Verificar que tengamos preguntas para mostrar
+    if (!gameState.currentRoundQuestions || gameState.currentRoundQuestions.length === 0) {
+        console.error("No hay preguntas disponibles para mostrar");
+        
+        // Mostrar error en un modal
+        elements.errorText.textContent = 'No hay suficientes preguntas disponibles para este nivel. Por favor contacta al administrador.';
+        elements.errorModal.classList.remove('hide');
+        elements.overlay.classList.remove('hide');
+        
+        // Volver a la pantalla inicial
+        setTimeout(() => {
+            showScreen(elements.startScreen);
+        }, 3000);
+        
+        return;
+    }
+    
     // Get the current question
     gameState.currentQuestion = gameState.currentRoundQuestions[gameState.player.currentQuestionIndex];
+    
+    // Verificar que la pregunta sea válida
+    if (!gameState.currentQuestion) {
+        console.error("La pregunta actual es inválida o nula");
+        
+        // Mostrar error en un modal
+        elements.errorText.textContent = 'Ocurrió un error al cargar la pregunta. Por favor intenta de nuevo.';
+        elements.errorModal.classList.remove('hide');
+        elements.overlay.classList.remove('hide');
+        
+        // Volver a la pantalla inicial
+        setTimeout(() => {
+            showScreen(elements.startScreen);
+        }, 3000);
+        
+        return;
+    }
     
     // Actualizar el pilar actual según la pregunta que se está mostrando
     gameState.player.currentPillar = gameState.currentQuestion.pillar;
@@ -558,7 +616,7 @@ function loadQuestion() {
     gameState.selectedAnswer = null;
     
     // Get time for this difficulty
-    const difficultyKey = currentDifficulty.toLowerCase().replace(' ', '_');
+    const difficultyKey = currentDifficulty.toLowerCase().replace(/ /g, '_');
     gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
     
     // Start timer
@@ -910,7 +968,7 @@ function stopTimer() {
 // Update the timer display
 function updateTimerDisplay() {
     // Calculate the percentage of time remaining
-    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(' ', '_');
+    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
     const totalTime = GAME_CONFIG.timePerDifficulty[difficultyKey];
     const percentage = (gameState.timeRemaining / totalTime) * 100;
     
@@ -1006,7 +1064,7 @@ function showAudienceHelp() {
     const correctIndex = gameState.currentQuestion.correctIndex;
     
     // Generate audience percentages based on the difficulty
-    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase();
+    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
     let percentages = generateAudiencePercentages(difficultyKey, correctIndex);
     
     // Update the audience chart
@@ -1044,19 +1102,19 @@ function generateAudiencePercentages(difficulty, correctIndex) {
     // Determine correct answer percentage based on difficulty
     let correctPercentage;
     switch(difficulty) {
-        case 'fácil':
+        case 'fácil_🟢':
             correctPercentage = 65 + Math.floor(Math.random() * 20); // 65-84%
             break;
-        case 'media':
+        case 'menos_fácil_🟡':
             correctPercentage = 55 + Math.floor(Math.random() * 20); // 55-74%
             break;
-        case 'difícil':
+        case 'difícil_🔴':
             correctPercentage = 45 + Math.floor(Math.random() * 20); // 45-64%
             break;
-        case 'muy difícil':
+        case 'muy_difícil_🔥':
             correctPercentage = 40 + Math.floor(Math.random() * 20); // 40-59%
             break;
-        case 'experto':
+        case 'complicada_💀':
             correctPercentage = 30 + Math.floor(Math.random() * 25); // 30-54%
             break;
         default:
@@ -1100,22 +1158,22 @@ function showExpertCall() {
     
     // Determine confidence level based on difficulty
     let confidenceLevel;
-    const difficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase();
+    const difficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
     
     switch(difficulty) {
-        case 'fácil':
+        case 'fácil_🟢':
             confidenceLevel = Math.random() < 0.8 ? 'high' : 'medium';
             break;
-        case 'media':
+        case 'menos_fácil_🟡':
             confidenceLevel = Math.random() < 0.6 ? 'high' : (Math.random() < 0.8 ? 'medium' : 'low');
             break;
-        case 'difícil':
+        case 'difícil_🔴':
             confidenceLevel = Math.random() < 0.4 ? 'high' : (Math.random() < 0.7 ? 'medium' : 'low');
             break;
-        case 'muy difícil':
+        case 'muy_difícil_🔥':
             confidenceLevel = Math.random() < 0.3 ? 'high' : (Math.random() < 0.6 ? 'medium' : 'low');
             break;
-        case 'experto':
+        case 'complicada_💀':
             confidenceLevel = Math.random() < 0.2 ? 'high' : (Math.random() < 0.5 ? 'medium' : 'low');
             break;
         default:

@@ -9,37 +9,37 @@ const API_ENDPOINTS = {
 
 // Game configuration
 const GAME_CONFIG = {
-    // Time per difficulty level (in seconds)
+    // Time per difficulty level (in seconds) - ajustados según los niveles del CSV
     timePerDifficulty: {
-        fácil: 30,
-        media: 45,
-        difícil: 60,
-        muy_difícil: 75,
-        experto: 90
+        'fácil_🟢': 30,
+        'menos_fácil_🟡': 45,
+        'difícil_🔴': 60,
+        'muy_difícil_🔥': 75,
+        'complicada_💀': 90
     },
     
     // Number of questions per pillar in each round
     questionsPerRound: 1, // Ahora solo necesitamos 1 pregunta por pilar
     
-    // Points awarded per difficulty level
+    // Points awarded per difficulty level - ajustados según los niveles del CSV
     pointsPerDifficulty: {
-        fácil: 100,
-        media: 200,
-        difícil: 500,
-        muy_difícil: 1000,
-        experto: 2000
+        'fácil_🟢': 100,
+        'menos_fácil_🟡': 200,
+        'difícil_🔴': 500,
+        'muy_difícil_🔥': 1000,
+        'complicada_💀': 2000
     }
 };
 
 // Game structure
 const GAME_STRUCTURE = {
-    // Difficulty levels
+    // Difficulty levels - ajustados para coincidir con el CSV
     difficultyLevels: [
-        'Fácil',
-        'Media',
-        'Difícil',
-        'Muy Difícil',
-        'Experto'
+        'Fácil 🟢',
+        'Menos fácil 🟡',
+        'Difícil 🔴',
+        'Muy difícil 🔥',
+        'Complicada 💀'
     ],
     
     // Pillars - solo usamos los que están en el CSV

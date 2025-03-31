@@ -12,6 +12,9 @@ const {
     fetchTopScores
 } = require('./api');
 
+// Importar función para cargar preguntas desde CSV
+const { loadQuestionsFromCSV } = require('./db');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -103,8 +106,31 @@ app.get('/api/top-scores', async (req, res) => {
 //     }
 // });
 
+// Endpoint para cargar preguntas desde CSV
+app.post('/api/load-questions-csv', async (req, res) => {
+    try {
+        const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
+        const result = await loadQuestionsFromCSV(csvFilePath);
+        res.json(result);
+    } catch (error) {
+        console.error('Error cargando preguntas desde CSV:', error);
+        res.status(500).json({ 
+            error: error.message
+        });
+    }
+});
+
 // Iniciar el servidor
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`Servidor ejecutándose en el puerto ${PORT}`);
     console.log('Usando Airtable para obtener preguntas y almacenar datos');
+    
+    // Cargar preguntas desde CSV al iniciar el servidor
+    try {
+        const csvFilePath = './attached_assets/MELIXP_GAME_QUIEN_PREGUNTAS-Grid view 2025-03-30.csv';
+        const result = await loadQuestionsFromCSV(csvFilePath);
+        console.log('Preguntas cargadas desde CSV:', result.message);
+    } catch (error) {
+        console.error('Error cargando preguntas desde CSV al iniciar:', error);
+    }
 });

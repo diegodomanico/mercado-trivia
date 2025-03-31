@@ -230,11 +230,11 @@ async function fetchAllGameQuestions() {
         const allQuestions = {
             total: 0,
             byDifficultyAndPillar: {
-                'Fácil': {},
-                'Media': {},
-                'Difícil': {},
-                'Muy Difícil': {},
-                'Experto': {}
+                'Fácil 🟢': {},
+                'Menos fácil 🟡': {},
+                'Difícil 🔴': {},
+                'Muy difícil 🔥': {},
+                'Complicada 💀': {}
             }
         };
         
@@ -243,15 +243,15 @@ async function fetchAllGameQuestions() {
         
         // Initialize empty arrays for each pillar and difficulty
         pillars.forEach(pillar => {
-            allQuestions.byDifficultyAndPillar['Fácil'][pillar] = [];
-            allQuestions.byDifficultyAndPillar['Media'][pillar] = [];
-            allQuestions.byDifficultyAndPillar['Difícil'][pillar] = [];
-            allQuestions.byDifficultyAndPillar['Muy Difícil'][pillar] = [];
-            allQuestions.byDifficultyAndPillar['Experto'][pillar] = [];
+            allQuestions.byDifficultyAndPillar['Fácil 🟢'][pillar] = [];
+            allQuestions.byDifficultyAndPillar['Menos fácil 🟡'][pillar] = [];
+            allQuestions.byDifficultyAndPillar['Difícil 🔴'][pillar] = [];
+            allQuestions.byDifficultyAndPillar['Muy difícil 🔥'][pillar] = [];
+            allQuestions.byDifficultyAndPillar['Complicada 💀'][pillar] = [];
         });
         
         // Fetch questions for each difficulty level
-        for (const difficulty of ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto']) {
+        for (const difficulty of ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀']) {
             try {
                 const questionsForDifficulty = await fetchQuestions(pillars, difficulty);
                 
@@ -312,7 +312,7 @@ async function fetchAllGameQuestions() {
                 console.log(`Buscando preguntas de otras dificultades para reutilizar en ${difficulty}`);
                 
                 // Buscar en las otras dificultades ya cargadas para encontrar preguntas por pilar
-                const otherDifficulties = ['Fácil', 'Media', 'Difícil', 'Muy Difícil', 'Experto'].filter(d => d !== difficulty);
+                const otherDifficulties = ['Fácil 🟢', 'Menos fácil 🟡', 'Difícil 🔴', 'Muy difícil 🔥', 'Complicada 💀'].filter(d => d !== difficulty);
                 
                 pillars.forEach(pillar => {
                     // Intentar encontrar preguntas en otras dificultades para este pilar
