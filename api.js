@@ -432,10 +432,9 @@ async function validatePhone(phone) {
         // Intentar todos los formatos de teléfono
         for (const phoneFormat of phoneFormats) {
             // Construct the URL with the FILTER formula to check if the phone exists
-            // Usamos el nombre de campo correcto en español para el teléfono
-            // Usamos OR para buscar con diferentes formatos de telefono
-            const filterFormula = encodeURIComponent(`{Telefono}="${phoneFormat}"`);
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula=${filterFormula}`;
+            // Búsqueda tanto en campo "Telefono" como en "Contacto" 
+            const filterOR = encodeURIComponent(`OR({Telefono}="${phoneFormat}",{Contacto}="${phoneFormat}")`);
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_SCORES_TABLE}?filterByFormula=${filterOR}`;
             
             console.log(`Verificando formato de teléfono: ${phoneFormat}`);
             
@@ -512,21 +511,11 @@ async function saveScore(scoreData) {
             console.log("Tipo de teléfono:", typeof scoreData.phone, "Valor:", scoreData.phone);
             
             // Formatear el teléfono para hacer que sea compatible con Airtable
-            // Parece que Airtable está rechazando los teléfonos con prefijo internacional
-            // Vamos a guardar solo el número como texto plano sin formato especial
+            // Revisando los logs, parece que Airtable rechaza el campo Telefono
+            // Vamos a cambiarlo por "Contacto" para ver si eso resuelve el problema
+            
+            // Simplemente usamos el valor tal como está, sin formateo especial
             let phoneValue = String(scoreData.phone).trim();
-            
-            // Eliminar cualquier carácter no numérico
-            phoneValue = phoneValue.replace(/\D/g, '');
-            
-            // Si comienza con 0, lo quitamos
-            if (phoneValue.startsWith('0')) {
-                phoneValue = phoneValue.substring(1);
-            }
-            // Si comienza con 15, lo reemplazamos según formato argentino
-            if (phoneValue.startsWith('15')) {
-                phoneValue = phoneValue.replace(/^15/, '');
-            }
             
             console.log(`Tipo de teléfono: ${typeof phoneValue} Valor: ${phoneValue}`);
             
@@ -537,7 +526,7 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Telefono: phoneValue, // Teléfono como cadena de texto plano sin formato especial
+                            Contacto: phoneValue, // Cambiamos "Telefono" por "Contacto" para evitar problemas
                             Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
                             Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,
@@ -618,7 +607,7 @@ async function fetchTopScores(limit = 5) {
                 return {
                     id: record.id,
                     name: record.fields.Nombre || "Jugador",
-                    phone: record.fields.Telefono || "000000000",
+                    phone: record.fields.Contacto || record.fields.Telefono || "000000000",
                     prize: record.fields.Premio || 0,
                     chances: record.fields.Chances || 0, // Agregamos el campo Chances
                     maxRound: record.fields["Nivel Maximo"] || 1,

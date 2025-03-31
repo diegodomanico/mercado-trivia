@@ -131,8 +131,14 @@ elements.nextRoundButton.addEventListener('click', function() {
         stopConfetti();
     }
     
-    // Cargar la siguiente pregunta
+    // Cargar la siguiente pregunta y reiniciar el temporizador
+    // IMPORTANTE: Primero cargar la pregunta y luego iniciar el temporizador
     loadQuestion();
+    
+    // Reiniciar temporizador para la nueva pregunta
+    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
+    gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
+    startTimer();
 });
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
@@ -729,6 +735,9 @@ function handleCorrectAnswer() {
     
     // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
+        // IMPORTANTE: Detener el temporizador para que no se agote el tiempo mientras se muestra el mensaje
+        stopTimer();
+        
         // Show round complete modal with custom message
         elements.roundCompleteTitle.textContent = `¡HAS GANADO UNA CHANCE! 🎉`;
         elements.roundCompleteTitle.classList.add('winner-text');
