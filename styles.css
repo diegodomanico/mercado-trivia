@@ -435,6 +435,7 @@ input:focus {
     border-radius: 50%;
     cursor: pointer;
     font-weight: bold;
+    color: var(--ml-black);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
 }
@@ -493,6 +494,7 @@ input:focus {
 
 #question-number {
     font-weight: bold;
+    color: var(--ml-black);
 }
 
 .progress-indicator {
@@ -715,6 +717,7 @@ input:focus {
     border-bottom: 1px solid var(--ml-light-gray);
     text-align: center;
     font-weight: bold;
+    color: var(--ml-black);
 }
 
 .prize-level:last-child {
