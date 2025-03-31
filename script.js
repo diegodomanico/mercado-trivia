@@ -1639,8 +1639,27 @@ async function getLeaderboard() {
             throw new Error('Formato de datos incorrecto');
         }
         
-        // Update the leaderboard with the scores
-        updateLeaderboard(scores);
+        // Ordenar los puntajes por:
+        // 1. Mayor número de preguntas respondidas
+        // 2. Menor tiempo de juego (si ambos jugadores tienen la misma cantidad de preguntas)
+        const sortedScores = [...scores].sort((a, b) => {
+            // Determinar preguntas respondidas (usar valores por defecto si no existen)
+            const aQuestions = a.questionsAnswered || a.maxRound * 5 || 0;
+            const bQuestions = b.questionsAnswered || b.maxRound * 5 || 0;
+            
+            // Si tienen diferentes cantidades de preguntas, ordenar por eso primero
+            if (aQuestions !== bQuestions) {
+                return bQuestions - aQuestions; // Mayor número primero
+            }
+            
+            // Si tienen la misma cantidad de preguntas, ordenar por tiempo
+            const aTime = a.totalGameTimeSeconds || Number.MAX_SAFE_INTEGER;
+            const bTime = b.totalGameTimeSeconds || Number.MAX_SAFE_INTEGER;
+            return aTime - bTime; // Menor tiempo primero
+        });
+        
+        // Update the leaderboard with the sorted scores
+        updateLeaderboard(sortedScores);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
         
