@@ -595,11 +595,46 @@ async function fetchTopScores(limit = 5) {
                 }
             });
             
+            // Si obtenemos un error 422, probablemente significa que la tabla no existe
+            // o no hay registros, en ese caso devolvemos un array vacío con un mensaje informativo
+            if (response.status === 422) {
+                console.log('La tabla de puntajes está vacía o aún no se ha creado.');
+                return [
+                    {
+                        id: 'empty',
+                        name: 'Aún no hay datos',
+                        phone: '',
+                        prize: 0,
+                        chances: 0,
+                        maxRound: 0,
+                        finalPillar: 'Sé el primero en completar el juego para aparecer aquí',
+                        date: new Date().toISOString()
+                    }
+                ];
+            }
+            
+            // Para otros errores, lanzamos una excepción
             if (!response.ok) {
                 throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
             }
             
             const data = await response.json();
+            
+            // Si no hay registros, devolvemos un mensaje informativo
+            if (!data.records || data.records.length === 0) {
+                return [
+                    {
+                        id: 'empty',
+                        name: 'Aún no hay datos',
+                        phone: '',
+                        prize: 0,
+                        chances: 0,
+                        maxRound: 0,
+                        finalPillar: 'Sé el primero en completar el juego para aparecer aquí',
+                        date: new Date().toISOString()
+                    }
+                ];
+            }
             
             // Transform Airtable records to our score format
             const scores = data.records.map(record => {
@@ -619,24 +654,35 @@ async function fetchTopScores(limit = 5) {
             return scores;
         } catch (airtableError) {
             console.error('Error al obtener puntajes de Airtable:', airtableError);
-            // No devolvemos datos de ejemplo, solo un array vacío con mensaje
+            // No devolvemos datos de ejemplo, solo un array con un mensaje informativo
             return [
                 {
                     id: 'error',
-                    name: 'Error de conexión',
+                    name: 'Sin datos disponibles',
                     phone: '',
                     prize: 0,
                     chances: 0,
                     maxRound: 0,
-                    finalPillar: 'No se pudieron cargar los datos de Airtable',
+                    finalPillar: 'La tabla de posiciones estará disponible pronto',
                     date: new Date().toISOString()
                 }
             ];
         }
     } catch (error) {
         console.error('Error obteniendo mejores puntajes:', error);
-        // En caso de error, devolvemos un array vacío para evitar romper la aplicación
-        return [];
+        // En caso de error, devolvemos un array con mensaje amigable
+        return [
+            {
+                id: 'error',
+                name: 'Error de conexión',
+                phone: '',
+                prize: 0,
+                chances: 0,
+                maxRound: 0,
+                finalPillar: 'No se pudieron cargar los datos',
+                date: new Date().toISOString()
+            }
+        ];
     }
 }
 
