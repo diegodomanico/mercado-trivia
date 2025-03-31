@@ -894,6 +894,14 @@ function handleWrongAnswer() {
 
 // Check if all pillars have been completed in the current round
 function checkAllPillarsComplete() {
+    // Verificar si ya se alcanzaron las 25 preguntas (5 chances) - esto es fin de juego
+    if (gameState.player.questionsAnswered >= 25) {
+        console.log("🎮 FIN DEL JUEGO: Se respondieron 25 preguntas (5 chances)");
+        gameState.gameCompleted = true;
+        gameState.playerWon = true;
+        return true;
+    }
+    
     // Get current difficulty
     const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
     
@@ -931,6 +939,17 @@ function selectNewPillar() {
 
 // Show the pillar change modal
 function showPillarChangeModal() {
+    // Si el juego está completado, ir directamente a la pantalla de resultados
+    if (gameState.gameCompleted || gameState.playerWon || gameState.player.questionsAnswered >= 25) {
+        console.log("🏆 Juego completado durante cambio de pilar, mostrando resultados finales");
+        gameState.gameCompleted = true;
+        gameState.playerWon = true;
+        
+        // Terminar el juego como ganador
+        endGame(true);
+        return;
+    }
+    
     elements.roundCompleteTitle.textContent = `¡Cambiando de Pilar! 🔄`;
     elements.roundCompleteMessage.textContent = 
         `Ahora jugarás con preguntas del pilar ${gameState.player.currentPillar}. ¡Mantén el buen desempeño!`;
@@ -940,6 +959,13 @@ function showPillarChangeModal() {
     
     // Auto-continue after 3 seconds
     setTimeout(() => {
+        // Verificar nuevamente si el juego se completó mientras esperaba
+        if (gameState.gameCompleted || gameState.playerWon || gameState.player.questionsAnswered >= 25) {
+            console.log("🏆 Juego completado durante espera de 3 segundos, mostrando resultados finales");
+            endGame(true);
+            return;
+        }
+        
         elements.roundCompleteModal.classList.add('hide');
         elements.overlay.classList.add('hide');
         loadQuestion();
@@ -948,6 +974,16 @@ function showPillarChangeModal() {
 
 // Complete the current round and prepare for the next
 function completeRound() {
+    // Si ya se han completado las 25 preguntas totales o se alcanzó el nivel final, 
+    // terminar como ganador en lugar de avanzar
+    if (gameState.player.questionsAnswered >= 25 || gameState.player.currentRound >= GAME_STRUCTURE.totalRounds) {
+        console.log("🏆 Última ronda completada, finalizando juego como ganador");
+        gameState.gameCompleted = true;
+        gameState.playerWon = true;
+        endGame(true);
+        return;
+    }
+    
     // Play level up sound
     if (typeof playSound === 'function') {
         playSound('levelUp');
