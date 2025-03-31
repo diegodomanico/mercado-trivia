@@ -55,6 +55,28 @@ async function getAirtableApiKey() {
     }
 }
 
+/**
+ * Convierte un número de nivel a su descripción con emoji
+ * @param {number|string} nivel - Número de nivel (1-5)
+ * @returns {string} - Descripción del nivel con emoji
+ */
+function convertirNumeroANivel(nivel) {
+    // Convertir a número si es string
+    const nivelNum = parseInt(nivel);
+    
+    // Mapa de niveles
+    const niveles = {
+        1: "Fácil 🟢",
+        2: "Menos fácil 🟡",
+        3: "Difícil 🔴",
+        4: "Muy difícil 🔥",
+        5: "Complicada 💀"
+    };
+    
+    // Devolver descripción o valor por defecto
+    return niveles[nivelNum] || "Nivel " + nivelNum;
+}
+
 async function fetchQuestions(pillars, difficulty) {
     try {
         // Get API key
@@ -652,7 +674,10 @@ async function fetchTopScores(limit = 5) {
                     prize: record.fields.Puntaje || 0,
                     chances: record.fields.Chances || 0,
                     maxRound: record.fields["Nivel Maximo"] || 1,
-                    finalPillar: record.fields["Nivel Maximo"] || "Desconocido",
+                    // Compatibilidad con registros antiguos: si el valor es un número, mostramos el nivel correspondiente
+                    finalPillar: isNaN(record.fields["Nivel Maximo"]) ? 
+                        record.fields["Nivel Maximo"] : 
+                        convertirNumeroANivel(record.fields["Nivel Maximo"]),
                     date: record.fields.Fecha || new Date().toISOString()
                 };
             });
