@@ -526,7 +526,7 @@ async function saveScore(scoreData) {
                         fields: {
                             // Usamos solo nombres de campo en español basado en el error
                             Nombre: scoreData.name,
-                            Telefono: phoneValue, // Volvemos a usar "Telefono" en lugar de "Contacto"
+                            // Quitamos el campo Telefono que está causando el error 422
                             Premio: Number(scoreData.score) || 0, // Asegurarnos que sea número
                             Chances: Number(scoreData.chances) || 0, // Asegurarnos que sea número
                             "Nivel Maximo": Number(scoreData.maxRound) || 1,

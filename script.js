@@ -118,6 +118,27 @@ elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
 elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
 // Manejar el botón para continuar después de completar ronda o ganar chance
 elements.nextRoundButton.addEventListener('click', function() {
+    console.log("Botón Continuar presionado");
+    
+    // Verificar si el juego ha sido completado primero
+    if (gameState.gameCompleted || gameState.playerWon) {
+        console.log("Juego completado con éxito. Mostrando pantalla final.");
+        
+        // Ocultar modal antes de mostrar pantalla de resultados
+        elements.roundCompleteModal.classList.add('hide');
+        elements.overlay.classList.add('hide');
+        
+        // Detener la animación de confetis
+        if (typeof stopConfetti === 'function') {
+            stopConfetti();
+        }
+        
+        // Llamar a endGame para ir a la pantalla de resultados
+        endGame(true);
+        return;
+    }
+    
+    // Si no es fin de juego, continuar normalmente
     // Ocultar el modal
     elements.roundCompleteModal.classList.add('hide');
     elements.overlay.classList.add('hide');
@@ -131,23 +152,20 @@ elements.nextRoundButton.addEventListener('click', function() {
         stopConfetti();
     }
     
-    // Verificar si el juego ha sido completado
-    if (gameState.gameCompleted) {
-        console.log("Juego completado con éxito. Mostrando pantalla final.");
-        
-        // Llamar a endGame para ir a la pantalla de resultados
-        endGame(true);
-        return;
-    }
+    // Siempre asegurarnos de que el temporizador esté detenido antes de cargar una nueva pregunta
+    stopTimer();
     
-    // Cargar la siguiente pregunta y reiniciar el temporizador
-    // IMPORTANTE: Primero cargar la pregunta y luego iniciar el temporizador
+    // Cargar la siguiente pregunta
     loadQuestion();
     
-    // Reiniciar temporizador para la nueva pregunta
-    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
-    gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
-    startTimer();
+    // Esperar un poco antes de iniciar el temporizador para dar tiempo al jugador
+    setTimeout(() => {
+        console.log("Iniciando nuevo temporizador después de ganar una chance");
+        // Reiniciar temporizador para la nueva pregunta
+        const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
+        gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
+        startTimer();
+    }, 500); // Pequeño retraso para asegurar que la UI se actualice primero
 });
 elements.closeExpertModalButton.addEventListener('click', closeModals);
 elements.closeAudienceModalButton.addEventListener('click', closeModals);
@@ -185,6 +203,7 @@ function resetGameState() {
     // Reset game active status
     gameState.gameActive = false;
     gameState.gameCompleted = false;
+    gameState.playerWon = false;
     
     // Clear timer
     if (gameState.timer) {
@@ -748,6 +767,10 @@ function handleCorrectAnswer() {
     
     // If just earned a new chance (divisible by 5), show modal instead of alert
     if (gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0) {
+        // PRIMERO: Siempre asegurarse de que el temporizador esté detenido
+        stopTimer();
+        console.log("🛑 Temporizador detenido al ganar chance");
+        
         // Verificar si ya se completó el nivel máximo del juego
         const isGameComplete = gameState.player.currentRound >= GAME_STRUCTURE.totalRounds && 
                              (gameState.player.questionsAnswered / 5) >= 5; // 5 chances = juego completo
@@ -767,7 +790,7 @@ function handleCorrectAnswer() {
         }
         
         // Texto del botón y mensaje según si es fin de juego o no
-        if (isGameComplete) {
+        if (isGameComplete || gameState.player.questionsAnswered >= 25) {
             // El juego ha sido completado
             console.log("¡El jugador ha completado todos los niveles! Juego terminado.");
             
@@ -781,6 +804,8 @@ function handleCorrectAnswer() {
             
             // Marcar para terminar el juego cuando presione el botón
             gameState.gameCompleted = true;
+            // Marcar como ganador
+            gameState.playerWon = true;
         } else {
             // Increase difficulty level (move to next round)
             const oldDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
@@ -933,6 +958,10 @@ function completeRound() {
 function endGame(isWinner) {
     // Set game as inactive
     gameState.gameActive = false;
+    
+    // Asegurarnos de que el temporizador esté detenido
+    console.log("🛑 Deteniendo temporizador al finalizar juego");
+    stopTimer();
     
     // Update results screen
     if (isWinner) {
