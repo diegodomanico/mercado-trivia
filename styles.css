@@ -563,7 +563,7 @@ input:focus {
     display: flex;
     align-items: center;
     padding: var(--space-medium);
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: white;
     border-radius: var(--border-radius-medium);
     cursor: pointer;
     transition: all 0.3s ease;
@@ -573,29 +573,29 @@ input:focus {
     overflow: hidden;
 }
 
-/* Fondo de color para las respuestas según el tema/pilar */
+/* Bordes de color para las respuestas según el tema/pilar */
 .answer.reputacion-theme {
-    background-color: rgba(255, 102, 102, 0.15);
+    background-color: white;
     border: 3px solid var(--reputacion-color);
 }
 
 .answer.oferta-theme {
-    background-color: rgba(51, 153, 255, 0.15);
+    background-color: white;
     border: 3px solid var(--oferta-color);
 }
 
 .answer.servicio-theme {
-    background-color: rgba(255, 204, 51, 0.15);
+    background-color: white;
     border: 3px solid var(--servicio-color);
 }
 
 .answer.trafico-theme {
-    background-color: rgba(153, 51, 255, 0.15);
+    background-color: white;
     border: 3px solid var(--trafico-color);
 }
 
 .answer.data-driven-theme {
-    background-color: rgba(255, 51, 153, 0.15);
+    background-color: white;
     border: 3px solid var(--data-driven-color);
 }
 
@@ -747,6 +747,27 @@ input:focus {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* Colores de los círculos según el tema */
+.answer.reputacion-theme .answer-letter {
+    background-color: var(--reputacion-color);
+}
+
+.answer.oferta-theme .answer-letter {
+    background-color: var(--oferta-color);
+}
+
+.answer.servicio-theme .answer-letter {
+    background-color: var(--servicio-color);
+}
+
+.answer.trafico-theme .answer-letter {
+    background-color: var(--trafico-color);
+}
+
+.answer.data-driven-theme .answer-letter {
+    background-color: var(--data-driven-color);
+}
+
 .answer.selected .answer-letter {
     background-color: #00FFFF; /* Cyan */
     color: var(--ml-black);
@@ -772,7 +793,7 @@ input:focus {
     font-size: var(--font-medium);
     transition: transform 0.2s ease;
     color: var(--ml-black);
-    font-weight: 500;
+    font-weight: bold;
 }
 
 .answer:hover .answer-text {
