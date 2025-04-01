@@ -917,6 +917,7 @@ input:focus {
     border-radius: var(--border-radius-large);
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Asegurar que esté por encima */
 }
 
 .prize-level {
@@ -1540,6 +1541,32 @@ body.game-active #navbar {
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
         scroll-behavior: smooth !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Ajustes para la escalera de premios en móviles */
+    .prize-ladder {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 10px !important;
+        order: 2 !important; /* Movemos visualmente hacia abajo */
+        font-size: 14px !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .prize-level {
+        padding: 8px !important;
+        font-size: 12px !important;
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
     
     /* Otras mejoras para móviles */
