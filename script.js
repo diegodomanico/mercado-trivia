@@ -112,20 +112,66 @@ const gameState = {
 };
 
 // Initialize the game
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar manejador directo para el botón de comenzar juego
+    const startGameButton = document.getElementById('start-game');
+    const playerForm = document.getElementById('player-form');
+    const debugMessage = document.getElementById('debug-message');
+    
+    if (startGameButton) {
+        startGameButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            debugMessage.textContent = "Botón COMENZAR JUEGO presionado";
+            console.log("Botón comenzar juego presionado directamente");
+            
+            // Obtener el formulario y los valores
+            const name = document.getElementById('player-name').value.trim();
+            const phone = document.getElementById('player-phone').value.trim();
+            
+            if (!name) {
+                debugMessage.textContent += " - Falta nombre";
+                return;
+            }
+            
+            if (!phone) {
+                debugMessage.textContent += " - Falta teléfono";
+                return;
+            }
+            
+            // Llamar directamente a checkPhoneAndStartGame
+            checkPhoneAndStartGame(e);
+        });
+    }
+    
+    // Iniciar el juego
+    initGame();
+});
 
 // Event Listeners
 elements.retryButton.addEventListener('click', initGame);
 // En móviles el evento click no siempre funciona, por eso usamos submit en el formulario
-document.getElementById('player-form').addEventListener('submit', checkPhoneAndStartGame);
-// Mantener el evento click para compatibilidad con PC
-elements.startGameButton.addEventListener('click', function(e) {
-    // Evitar doble activación si ya se disparó el submit
-    if (e.target.form && !e.target.form.hasAttribute('data-submitted')) {
-        e.target.form.setAttribute('data-submitted', 'true');
+// IMPORTANTE: Asegurarnos de que el listener se agregue correctamente
+const playerForm = document.getElementById('player-form');
+if (playerForm) {
+    playerForm.addEventListener('submit', checkPhoneAndStartGame);
+    console.log("Listener para submit del formulario agregado correctamente");
+} else {
+    console.error("No se encontró el elemento player-form");
+}
+
+// Mantener el evento click para compatibilidad con PC y como respaldo
+if (elements.startGameButton) {
+    elements.startGameButton.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevenir comportamiento por defecto
+        console.log("Botón de iniciar juego presionado");
+        
+        // Llamar directamente a la función
         checkPhoneAndStartGame(e);
-    }
-});
+    });
+    console.log("Listener para click en startGameButton agregado correctamente");
+} else {
+    console.error("No se encontró el elemento startGameButton");
+}
 elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
 elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
