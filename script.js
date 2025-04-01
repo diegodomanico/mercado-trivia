@@ -1665,48 +1665,111 @@ async function saveScore(name, prize, maxRound, finalPillar) {
         // Calcular el número de chances basado en preguntas correctas
         const chances = Math.floor(gameState.player.questionsAnswered / 5);
         
-        // Asegurarse de que el teléfono sea string y no esté vacío
-        const phone = String(gameState.player.phone || "").trim();
+        // SOLUCIÓN PARA TELÉFONOS: Asegurarse de que el teléfono sea string y nunca sea null/undefined
+        let phone = "";
+        if (gameState.player && gameState.player.phone) {
+            phone = String(gameState.player.phone).trim();
+        }
         if (!phone) {
-            console.warn("⚠️ ¡Teléfono vacío! Esto puede causar problemas al guardar.");
+            console.warn("⚠️ ¡Teléfono vacío! Usando valor predeterminado '0000000000'");
+            phone = "0000000000"; // Valor predeterminado para evitar null/undefined
         }
         
+        // Sanitizar nombre para evitar problemas con Airtable
+        const cleanName = (name || "").trim() || "Jugador";
+        
+        // Datos del puntaje con valores predeterminados para campos críticos
         const scoreData = {
-            name: name || "Jugador anónimo", // Evitar nombres vacíos
+            name: cleanName, 
             phone: phone,
-            score: Number(prize) || 0, // Forzar conversión a número
-            prize: Number(prize) || 0,  // Campo adicional para compatibilidad
-            chances: chances, // Agregamos el campo de chances explícitamente
-            maxRound: Number(maxRound) || 1, // Forzar conversión a número con valor mínimo
+            score: Number(prize) || 0, 
+            prize: Number(prize) || 0,
+            chances: Number(chances) || 0,
+            maxRound: Number(maxRound) || 1,
             questionsAnswered: Number(gameState.player.questionsAnswered) || 0,
             totalGameTimeSeconds: Number(gameState.player.totalGameTimeSeconds) || 0,
-            finalPillar: String(finalPillar || "Nivel 1") // Asegurar que siempre sea string con valor por defecto
+            finalPillar: String(finalPillar || "Fácil 🟢")
         };
         
         console.log('Guardando puntuación:', JSON.stringify(scoreData, null, 2));
         
-        // Send the score to the server
-        const response = await fetch(API_ENDPOINTS.scores, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(scoreData)
-        });
+        // Intentos múltiples para guardar la puntuación
+        let attempts = 0;
+        const maxAttempts = 3;
+        let success = false;
+        let lastError = null;
         
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error respuesta del servidor:', errorText);
-            throw new Error('Error al guardar la puntuación');
+        while (attempts < maxAttempts && !success) {
+            attempts++;
+            try {
+                console.log(`Intento ${attempts} de guardar puntuación...`);
+                
+                // Hacer una solicitud con tiempo de espera explícito
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
+                
+                const response = await fetch(API_ENDPOINTS.scores, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(scoreData),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId); // Limpiar el timeout si la respuesta llega antes
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`Error respuesta del servidor (intento ${attempts}):`, errorText);
+                    lastError = new Error(`Error en respuesta del servidor: ${response.status} ${response.statusText}`);
+                    
+                    // Si no es el último intento, esperar un poco antes de reintentar
+                    if (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos entre intentos
+                    }
+                } else {
+                    const result = await response.json();
+                    console.log('✅ ¡Puntuación guardada exitosamente!:', result);
+                    success = true;
+                    
+                    // Activar confeti para celebrar
+                    if (typeof startConfetti === 'function') {
+                        startConfetti();
+                        setTimeout(() => {
+                            if (typeof stopConfetti === 'function') stopConfetti();
+                        }, 3000);
+                    }
+                    
+                    // Get the leaderboard after saving
+                    getLeaderboard();
+                    return true; // Éxito
+                }
+            } catch (attemptError) {
+                console.error(`Error en intento ${attempts}:`, attemptError);
+                lastError = attemptError;
+                
+                // Si no es el último intento, esperar un poco antes de reintentar
+                if (attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos entre intentos
+                }
+            }
         }
         
-        const result = await response.json();
-        console.log('Puntuación guardada exitosamente:', result);
+        if (!success) {
+            throw lastError || new Error('No se pudo guardar la puntuación después de múltiples intentos');
+        }
         
-        // Get the leaderboard after saving
-        getLeaderboard();
+        return success;
     } catch (error) {
-        console.error('Error guardando puntuación:', error);
+        console.error('❌ Error final guardando puntuación:', error);
+        // A pesar del error, actualizar la tabla de líderes de todos modos
+        try {
+            getLeaderboard();
+        } catch (e) {
+            console.error('Error adicional obteniendo tabla de líderes:', e);
+        }
+        return false;
     }
 }
 

@@ -306,5 +306,58 @@
     <script src="assets/sounds.js"></script>
     <script src="assets/confetti.js"></script>
     <script src="script.js"></script>
+    
+    <!-- Script para ocultar la barra de navegación en Replit durante el juego -->
+    <script>
+        // Función para ocultar la barra de navegación cuando se inicia el juego
+        function hideNavbarOnGameStart() {
+            const gameScreen = document.getElementById('game-screen');
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (!gameScreen.classList.contains('hide')) {
+                            document.body.classList.add('game-active');
+                            
+                            // Forzar ocultar cualquier elemento de navbar que pueda existir
+                            const navbars = document.querySelectorAll('#navbar, .navbar, nav, header');
+                            navbars.forEach(nav => {
+                                if (nav) {
+                                    nav.style.display = 'none';
+                                    nav.style.visibility = 'hidden';
+                                    nav.style.opacity = '0';
+                                    nav.style.height = '0';
+                                    nav.style.overflow = 'hidden';
+                                    nav.style.position = 'absolute';
+                                    nav.style.zIndex = '-1';
+                                }
+                            });
+                        } else {
+                            document.body.classList.remove('game-active');
+                        }
+                    }
+                });
+            });
+            
+            // Comenzar a observar cambios en la clase del gameScreen
+            observer.observe(gameScreen, { attributes: true });
+            
+            // Buscar el timer para asegurarnos que sea visible
+            const timerCheck = setInterval(() => {
+                const timerContainer = document.querySelector('.timer-container');
+                const timerBar = document.querySelector('#timer-bar');
+                if (timerContainer && timerBar) {
+                    timerContainer.style.zIndex = '9999';
+                    timerContainer.style.position = 'relative';
+                    timerContainer.style.display = 'block';
+                    timerContainer.style.visibility = 'visible';
+                    timerBar.style.display = 'block';
+                    timerBar.style.visibility = 'visible';
+                }
+            }, 1000); // Verificar cada segundo
+        }
+        
+        // Ejecutar cuando el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', hideNavbarOnGameStart);
+    </script>
 </body>
 </html>
