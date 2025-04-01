@@ -1135,12 +1135,13 @@ tbody tr:hover {
 tbody td {
     color: var(--ml-black);
     font-size: 16px;
+    font-weight: bold;
 }
 
 /* Estilo específico para la columna de Chances */
 tbody tr td:nth-child(3) {
     color: var(--ml-black);
-    font-weight: bold;
+    font-weight: 900; /* Usando weight 900 para que sea extra-negrita */
 }
 
 /* Colores para posiciones */
