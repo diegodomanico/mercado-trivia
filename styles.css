@@ -586,6 +586,10 @@ input:focus {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
+    /* Evitar el highlight al tocar en móviles */
+    -webkit-tap-highlight-color: transparent;
+    /* Evitar que iOS muestre el último elemento seleccionado */
+    touch-action: manipulation;
 }
 
 /* Bordes de color para las respuestas según el tema/pilar */

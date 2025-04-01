@@ -220,6 +220,12 @@ function resetGameState() {
     gameState.gameCompleted = false;
     gameState.playerWon = false;
     
+    // Limpiar cualquier setTimeout pendiente para verificar respuestas
+    if (gameState.answerTimeout) {
+        clearTimeout(gameState.answerTimeout);
+        gameState.answerTimeout = null;
+    }
+    
     // Clear timer
     if (gameState.timer) {
         clearInterval(gameState.timer);
@@ -686,10 +692,13 @@ function loadQuestion() {
     console.log(`Aplicando clase de pilar: ${pillarClass}`);
     document.querySelector('.question-container').classList.add(pillarClass);
     
-    // Update answers
+    // Update answers - primero forzar un reflow para resetear estados visuales persistentes
     elements.answers.forEach((answer, index) => {
+        // Eliminar todas las clases y forzar reflow
         answer.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'reputacion-theme', 'oferta-theme', 'servicio-theme', 'trafico-theme', 'data-driven-theme');
-        answer.classList.add(pillarClass); // Agregar la clase del tema actual
+        void answer.offsetWidth; // Forzar reflow para limpiar estados visuales en iOS
+        // Agregar clase de tema
+        answer.classList.add(pillarClass);
         elements.answerTexts[index].textContent = gameState.currentQuestion.options[index];
     });
     
@@ -722,8 +731,14 @@ function selectAnswer(e) {
     const answerIndex = parseInt(answerElement.dataset.index);
     gameState.selectedAnswer = answerIndex;
     
-    // Update UI to show selection
-    elements.answers.forEach(ans => ans.classList.remove('selected'));
+    // Primero remover cualquier selección previa para evitar que iOS mantenga el efecto táctil
+    elements.answers.forEach(ans => {
+        ans.classList.remove('selected');
+        // Forzar un reflow para limpiar cualquier estado visual persistente
+        void ans.offsetWidth;
+    });
+    
+    // Luego aplicar la selección al elemento correcto
     answerElement.classList.add('selected');
     
     // Play select sound
@@ -735,7 +750,12 @@ function selectAnswer(e) {
     stopTimer();
     
     // Check answer after a short delay
-    setTimeout(() => checkAnswer(answerIndex), 1500);
+    // Limpiar cualquier setTimeout previo que pudiera quedar
+    if (gameState.answerTimeout) {
+        clearTimeout(gameState.answerTimeout);
+    }
+    // Guardar referencia al nuevo setTimeout para poder cancelarlo si es necesario
+    gameState.answerTimeout = setTimeout(() => checkAnswer(answerIndex), 1500);
 }
 
 // Check if the selected answer is correct
