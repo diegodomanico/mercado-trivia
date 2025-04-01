@@ -46,6 +46,16 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 body {
@@ -166,16 +176,21 @@ button {
 
 /* Screen Layout */
 .screen {
-    min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: var(--space-large);
     overflow-y: auto;
-    max-height: 100vh;
+    overflow-x: hidden;
     opacity: 1;
     visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
 }
 
@@ -1172,7 +1187,7 @@ tbody tr:first-child td:first-child:before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.95);
     z-index: 1000;
 }
 

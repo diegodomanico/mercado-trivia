@@ -77,14 +77,14 @@ async function validatePhone(phone) {
 // Guardar puntaje
 async function saveScore(scoreData) {
     try {
-        const { name, phone, score, maxRound, finalPillar } = scoreData;
+        const { name, phone, score, maxRound, finalPillar, questionsAnswered, totalGameTimeSeconds } = scoreData;
         const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
         
         const result = await pool.query(
-            `INSERT INTO scores (name, phone, score, max_round, final_pillar) 
-             VALUES ($1, $2, $3, $4, $5) 
+            `INSERT INTO scores (name, phone, score, max_round, final_pillar, questions_answered, total_game_time) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) 
              RETURNING *`,
-            [name, cleanPhone, score, maxRound, finalPillar]
+            [name, cleanPhone, score, maxRound, finalPillar, questionsAnswered || 0, totalGameTimeSeconds || 0]
         );
         
         return result.rows[0];
