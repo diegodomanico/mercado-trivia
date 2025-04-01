@@ -116,7 +116,16 @@ document.addEventListener('DOMContentLoaded', initGame);
 
 // Event Listeners
 elements.retryButton.addEventListener('click', initGame);
-elements.startGameButton.addEventListener('click', checkPhoneAndStartGame);
+// En móviles el evento click no siempre funciona, por eso usamos submit en el formulario
+document.getElementById('player-form').addEventListener('submit', checkPhoneAndStartGame);
+// Mantener el evento click para compatibilidad con PC
+elements.startGameButton.addEventListener('click', function(e) {
+    // Evitar doble activación si ya se disparó el submit
+    if (e.target.form && !e.target.form.hasAttribute('data-submitted')) {
+        e.target.form.setAttribute('data-submitted', 'true');
+        checkPhoneAndStartGame(e);
+    }
+});
 elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
 elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);

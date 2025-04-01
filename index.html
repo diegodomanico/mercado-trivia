@@ -13,10 +13,13 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
     
-    <!-- Fix para dispositivos móviles - Ocultar barra de navegación -->
+    <!-- Fix para dispositivos móviles - Mejoras para funcionamiento táctil -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <style>
         /* Ocultar barra de navegación de Replit */
-        #navbar, .navbar, .toggle-bar, .toggle-bar-spacer {
+        #navbar, .navbar, nav, header, .toggle-bar, .toggle-bar-spacer {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -234,7 +237,7 @@
                 
                 <div class="form-group">
                     <label for="player-phone">Teléfono:</label>
-                    <input type="tel" id="player-phone" required placeholder="Tu número de teléfono (10 dígitos)">
+                    <input type="tel" id="player-phone" required placeholder="Tu número de teléfono (10 dígitos)" inputmode="tel">
                     <p id="phone-error" class="error-text hide">Formato incorrecto de teléfono</p>
                 </div>
                 
