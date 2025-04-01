@@ -1651,21 +1651,39 @@ function updateLeaderboard(scores) {
 // Save the player's score to the leaderboard
 async function saveScore(name, prize, maxRound, finalPillar) {
     try {
+        // Mostrar un mensaje explícito de depuración de datos
+        console.log("------------- DEPURACIÓN DE DATOS -------------");
+        console.log("- Nombre del jugador:", name);
+        console.log("- Teléfono:", gameState.player.phone);
+        console.log("- Premio/Chances real:", prize);
+        console.log("- Ronda máxima:", maxRound);
+        console.log("- Nivel final:", finalPillar);
+        console.log("- Preguntas respondidas:", gameState.player.questionsAnswered);
+        console.log("- Tiempo total:", gameState.player.totalGameTimeSeconds);
+        console.log("--------------------------------------------");
+        
         // Calcular el número de chances basado en preguntas correctas
         const chances = Math.floor(gameState.player.questionsAnswered / 5);
         
+        // Asegurarse de que el teléfono sea string y no esté vacío
+        const phone = String(gameState.player.phone || "").trim();
+        if (!phone) {
+            console.warn("⚠️ ¡Teléfono vacío! Esto puede causar problemas al guardar.");
+        }
+        
         const scoreData = {
-            name: name,
-            phone: String(gameState.player.phone), // Aseguramos que siempre sea string
-            score: prize,
+            name: name || "Jugador anónimo", // Evitar nombres vacíos
+            phone: phone,
+            score: Number(prize) || 0, // Forzar conversión a número
+            prize: Number(prize) || 0,  // Campo adicional para compatibilidad
             chances: chances, // Agregamos el campo de chances explícitamente
-            maxRound: maxRound,
-            questionsAnswered: gameState.player.questionsAnswered,
-            totalGameTimeSeconds: gameState.player.totalGameTimeSeconds || 0,
-            finalPillar: finalPillar // Este campo ahora contiene el nivel de dificultad en lugar del pilar
+            maxRound: Number(maxRound) || 1, // Forzar conversión a número con valor mínimo
+            questionsAnswered: Number(gameState.player.questionsAnswered) || 0,
+            totalGameTimeSeconds: Number(gameState.player.totalGameTimeSeconds) || 0,
+            finalPillar: String(finalPillar || "Nivel 1") // Asegurar que siempre sea string con valor por defecto
         };
         
-        console.log('Guardando puntuación:', JSON.stringify(scoreData));
+        console.log('Guardando puntuación:', JSON.stringify(scoreData, null, 2));
         
         // Send the score to the server
         const response = await fetch(API_ENDPOINTS.scores, {

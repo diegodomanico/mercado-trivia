@@ -553,16 +553,23 @@ async function saveScore(scoreData) {
                     {
                         fields: {
                             // Solo usamos los campos confirmados que existen en la tabla
-                            Nombre: scoreData.name,
+                            Nombre: scoreData.name || "Anónimo",
                             Puntaje: Number(scoreData.questionsAnswered) || 0, // Usar questionsAnswered como puntaje 
-                            Telefono: String(scoreData.phone).trim(),
-                            Chances: Number(scoreData.chances) || 0,
-                            "Nivel Maximo": String(scoreData.finalPillar), // Nombre completo del nivel con emoji
+                            Telefono: String(scoreData.phone || "").trim(),
+                            Chances: Number(scoreData.prize || scoreData.chances || 0),
+                            "Nivel Maximo": String(scoreData.finalPillar || "Nivel 1"),
                             Fecha: new Date().toISOString() // Airtable acepta formato ISO
                         }
                     }
                 ]
             };
+            
+            // Log detallado para diagnóstico
+            console.log("DATOS DEL JUGADOR PARA GUARDAR:");
+            console.log("- Nombre:", scoreData.name);
+            console.log("- Teléfono:", scoreData.phone);
+            console.log("- Preguntas contestadas:", scoreData.questionsAnswered);
+            console.log("- Premio/Chances:", scoreData.prize || scoreData.chances);
             
             // Log para diagnóstico
             console.log("Enviando datos a Airtable:", JSON.stringify(airtableData, null, 2));

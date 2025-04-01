@@ -73,10 +73,40 @@ app.get('/api/questions', async (req, res) => {
 app.post('/api/scores', async (req, res) => {
     try {
         const scoreData = req.body;
-        const savedScore = await saveScore(scoreData);
-        res.json(savedScore);
+        
+        // Log detallado de los datos recibidos
+        console.log('-----------------------------------------');
+        console.log('DATOS RECIBIDOS DEL CLIENTE:');
+        console.log(JSON.stringify(scoreData, null, 2));
+        console.log('-----------------------------------------');
+        
+        // Verificar que los datos cruciales existan
+        if (!scoreData.name) {
+            console.warn('⚠️ Nombre del jugador faltante');
+            scoreData.name = "Jugador anónimo";
+        }
+        
+        if (!scoreData.phone) {
+            console.warn('⚠️ Teléfono del jugador faltante');
+            // No asignamos un valor por defecto al teléfono para diagnóstico
+        }
+        
+        // Intentar guardar el puntaje
+        try {
+            const savedScore = await saveScore(scoreData);
+            console.log('✓ Puntaje guardado exitosamente:', savedScore);
+            res.json(savedScore);
+        } catch (airtableError) {
+            console.error('❌ Error de Airtable al guardar:', airtableError.message);
+            
+            // Responder con un error específico de Airtable
+            res.status(500).json({ 
+                error: `Error de Airtable: ${airtableError.message}`,
+                originalData: scoreData 
+            });
+        }
     } catch (error) {
-        console.error('Error guardando puntaje:', error);
+        console.error('❌ Error general al procesar la solicitud:', error);
         res.status(500).json({ error: error.message });
     }
 });
