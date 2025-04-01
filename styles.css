@@ -1129,8 +1129,12 @@ th:last-child {
     border-top-right-radius: var(--border-radius-medium);
 }
 
-tbody tr {
+tbody tr:nth-child(odd) {
     background-color: white;
+}
+
+tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.03); /* Gris suave para filas pares */
 }
 
 tbody tr:hover {
