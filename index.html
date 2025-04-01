@@ -14,10 +14,69 @@
     <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
     
     <!-- Fix para dispositivos móviles - Ocultar barra de navegación y elementos no deseados -->
-    <style>
-        /* Estilo incrustado para asegurar máxima prioridad */
-        #navbar, .replit-ui-theme-root, .jsx-2626493671, .jsx-1189939650, .toggle-bar, .toggle-bar-spacer, 
-        .css-19n4s7f, .css-1f84tvl, div[class*="xterm-"], div[class*="ansi-"], 
+    <style id="hide-replit-elements-global">
+        /* Ocultar absolutamente todos los elementos de navegación y UI de Replit */
+        #navbar, .navbar, nav, header, 
+        div[class*="xterm"], div[class*="xterm-"], div[class*="ansi"], div[class*="ansi-"], 
+        div[class*="monaco"], div[class*="editor"],
+        .toggle-bar, .toggle-bar-spacer,
+        .replit-ui-theme-root, 
+        [class*="css-"], [class*="jsx-"],
+        [class*="replit-ui-"], div[role="navigation"],
+        .jsx-2626493671, .jsx-1189939650, .css-19n4s7f, .css-1f84tvl, 
+        .css-1vbeog1, .css-1x65030, .css-l1b29f, .css-1j2ow70, .css-1ggvgc2, .css-1gwk1i8 {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+            left: -9999px !important;
+            top: -9999px !important;
+        }
+        
+        /* Asegurar que los campos de entrada de texto funcionen correctamente */
+        input, textarea, select {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            height: auto !important;
+            width: 100% !important;
+            position: relative !important;
+            z-index: auto !important;
+            left: auto !important;
+            top: auto !important;
+        }
+        
+        /* Evitar efectos de hover persistentes */
+        .no-hover {
+            pointer-events: none !important;
+        }
+        
+        /* Evitar efectos de hover en móviles */
+        @media (hover: none) {
+            a:hover, button:hover, input:hover, 
+            .answer:hover, .prize-level:hover, 
+            .lifeline:hover, .cta-button:hover,
+            .secondary-button:hover {
+                transform: none !important;
+                box-shadow: none !important;
+                border-color: inherit !important;
+                background-color: inherit !important;
+            }
+            
+            a:active, button:active, input:active,
+            .answer:active, .prize-level:active,
+            .lifeline:active, .cta-button:active,
+            .secondary-button:active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s !important;
+            }
+        }
         #monaco-editor-embed, #editor-container-0, .toggle-bar, .toggle-bar-spacer,
         .toggle-bar-container, .jsx-1189939650, .jsx-2626493671, .jsx-3457456006,
         nav, header, [aria-label="Replit Header"], #replit-logo, .webcontainer,
@@ -490,6 +549,53 @@
             
             // Función para asegurarnos que todo esté oculto
             function hideAllNavigationElements() {
+                // Inyectar un estilo directo en el head
+                if (!document.getElementById('hide-replit-elements')) {
+                    const style = document.createElement('style');
+                    style.id = 'hide-replit-elements';
+                    style.textContent = `
+                        #navbar, .navbar, nav, header, 
+                        [class*="xterm"], [class*="ansi"], 
+                        [class*="monaco"], [class*="editor"],
+                        .toggle-bar, .toggle-bar-spacer,
+                        .replit-ui-theme-root, .css-1ggvgc2,
+                        .css-1gwk1i8, .css-1vbeog1, .css-1x65030,
+                        .css-l1b29f, .css-1j2ow70,
+                        [class*="replit-ui-"], [class*="jsx-"] {
+                            display: none !important;
+                            visibility: hidden !important;
+                            opacity: 0 !important;
+                            height: 0 !important;
+                            width: 0 !important;
+                            overflow: hidden !important;
+                            position: absolute !important;
+                            z-index: -9999 !important;
+                            pointer-events: none !important;
+                            left: -9999px !important;
+                            top: -9999px !important;
+                        }
+                        
+                        input, textarea, select {
+                            pointer-events: auto !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                        }
+                        
+                        form input, form textarea, form select, 
+                        .form-group input, .form-group textarea, .form-group select {
+                            display: block !important;
+                            height: auto !important;
+                            width: 100% !important;
+                            position: static !important;
+                            z-index: auto !important;
+                            left: auto !important;
+                            top: auto !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // También ocultamos elementos específicos
                 const elementsToHide = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"], .toggle-bar, .toggle-bar-spacer');
                 elementsToHide.forEach(el => {
                     if (el) {
@@ -530,17 +636,29 @@
             });
             
             // Limpiar el estado de hover después de tocar la pantalla
-            document.addEventListener('touchend', function() {
-                // Remover cualquier clase de hover o active
-                const hoveredElements = document.querySelectorAll(':hover, :active');
+            // Pero NO interferir con campos de entrada de texto
+            document.addEventListener('touchend', function(e) {
+                // NO aplicar si estamos tocando un campo de entrada o un elemento dentro de un formulario
+                if (e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'TEXTAREA' || 
+                    e.target.tagName === 'SELECT' ||
+                    e.target.closest('form') ||
+                    e.target.getAttribute('contenteditable') === 'true') {
+                    return;
+                }
+                
+                // Remover cualquier clase de hover o active en otros elementos
+                const hoveredElements = document.querySelectorAll(':hover:not(input):not(textarea):not(select)');
                 hoveredElements.forEach(el => {
-                    el.blur();
-                    
-                    // Añadir un bloqueo temporal de estilos hover/active
-                    el.classList.add('no-hover');
-                    setTimeout(() => {
-                        el.classList.remove('no-hover');
-                    }, 300);
+                    if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && el.tagName !== 'SELECT') {
+                        el.blur();
+                        
+                        // Añadir un bloqueo temporal de estilos hover/active
+                        el.classList.add('no-hover');
+                        setTimeout(() => {
+                            el.classList.remove('no-hover');
+                        }, 300);
+                    }
                 });
             });
             

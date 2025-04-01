@@ -18,6 +18,28 @@
     
     /* Fix iOS Safari issues */
     --safe-area-inset-top: env(safe-area-inset-top, 0px);
+}
+
+/* Ocultar la barra de navegación y elementos Replit */
+#navbar, .navbar, nav, header, 
+[class*="xterm"], [class*="ansi"], 
+[class*="monaco"], [class*="editor"],
+.toggle-bar, .toggle-bar-spacer,
+.replit-ui-theme-root, .css-1ggvgc2,
+.css-1gwk1i8, .css-1vbeog1, .css-1x65030,
+.css-l1b29f, .css-1j2ow70 {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
+    left: -9999px !important;
+    top: -9999px !important;
+}
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
     
     /* Ocultar elementos de Replit */
