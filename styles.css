@@ -1122,6 +1122,12 @@ tbody td {
     font-size: 16px;
 }
 
+/* Estilo específico para la columna de Chances */
+tbody tr td:nth-child(3) {
+    color: var(--ml-black);
+    font-weight: bold;
+}
+
 /* Colores para posiciones */
 tbody tr td:first-child {
     font-weight: bold;

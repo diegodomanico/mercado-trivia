@@ -1543,7 +1543,12 @@ function updateLeaderboard(scores) {
         const questionsAnswered = score.questionsAnswered || score.maxRound * 5 || 0;
         
         // Determinar tiempo de juego (si existe)
-        const gameTime = score.totalGameTimeSeconds ? `${score.totalGameTimeSeconds}s` : 'N/A';
+        let gameTime = 'N/A';
+        if (score.totalGameTimeSeconds) {
+            const minutes = Math.floor(score.totalGameTimeSeconds / 60);
+            const seconds = score.totalGameTimeSeconds % 60;
+            gameTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
         
         // Generar HTML para el nivel con color según dificultad
         let levelHtml = score.finalPillar;
@@ -1566,7 +1571,7 @@ function updateLeaderboard(scores) {
         row.innerHTML = `
             <td style="color: var(--ml-violet); font-weight: bold;">${index + 1}</td>
             <td style="font-weight: bold;">${score.name}</td>
-            <td style="color: #00FFFF; font-weight: bold;">${formatCurrency(score.chances !== undefined ? score.chances : Math.floor(score.score / 5))}</td>
+            <td style="color: black; font-weight: bold;">${score.chances !== undefined ? score.chances : Math.floor(score.score / 5)} Chances</td>
             <td style="color: #3483FA; font-weight: bold;">${questionsAnswered}</td>
             <td>${gameTime}</td>
             <td>${levelHtml}</td>
