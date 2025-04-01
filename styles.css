@@ -52,6 +52,7 @@
 
 html, body {
     height: 100%;
+    height: -webkit-fill-available;
     width: 100%;
     position: fixed;
     overflow: hidden;
@@ -63,6 +64,10 @@ body {
     background-color: var(--ml-black);
     color: var(--ml-light-gray);
     line-height: 1.6;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 .hide {
@@ -219,12 +224,14 @@ button {
 }
 
 .logo {
-    max-width: 260px;
+    max-width: 200px;
     height: auto;
     margin: 0 auto var(--space-medium) auto;
     display: block;
     object-fit: contain;
-    max-height: none;
+    max-height: 150px; /* Limitar altura para asegurar visibilidad */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar el logo */
+    border-radius: 5px; /* Bordes redondeados */
 }
 
 .loading-animation {
@@ -476,11 +483,12 @@ input:focus {
 
 .timer-container {
     width: 100%;
-    height: 10px;
+    height: 15px; /* Aumentar altura para mejor visibilidad en móviles */
     background-color: var(--ml-light-gray);
     border-radius: var(--border-radius-small);
     margin-bottom: var(--space-medium);
     overflow: hidden;
+    border: 1px solid var(--ml-dark-gray); /* Añadir borde para mejor contraste */
 }
 
 #timer-bar {
@@ -488,6 +496,7 @@ input:focus {
     width: 100%;
     background-color: var(--success-green);
     transition: width 1s linear, background-color 0.5s ease;
+    box-shadow: 0 0 5px rgba(57, 181, 74, 0.5); /* Añadir sombra para mejor visibilidad */
 }
 
 .question-container {
@@ -669,6 +678,9 @@ input:focus {
     border-color: white;
     box-shadow: 0 0 15px rgba(122, 29, 234, 0.5);
     color: white;
+    /* Arreglo para evitar que se quede el estado seleccionado en móviles */
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.3s ease, background-color 0.1s ease;
 }
 
 .answer.selected:before {
@@ -823,6 +835,8 @@ input:focus {
     color: white;
     font-weight: bold;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+    /* Asegurar reset del estado después de remover selección */
+    transition: all 0.3s ease, color 0.1s ease;
 }
 
 /* Color específico para el texto de la opción servicio seleccionada */

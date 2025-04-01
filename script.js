@@ -694,11 +694,20 @@ function loadQuestion() {
     
     // Update answers - primero forzar un reflow para resetear estados visuales persistentes
     elements.answers.forEach((answer, index) => {
-        // Eliminar todas las clases y forzar reflow
+        // Eliminar todas las clases, forzar reflow y aplicar una transición temporal para resetear el estado visual
         answer.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'reputacion-theme', 'oferta-theme', 'servicio-theme', 'trafico-theme', 'data-driven-theme');
+        answer.style.transition = 'none';
         void answer.offsetWidth; // Forzar reflow para limpiar estados visuales en iOS
-        // Agregar clase de tema
-        answer.classList.add(pillarClass);
+        answer.style.backgroundColor = ''; // Resetear explícitamente el fondo
+        answer.style.color = '';           // Resetear explícitamente el color
+        answer.style.transition = '';      // Restaurar transiciones
+        
+        // Usar setTimeout para asegurar que el estado visual esté completamente reseteado
+        setTimeout(() => {
+            // Agregar clase de tema después del reflow
+            answer.classList.add(pillarClass);
+        }, 10);
+        
         elements.answerTexts[index].textContent = gameState.currentQuestion.options[index];
     });
     
@@ -727,6 +736,9 @@ function selectAnswer(e) {
     const answerElement = e.target.closest('.answer');
     if (!answerElement || answerElement.classList.contains('disabled')) return;
     
+    // Desactivar temporalmente el evento táctil para evitar selecciones dobles
+    e.preventDefault();
+    
     // Get selected answer index
     const answerIndex = parseInt(answerElement.dataset.index);
     gameState.selectedAnswer = answerIndex;
@@ -734,28 +746,43 @@ function selectAnswer(e) {
     // Primero remover cualquier selección previa para evitar que iOS mantenga el efecto táctil
     elements.answers.forEach(ans => {
         ans.classList.remove('selected');
+        ans.style.pointerEvents = 'none'; // Desactivar eventos de puntero temporalmente
+        // Resetear explícitamente propiedades visuales
+        ans.style.transition = 'none';
+        ans.style.backgroundColor = '';
+        ans.style.color = '';
         // Forzar un reflow para limpiar cualquier estado visual persistente
         void ans.offsetWidth;
+        ans.style.transition = '';
     });
     
     // Luego aplicar la selección al elemento correcto
-    answerElement.classList.add('selected');
-    
-    // Play select sound
-    if (typeof playSound === 'function') {
-        playSound('select');
-    }
-    
-    // Stop the timer
-    stopTimer();
-    
-    // Check answer after a short delay
-    // Limpiar cualquier setTimeout previo que pudiera quedar
-    if (gameState.answerTimeout) {
-        clearTimeout(gameState.answerTimeout);
-    }
-    // Guardar referencia al nuevo setTimeout para poder cancelarlo si es necesario
-    gameState.answerTimeout = setTimeout(() => checkAnswer(answerIndex), 1500);
+    setTimeout(() => {
+        answerElement.classList.add('selected');
+        
+        // Reactivar eventos después de un tiempo
+        setTimeout(() => {
+            elements.answers.forEach(ans => {
+                ans.style.pointerEvents = '';
+            });
+        }, 1000);
+        
+        // Play select sound
+        if (typeof playSound === 'function') {
+            playSound('select');
+        }
+        
+        // Stop the timer
+        stopTimer();
+        
+        // Check answer after a short delay
+        // Limpiar cualquier setTimeout previo que pudiera quedar
+        if (gameState.answerTimeout) {
+            clearTimeout(gameState.answerTimeout);
+        }
+        // Guardar referencia al nuevo setTimeout para poder cancelarlo si es necesario
+        gameState.answerTimeout = setTimeout(() => checkAnswer(answerIndex), 1500);
+    }, 50);
 }
 
 // Check if the selected answer is correct
@@ -1121,14 +1148,28 @@ function startTimer() {
         gameState.timer = null;
     }
     
-    // Log for debugging
+    // Asegurar que el valor del tiempo restante es válido
+    if (typeof gameState.timeRemaining !== 'number' || gameState.timeRemaining <= 0) {
+        console.warn("⚠️ Valor de tiempo restante inválido:", gameState.timeRemaining);
+        // Establecer un valor predeterminado de seguridad
+        gameState.timeRemaining = 30;
+    }
+    
+    // Log para debugging
     console.log("Iniciando temporizador con " + gameState.timeRemaining + " segundos");
     
-    // Initialize timer display
+    // Inicializar la visualización del temporizador
+    elements.timerBar.style.transition = 'none'; // Desactivar transición para reinicio instantáneo
     elements.timerBar.style.width = '100%';
     elements.timerBar.style.backgroundColor = 'var(--success-green)';
     
-    // Update timer display immediately
+    // Forzar reflow para asegurar que los cambios se apliquen inmediatamente
+    void elements.timerBar.offsetWidth;
+    
+    // Restaurar transición
+    elements.timerBar.style.transition = 'width 1s linear, background-color 0.5s ease';
+    
+    // Actualizar la visualización del temporizador inmediatamente
     updateTimerDisplay();
     
     // Start the timer immediately
