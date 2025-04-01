@@ -101,6 +101,32 @@
             z-index: 9999 !important;
         }
         
+        /* Evitar efectos de hover persistentes */
+        .no-hover {
+            pointer-events: none !important;
+        }
+        
+        /* Evitar efectos de hover en móviles */
+        @media (hover: none) {
+            a:hover, button:hover, input:hover, 
+            .answer:hover, .prize-level:hover, 
+            .lifeline:hover, .cta-button:hover,
+            .secondary-button:hover {
+                transform: none !important;
+                box-shadow: none !important;
+                border-color: inherit !important;
+                background-color: inherit !important;
+            }
+            
+            a:active, button:active, input:active,
+            .answer:active, .prize-level:active,
+            .lifeline:active, .cta-button:active,
+            .secondary-button:active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s !important;
+            }
+        }
+        
         /* Ajustes para la escalera de premios */
         .prize-ladder {
             width: 100% !important;
@@ -420,38 +446,103 @@
         function hideNavbarOnGameStart() {
             const gameScreen = document.getElementById('game-screen');
             
+            // Variables para controlar el estado de pantalla completa
+            let isFullscreen = false;
+            let fullscreenAttempts = 0;
+            const MAX_FULLSCREEN_ATTEMPTS = 3;
+            
             // Activar modo fullscreen/pantalla completa en móviles
             function activateFullscreen() {
-                // Crear un contenedor de pantalla completa
-                const fullscreenContainer = document.createElement('div');
-                fullscreenContainer.className = 'fullscreen-container';
-                document.body.appendChild(fullscreenContainer);
+                // Evitar múltiples intentos
+                if (fullscreenAttempts >= MAX_FULLSCREEN_ATTEMPTS) return;
+                fullscreenAttempts++;
                 
-                // Mover todo el contenido al contenedor de pantalla completa
-                while (document.body.firstChild !== fullscreenContainer) {
-                    fullscreenContainer.appendChild(document.body.firstChild);
+                // Crear un contenedor de pantalla completa si no existe
+                let fullscreenContainer = document.querySelector('.fullscreen-container');
+                if (!fullscreenContainer) {
+                    fullscreenContainer = document.createElement('div');
+                    fullscreenContainer.className = 'fullscreen-container';
+                    document.body.appendChild(fullscreenContainer);
+                    
+                    // Mover todo el contenido al contenedor de pantalla completa
+                    while (document.body.firstChild !== fullscreenContainer) {
+                        fullscreenContainer.appendChild(document.body.firstChild);
+                    }
                 }
                 
                 // Solicitar pantalla completa al navegador si es posible
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
+                try {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(e => console.warn('Fullscreen request failed:', e));
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        document.documentElement.msRequestFullscreen();
+                    }
+                    isFullscreen = true;
+                    
+                    // Ocultar elementos de UI inmediatamente
+                    hideAllNavigationElements();
+                } catch (err) {
+                    console.warn('Error activating fullscreen:', err);
                 }
             }
             
-            // Intentar activar pantalla completa al primer clic o toque
-            document.addEventListener('click', function handleFirstClick() {
-                activateFullscreen();
-                document.removeEventListener('click', handleFirstClick);
-            }, { once: true });
+            // Función para asegurarnos que todo esté oculto
+            function hideAllNavigationElements() {
+                const elementsToHide = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"], .toggle-bar, .toggle-bar-spacer');
+                elementsToHide.forEach(el => {
+                    if (el) {
+                        el.style.display = 'none';
+                        el.style.visibility = 'hidden';
+                        el.style.opacity = '0';
+                        el.style.height = '0';
+                        el.style.width = '0';
+                        el.style.overflow = 'hidden';
+                        el.style.position = 'absolute';
+                        el.style.zIndex = '-9999';
+                        el.style.pointerEvents = 'none';
+                        el.style.left = '-9999px';
+                        el.style.top = '-9999px';
+                    }
+                });
+            }
             
-            document.addEventListener('touchstart', function handleFirstTouch() {
+            // Manejar el cambio de estado de pantalla completa
+            document.addEventListener('fullscreenchange', function() {
+                if (document.fullscreenElement === null) {
+                    // Si salimos de pantalla completa, intentar volver a activarla
+                    if (isFullscreen) {
+                        setTimeout(activateFullscreen, 500);
+                    }
+                }
+            });
+            
+            // Intentar activar pantalla completa en múltiples eventos
+            document.addEventListener('click', function() {
                 activateFullscreen();
-                document.removeEventListener('touchstart', handleFirstTouch);
-            }, { once: true });
+                hideAllNavigationElements();
+            });
+            
+            document.addEventListener('touchstart', function() {
+                activateFullscreen();
+                hideAllNavigationElements();
+            });
+            
+            // Limpiar el estado de hover después de tocar la pantalla
+            document.addEventListener('touchend', function() {
+                // Remover cualquier clase de hover o active
+                const hoveredElements = document.querySelectorAll(':hover, :active');
+                hoveredElements.forEach(el => {
+                    el.blur();
+                    
+                    // Añadir un bloqueo temporal de estilos hover/active
+                    el.classList.add('no-hover');
+                    setTimeout(() => {
+                        el.classList.remove('no-hover');
+                    }, 300);
+                });
+            });
             
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
