@@ -548,16 +548,29 @@ async function saveScore(scoreData) {
             console.log(`Tipo de teléfono: ${typeof phoneValue} Valor: ${phoneValue}`);
             
             // Format the data for Airtable - usando SOLO los campos que existen en la tabla
+            // Adaptación basada en el esquema confirmado:
+            // - Nombre (string)
+            // - Puntaje (number) -> Usaremos questionsAnswered como puntaje
+            // - Fecha (string/date) -> Formato ISO
+            // - Nivel Maximo (string) -> Nombre del nivel final
+            // - Telefono (string) -> Teléfono del jugador
+            // - Chances (number) -> Número de chances ganadas
+            
+            // El tiempo total lo guardaremos en los comentarios del campo Nombre
+            // Las preguntas contestadas van en el campo Puntaje
+            const tiempoTotalStr = scoreData.totalGameTimeSeconds ? 
+                ` (Tiempo: ${scoreData.totalGameTimeSeconds}s)` : '';
+            
             const airtableData = {
                 records: [
                     {
                         fields: {
                             // Solo usamos los campos confirmados que existen en la tabla
-                            Nombre: scoreData.name || "Anónimo",
-                            Puntaje: Number(scoreData.questionsAnswered) || 0, // Usar questionsAnswered como puntaje 
+                            Nombre: (scoreData.name || "Anónimo") + tiempoTotalStr,
+                            Puntaje: Number(scoreData.questionsAnswered) || 0, 
                             Telefono: String(scoreData.phone || "").trim(),
                             Chances: Number(scoreData.prize || scoreData.chances || 0),
-                            "Nivel Maximo": String(scoreData.finalPillar || "Nivel 1"),
+                            "Nivel Maximo": String(scoreData.finalPillar || "Fácil 🟢"),
                             Fecha: new Date().toISOString() // Airtable acepta formato ISO
                         }
                     }

@@ -20,6 +20,14 @@
     --safe-area-inset-top: env(safe-area-inset-top, 0px);
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
     
+    /* Ocultar elementos de Replit */
+    --display-none: none !important;
+    --visibility-hidden: hidden !important;
+    --opacity-zero: 0 !important;
+    --height-zero: 0 !important;
+    --z-index-negative: -9999 !important;
+    --position-absolute: absolute !important;
+    
     /* Pillar Colors - adaptados a los pilares que usamos */
     --reputacion-color: #FF9800; /* Reputación ❤️ */
     --oferta-color: #4CAF50; /* Oferta 💙 */
@@ -1421,6 +1429,23 @@ body.game-active #navbar {
         height: 100vh;
         overflow: hidden;
         -webkit-overflow-scrolling: touch;
+        position: fixed !important;
+    }
+    
+    /* Ocultar elementos de Replit en móviles */
+    #navbar, .replit-ui-theme-root, .jsx-2626493671, .jsx-1189939650, 
+    .toggle-bar, .toggle-bar-spacer, .css-19n4s7f, .css-1f84tvl,
+    div[class*="xterm-"], div[class*="ansi-"], .webcontainer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        z-index: -9999 !important;
+        pointer-events: none !important;
     }
     
     /* Ajusta tamaños de fuente */
@@ -1435,8 +1460,15 @@ body.game-active #navbar {
         max-height: 100px !important;
         margin: 0 auto 15px auto !important;
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         border: 3px solid var(--ml-violet) !important;
         box-shadow: 0 0 15px rgba(122, 29, 234, 0.7) !important;
+        background-color: black !important;
+        padding: 5px !important;
+        border-radius: 10px !important;
+        z-index: 9999 !important;
+        position: relative !important;
     }
     
     /* Fix para la barra superior */
@@ -1463,6 +1495,16 @@ body.game-active #navbar {
         border: 3px solid var(--ml-dark-gray) !important;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.7) !important;
         z-index: 1000 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+    }
+    
+    #timer-bar {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     /* Ajustes para las preguntas y respuestas */

@@ -2,20 +2,82 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
+    <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
     <title>¿Quién quiere ser un Vendedor SUPER PRO?</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="./assets/domup games vertical y fondo negro.png" type="image/png">
+    <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
+    
+    <!-- Fix para dispositivos móviles - Ocultar barra de navegación y elementos no deseados -->
+    <style>
+        /* Estilo incrustado para asegurar máxima prioridad */
+        #navbar, .replit-ui-theme-root, .jsx-2626493671, .jsx-1189939650, .toggle-bar, .toggle-bar-spacer {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Asegurar que el logo se vea siempre */
+        .logo {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            max-width: 180px !important;
+            margin: 0 auto 15px auto !important;
+            box-shadow: 0 0 20px rgba(122, 29, 234, 0.8) !important;
+            border: 3px solid #7A1DEA !important;
+            background-color: #000 !important;
+            border-radius: 10px !important;
+            padding: 5px !important;
+        }
+        
+        /* Asegurar que el timer se vea siempre */
+        .timer-container {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: 20px !important;
+            margin: 10px auto !important;
+            border: 3px solid #333 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+        }
+        
+        /* Evitar que la página haga scroll */
+        html, body {
+            overflow: hidden !important;
+            position: fixed !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+        }
+        
+        /* Hacer que las pantallas llenen completamente el viewport */
+        .screen {
+            width: 100% !important;
+            height: 100% !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="screen">
         <div class="loading-container">
-            <img src="assets/domup games vertical y fondo negro.png" alt="DomUp Games Logo" class="logo">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
             <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
             <div class="loading-animation">
                 <div class="spinner"></div>
@@ -27,7 +89,7 @@
     <!-- Error Screen -->
     <div id="error-screen" class="screen hide">
         <div class="error-container">
-            <img src="assets/domup games vertical y fondo negro.png" alt="DomUp Games Logo" class="logo">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
             <h1>¡Ups! Algo salió mal</h1>
             <p id="error-message">Error al cargar el juego.</p>
             <button id="retry-button" class="cta-button">Reintentar</button>
@@ -37,7 +99,7 @@
     <!-- Start Screen -->
     <div id="start-screen" class="screen hide">
         <div class="start-container">
-            <img src="assets/domup games vertical y fondo negro.png" alt="DomUp Games Logo" class="logo">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
             <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
             <p class="subtitle">Pon a prueba tus conocimientos sobre Mercado Libre</p>
             
