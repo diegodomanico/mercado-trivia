@@ -563,39 +563,39 @@ input:focus {
     display: flex;
     align-items: center;
     padding: var(--space-medium);
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: var(--border-radius-medium);
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid var(--ml-light-gray);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
 }
 
-/* Bordes de color para las respuestas según el tema/pilar */
+/* Fondo de color para las respuestas según el tema/pilar */
 .answer.reputacion-theme {
-    background-color: white;
+    background-color: rgba(255, 102, 102, 0.15);
     border: 3px solid var(--reputacion-color);
 }
 
 .answer.oferta-theme {
-    background-color: white;
+    background-color: rgba(51, 153, 255, 0.15);
     border: 3px solid var(--oferta-color);
 }
 
 .answer.servicio-theme {
-    background-color: white;
+    background-color: rgba(255, 204, 51, 0.15);
     border: 3px solid var(--servicio-color);
 }
 
 .answer.trafico-theme {
-    background-color: white;
+    background-color: rgba(153, 51, 255, 0.15);
     border: 3px solid var(--trafico-color);
 }
 
 .answer.data-driven-theme {
-    background-color: white;
+    background-color: rgba(255, 51, 153, 0.15);
     border: 3px solid var(--data-driven-color);
 }
 
@@ -612,10 +612,10 @@ input:focus {
 }
 
 .answer:hover {
-    background-color: #f8f8f8;
     transform: translateY(-3px);
     border-color: var(--ml-blue);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .answer:hover:before {
@@ -623,16 +623,66 @@ input:focus {
     left: 0;
 }
 
+/* Estilos específicos para cada tema al pasar el mouse */
+.answer.reputacion-theme:hover {
+    background-color: rgba(255, 102, 102, 0.3);
+}
+
+.answer.oferta-theme:hover {
+    background-color: rgba(51, 153, 255, 0.3);
+}
+
+.answer.servicio-theme:hover {
+    background-color: rgba(255, 204, 51, 0.3);
+}
+
+.answer.trafico-theme:hover {
+    background-color: rgba(153, 51, 255, 0.3);
+}
+
+.answer.data-driven-theme:hover {
+    background-color: rgba(255, 51, 153, 0.3);
+}
+
+/* Inversar colores cuando se selecciona */
 .answer.selected {
-    background-color: rgba(0, 255, 255, 0.2);
-    border-color: #00FFFF; /* Cyan */
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    background-color: var(--ml-violet);
+    border-color: white;
+    box-shadow: 0 0 15px rgba(122, 29, 234, 0.5);
+    color: white;
 }
 
 .answer.selected:before {
-    background-color: #00FFFF; /* Cyan */
+    background-color: white;
     opacity: 1;
     left: 0;
+}
+
+/* Inversión de colores específica para cada tema */
+.answer.reputacion-theme.selected {
+    background-color: var(--reputacion-color);
+    border-color: white;
+}
+
+.answer.oferta-theme.selected {
+    background-color: var(--oferta-color);
+    border-color: white;
+}
+
+.answer.servicio-theme.selected {
+    background-color: var(--servicio-color);
+    border-color: white;
+    color: var(--ml-black);
+}
+
+.answer.trafico-theme.selected {
+    background-color: var(--trafico-color);
+    border-color: white;
+}
+
+.answer.data-driven-theme.selected {
+    background-color: var(--data-driven-color);
+    border-color: white;
 }
 
 .answer.correct {
@@ -722,10 +772,23 @@ input:focus {
     font-size: var(--font-medium);
     transition: transform 0.2s ease;
     color: var(--ml-black);
+    font-weight: 500;
 }
 
 .answer:hover .answer-text {
     transform: translateX(5px);
+}
+
+.answer.selected .answer-text {
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Color específico para el texto de la opción servicio seleccionada */
+.answer.servicio-theme.selected .answer-text {
+    color: var(--ml-black);
+    text-shadow: none;
 }
 
 /* Theme colors for each pillar */
@@ -1109,14 +1172,20 @@ tbody tr:first-child td:first-child:before {
     align-items: center;
     margin: var(--space-large) 0;
     text-align: left;
-    background-color: var(--ml-light-gray);
-    padding: var(--space-medium);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: var(--space-large);
     border-radius: var(--border-radius-medium);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--ml-violet);
+    color: var(--ml-black);
+    font-weight: bold;
+    font-size: 1.1em;
 }
 
 .expert-icon {
     font-size: 48px;
     margin-right: var(--space-medium);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Audience Chart */
