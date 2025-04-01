@@ -13,13 +13,15 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
     
-    <!-- Fix para dispositivos móviles - Mejoras para funcionamiento táctil -->
+    <!-- Optimizaciones para dispositivos móviles y ocultar UI de Replit -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <style>
-        /* Ocultar barra de navegación de Replit */
-        #navbar, .navbar, nav, header, .toggle-bar, .toggle-bar-spacer {
+        /* Base de ocultar elementos - Se complementa con hide-navbar.js */
+        nav, header, .navbar, #navbar, .toggle-bar, .toggle-bar-spacer {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -492,6 +494,7 @@
     <script src="api.js"></script>
     <script src="assets/sounds.js"></script>
     <script src="assets/confetti.js"></script>
+    <script src="hide-navbar.js"></script>
     <script src="script.js"></script>
     
     <!-- Script para ocultar la barra de navegación en Replit durante el juego -->
