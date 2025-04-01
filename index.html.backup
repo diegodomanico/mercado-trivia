@@ -13,10 +13,18 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
     
-    <!-- Fix para dispositivos móviles - Ocultar barra de navegación simplemente -->
-    <style>
-        /* Ocultar solo elementos específicos de navegación de Replit */
-        #navbar, .navbar, .toggle-bar, .toggle-bar-spacer {
+    <!-- Fix para dispositivos móviles - Ocultar barra de navegación y elementos no deseados -->
+    <style id="hide-replit-elements-global">
+        /* Ocultar absolutamente todos los elementos de navegación y UI de Replit */
+        #navbar, .navbar, nav, header, 
+        div[class*="xterm"], div[class*="xterm-"], div[class*="ansi"], div[class*="ansi-"], 
+        div[class*="monaco"], div[class*="editor"],
+        .toggle-bar, .toggle-bar-spacer,
+        .replit-ui-theme-root, 
+        [class*="css-"], [class*="jsx-"],
+        [class*="replit-ui-"], div[role="navigation"],
+        .jsx-2626493671, .jsx-1189939650, .css-19n4s7f, .css-1f84tvl, 
+        .css-1vbeog1, .css-1x65030, .css-l1b29f, .css-1j2ow70, .css-1ggvgc2, .css-1gwk1i8 {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -499,9 +507,28 @@
             
             // Variables para controlar el estado de pantalla completa
             let isFullscreen = false;
+            let fullscreenAttempts = 0;
+            const MAX_FULLSCREEN_ATTEMPTS = 3;
             
             // Activar modo fullscreen/pantalla completa en móviles
             function activateFullscreen() {
+                // Evitar múltiples intentos
+                if (fullscreenAttempts >= MAX_FULLSCREEN_ATTEMPTS) return;
+                fullscreenAttempts++;
+                
+                // Crear un contenedor de pantalla completa si no existe
+                let fullscreenContainer = document.querySelector('.fullscreen-container');
+                if (!fullscreenContainer) {
+                    fullscreenContainer = document.createElement('div');
+                    fullscreenContainer.className = 'fullscreen-container';
+                    document.body.appendChild(fullscreenContainer);
+                    
+                    // Mover todo el contenido al contenedor de pantalla completa
+                    while (document.body.firstChild !== fullscreenContainer) {
+                        fullscreenContainer.appendChild(document.body.firstChild);
+                    }
+                }
+                
                 // Solicitar pantalla completa al navegador si es posible
                 try {
                     if (document.documentElement.requestFullscreen) {
@@ -514,21 +541,75 @@
                     isFullscreen = true;
                     
                     // Ocultar elementos de UI inmediatamente
-                    hideNavbarOnly();
+                    hideAllNavigationElements();
                 } catch (err) {
                     console.warn('Error activating fullscreen:', err);
                 }
             }
             
-            // Función para ocultar SÓLO la barra de navegación
-            function hideNavbarOnly() {
-                const elementsToHide = document.querySelectorAll('#navbar, .navbar, .toggle-bar, .toggle-bar-spacer');
+            // Función para asegurarnos que todo esté oculto
+            function hideAllNavigationElements() {
+                // Inyectar un estilo directo en el head
+                if (!document.getElementById('hide-replit-elements')) {
+                    const style = document.createElement('style');
+                    style.id = 'hide-replit-elements';
+                    style.textContent = `
+                        #navbar, .navbar, nav, header, 
+                        [class*="xterm"], [class*="ansi"], 
+                        [class*="monaco"], [class*="editor"],
+                        .toggle-bar, .toggle-bar-spacer,
+                        .replit-ui-theme-root, .css-1ggvgc2,
+                        .css-1gwk1i8, .css-1vbeog1, .css-1x65030,
+                        .css-l1b29f, .css-1j2ow70,
+                        [class*="replit-ui-"], [class*="jsx-"] {
+                            display: none !important;
+                            visibility: hidden !important;
+                            opacity: 0 !important;
+                            height: 0 !important;
+                            width: 0 !important;
+                            overflow: hidden !important;
+                            position: absolute !important;
+                            z-index: -9999 !important;
+                            pointer-events: none !important;
+                            left: -9999px !important;
+                            top: -9999px !important;
+                        }
+                        
+                        input, textarea, select {
+                            pointer-events: auto !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                        }
+                        
+                        form input, form textarea, form select, 
+                        .form-group input, .form-group textarea, .form-group select {
+                            display: block !important;
+                            height: auto !important;
+                            width: 100% !important;
+                            position: static !important;
+                            z-index: auto !important;
+                            left: auto !important;
+                            top: auto !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // También ocultamos elementos específicos
+                const elementsToHide = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"], .toggle-bar, .toggle-bar-spacer');
                 elementsToHide.forEach(el => {
                     if (el) {
                         el.style.display = 'none';
                         el.style.visibility = 'hidden';
                         el.style.opacity = '0';
                         el.style.height = '0';
+                        el.style.width = '0';
+                        el.style.overflow = 'hidden';
+                        el.style.position = 'absolute';
+                        el.style.zIndex = '-9999';
+                        el.style.pointerEvents = 'none';
+                        el.style.left = '-9999px';
+                        el.style.top = '-9999px';
                     }
                 });
             }
@@ -536,51 +617,76 @@
             // Manejar el cambio de estado de pantalla completa
             document.addEventListener('fullscreenchange', function() {
                 if (document.fullscreenElement === null) {
-                    // Si salimos de pantalla completa, intentar volver a activarla después de un breve retraso
+                    // Si salimos de pantalla completa, intentar volver a activarla
                     if (isFullscreen) {
-                        setTimeout(activateFullscreen, 300);
+                        setTimeout(activateFullscreen, 500);
                     }
                 }
             });
             
-            // Intentar activar pantalla completa al primer clic o toque
-            document.addEventListener('click', function handleFirstClick() {
+            // Intentar activar pantalla completa en múltiples eventos
+            document.addEventListener('click', function() {
                 activateFullscreen();
-                document.removeEventListener('click', handleFirstClick);
-            }, { once: true });
+                hideAllNavigationElements();
+            });
             
-            document.addEventListener('touchstart', function handleFirstTouch() {
+            document.addEventListener('touchstart', function() {
                 activateFullscreen();
-                document.removeEventListener('touchstart', handleFirstTouch);
-            }, { once: true });
+                hideAllNavigationElements();
+            });
             
-            // Modificar el comportamiento de hover para móviles
-            if ('ontouchstart' in window) {
-                // Añadir una clase al body para usar en CSS
-                document.body.classList.add('touch-device');
+            // Limpiar el estado de hover después de tocar la pantalla
+            // Pero NO interferir con campos de entrada de texto
+            document.addEventListener('touchend', function(e) {
+                // NO aplicar si estamos tocando un campo de entrada o un elemento dentro de un formulario
+                if (e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'TEXTAREA' || 
+                    e.target.tagName === 'SELECT' ||
+                    e.target.closest('form') ||
+                    e.target.getAttribute('contenteditable') === 'true') {
+                    return;
+                }
                 
-                // Añadir un evento para limpiar efectos hover
-                document.addEventListener('touchend', function(e) {
-                    // Si no tocamos un campo de entrada de texto
-                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
-                        // Remover foco y desactivar efectos hover temporalmente
-                        document.activeElement.blur();
+                // Remover cualquier clase de hover o active en otros elementos
+                const hoveredElements = document.querySelectorAll(':hover:not(input):not(textarea):not(select)');
+                hoveredElements.forEach(el => {
+                    if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && el.tagName !== 'SELECT') {
+                        el.blur();
                         
-                        // Añadir y quitar una clase para reactivar hover después
-                        document.body.classList.add('no-hover');
+                        // Añadir un bloqueo temporal de estilos hover/active
+                        el.classList.add('no-hover');
                         setTimeout(() => {
-                            document.body.classList.remove('no-hover');
-                        }, 100);
+                            el.classList.remove('no-hover');
+                        }, 300);
                     }
                 });
-            }
+            });
             
-            // Ejecutar la función de ocultar navbar cuando se muestra la pantalla de juego
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.attributeName === 'class') {
                         if (!gameScreen.classList.contains('hide')) {
-                            hideNavbarOnly();
+                            document.body.classList.add('game-active');
+                            
+                            // Forzar ocultar cualquier elemento de navbar que pueda existir
+                            const navbars = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"]');
+                            navbars.forEach(nav => {
+                                if (nav) {
+                                    nav.style.display = 'none';
+                                    nav.style.visibility = 'hidden';
+                                    nav.style.opacity = '0';
+                                    nav.style.height = '0';
+                                    nav.style.width = '0';
+                                    nav.style.overflow = 'hidden';
+                                    nav.style.position = 'absolute';
+                                    nav.style.zIndex = '-9999';
+                                    nav.style.pointerEvents = 'none';
+                                    nav.style.left = '-9999px';
+                                    nav.style.top = '-9999px';
+                                }
+                            });
+                        } else {
+                            document.body.classList.remove('game-active');
                         }
                     }
                 });
@@ -589,8 +695,19 @@
             // Comenzar a observar cambios en la clase del gameScreen
             observer.observe(gameScreen, { attributes: true });
             
-            // Inicialmente ocultar la barra de navegación
-            hideNavbarOnly();
+            // Buscar el timer para asegurarnos que sea visible
+            const timerCheck = setInterval(() => {
+                const timerContainer = document.querySelector('.timer-container');
+                const timerBar = document.querySelector('#timer-bar');
+                if (timerContainer && timerBar) {
+                    timerContainer.style.zIndex = '9999';
+                    timerContainer.style.position = 'relative';
+                    timerContainer.style.display = 'block';
+                    timerContainer.style.visibility = 'visible';
+                    timerBar.style.display = 'block';
+                    timerBar.style.visibility = 'visible';
+                }
+            }, 1000); // Verificar cada segundo
         }
         
         // Ejecutar cuando el DOM esté completamente cargado
