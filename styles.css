@@ -583,15 +583,15 @@ input:focus {
 }
 
 .question-container {
-    background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+    background: linear-gradient(135deg, rgba(26, 0, 51, 0.95), rgba(43, 0, 82, 0.95));
     color: white;
     border-radius: var(--border-radius-large);
     padding: var(--space-large);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(122, 29, 234, 0.3);
     width: 100%;
     max-width: 800px;
     margin-bottom: var(--space-large);
-    border: 2px solid rgba(122, 29, 234, 0.5);
+    border: 3px solid rgba(191, 0, 255, 0.6);
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -672,12 +672,12 @@ input:focus {
     display: flex;
     align-items: center;
     padding: var(--space-medium);
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(20, 0, 40, 0.9);
     border-radius: var(--border-radius-medium);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(122, 29, 234, 0.2);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(5px);
@@ -1163,17 +1163,56 @@ input:focus {
 
 /* Leaderboard Screen */
 .leaderboard-container {
-    background: var(--gradient-dark);
+    background: linear-gradient(135deg, rgba(26, 0, 51, 0.95), rgba(43, 0, 82, 0.95));
     border-radius: var(--border-radius-large);
     padding: var(--space-large);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+    box-shadow: 0 20px 40px rgba(122, 29, 234, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
     max-width: 800px;
     width: 100%;
-    border: 2px solid var(--ml-violet);
+    border: 3px solid rgba(191, 0, 255, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    background-color: rgba(20, 0, 40, 0.9);
+    border-radius: var(--border-radius-medium);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+th {
+    background: linear-gradient(135deg, var(--ml-violet), var(--accent-bright));
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: var(--font-small);
+    letter-spacing: 1px;
+    padding: 15px var(--space-medium);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+tbody tr {
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+    background-color: rgba(191, 0, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(122, 29, 234, 0.2);
+}
+
+tbody td {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: var(--space-medium);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .leaderboard-container h1 {
