@@ -825,7 +825,9 @@ function showLevelUpCelebration() {
 
 // Finaliza el juego
 async function endGame(isWinner) {
+    console.log('===== DEPURACIÓN PANTALLA DE RESULTADOS =====');
     console.log('Finalizando juego, ganador:', isWinner);
+    console.log('Estructura HTML actual:', document.body.innerHTML.substring(0, 500) + '...');
     
     // Guardar estadísticas finales
     resultName.textContent = gameState.player.name;
@@ -857,17 +859,48 @@ async function endGame(isWinner) {
     
     // Limpiar cualquier temporizador previo
     if (gameState.redirectTimer) {
+        console.log('Limpiando temporizador de redirección previo');
         clearTimeout(gameState.redirectTimer);
     }
     
+    console.log('Buscando contenedor de botones...');
+    
     // Obtener el contenedor de botones en la pantalla de resultados
     const resultButtons = document.getElementById('result-buttons');
-    console.log('Elemento result-buttons encontrado:', !!resultButtons);
+    console.log('Elemento result-buttons encontrado:', !!resultButtons, resultButtons);
     
     if (resultButtons) {
         try {
+            console.log('Configurando botones en el contenedor encontrado');
+            
             // Limpiar botones existentes
             resultButtons.innerHTML = '';
+            
+            // Crear botón de Jugar de nuevo
+            const playAgainButton = document.createElement('button');
+            playAgainButton.textContent = 'Jugar de nuevo';
+            playAgainButton.id = 'btnJugarDeNuevo';
+            playAgainButton.className = 'result-button';
+            playAgainButton.style.marginTop = '20px';
+            playAgainButton.style.padding = '10px 20px';
+            playAgainButton.style.marginRight = '10px';
+            playAgainButton.style.backgroundColor = '#3483FA';
+            playAgainButton.style.color = 'white';
+            playAgainButton.style.border = 'none';
+            playAgainButton.style.borderRadius = '5px';
+            playAgainButton.style.cursor = 'pointer';
+            playAgainButton.style.fontSize = '16px';
+            
+            // Usar addEventListener en lugar de onclick
+            playAgainButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                console.log('Botón Jugar de nuevo clickeado');
+                clearTimeout(gameState.redirectTimer);
+                window.location.reload();
+            });
+            
+            resultButtons.appendChild(playAgainButton);
+            console.log('Botón Jugar de nuevo agregado:', playAgainButton);
             
             // Crear botón volver al inicio
             const backButton = document.createElement('button');
@@ -883,15 +916,20 @@ async function endGame(isWinner) {
             backButton.style.cursor = 'pointer';
             backButton.style.fontSize = '16px';
             
-            // Usar addEventListener en lugar de onclick para mejor manejo de eventos
-            backButton.addEventListener('click', function() {
+            // Usar addEventListener con prevención de comportamiento por defecto
+            backButton.addEventListener('click', function(event) {
+                event.preventDefault();
                 console.log('Botón de inicio clickeado');
                 clearTimeout(gameState.redirectTimer);
                 window.location.reload();
             });
             
             resultButtons.appendChild(backButton);
-            console.log('Botón de inicio agregado');
+            console.log('Botón de inicio agregado:', backButton);
+            
+            // Verificar después de añadir los botones
+            console.log('Verificación: btnInicio está en el DOM:', !!document.getElementById('btnInicio'));
+            console.log('Verificación: btnJugarDeNuevo está en el DOM:', !!document.getElementById('btnJugarDeNuevo'));
             
             // Mostrar temporizador de redirección
             const timerDisplay = document.createElement('div');
@@ -899,7 +937,7 @@ async function endGame(isWinner) {
             timerDisplay.id = 'timerRedirect'; // Asignar ID específico
             timerDisplay.style.marginTop = '15px';
             timerDisplay.style.color = '#FFE600';
-            timerDisplay.style.fontSize = '14px';
+            timerDisplay.style.fontSize = '16px'; // Aumentar tamaño para mejor visibilidad
             timerDisplay.style.textAlign = 'center';
             timerDisplay.style.fontWeight = 'bold';
             resultButtons.appendChild(timerDisplay);
@@ -910,6 +948,7 @@ async function endGame(isWinner) {
             
             const countdownInterval = setInterval(() => {
                 secondsLeft--;
+                console.log(`Temporizador: ${secondsLeft} segundos restantes`);
                 if (secondsLeft > 0) {
                     timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
                 } else {
@@ -926,42 +965,28 @@ async function endGame(isWinner) {
             
             console.log('Timer de redirección configurado para 10 segundos');
             
-            // Añadir un segundo botón como alternativa (para cumplir con el diseño original)
-            const playAgainButton = document.createElement('button');
-            playAgainButton.textContent = 'Jugar de nuevo';
-            playAgainButton.id = 'btnJugarDeNuevo';
-            playAgainButton.className = 'result-button';
-            playAgainButton.style.marginTop = '20px';
-            playAgainButton.style.padding = '10px 20px';
-            playAgainButton.style.marginRight = '10px';
-            playAgainButton.style.backgroundColor = '#3483FA';
-            playAgainButton.style.color = 'white';
-            playAgainButton.style.border = 'none';
-            playAgainButton.style.borderRadius = '5px';
-            playAgainButton.style.cursor = 'pointer';
-            playAgainButton.style.fontSize = '16px';
-            
-            playAgainButton.addEventListener('click', function() {
-                console.log('Botón Jugar de nuevo clickeado');
-                clearTimeout(gameState.redirectTimer);
-                window.location.reload();
-            });
-            
-            // Insertar primero este botón para que esté a la izquierda
-            resultButtons.insertBefore(playAgainButton, resultButtons.firstChild);
-            
         } catch (error) {
             console.error('Error al configurar botones y temporizador:', error);
+            console.error('Detalles del error:', error.message, error.stack);
         }
     } else {
         console.error('No se pudo encontrar el elemento result-buttons');
+
+        // Verificación más amplia de elementos en el DOM
+        console.log('Elementos disponibles en el documento:');
+        console.log('- resultScreen:', resultScreen);
+        console.log('- Elementos con clase .final-result:', document.querySelectorAll('.final-result').length);
+        console.log('- Elementos con clase .button-container:', document.querySelectorAll('.button-container').length);
+        
         // Intento de fallback - buscar en el DOM otro contenedor
         const fallbackContainer = document.querySelector('.final-result');
         if (fallbackContainer) {
-            console.log('Usando contenedor alternativo para botones');
-            // Código similar al anterior para añadir botones
+            console.log('Usando contenedor alternativo para botones:', fallbackContainer);
+            
+            // Crear botón volver al inicio como enlace directo
             const backButton = document.createElement('button');
             backButton.textContent = 'Volver al inicio';
+            backButton.id = 'btnInicio_fallback';
             backButton.style.marginTop = '20px';
             backButton.style.padding = '10px 20px';
             backButton.style.backgroundColor = '#7A1DEA';
@@ -969,10 +994,65 @@ async function endGame(isWinner) {
             backButton.style.border = 'none';
             backButton.style.borderRadius = '5px';
             backButton.style.cursor = 'pointer';
-            backButton.addEventListener('click', () => window.location.reload());
+            backButton.style.display = 'block';
+            backButton.style.margin = '20px auto';
+            
+            // Usar un atributo data-action para depuración
+            backButton.setAttribute('data-action', 'reload');
+            
+            backButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                console.log('Botón de fallback clickeado');
+                window.location.reload();
+            });
+            
             fallbackContainer.appendChild(backButton);
+            console.log('Botón de fallback agregado:', backButton);
+            
+            // Alternativa: Usar un enlace <a> simple
+            const linkBack = document.createElement('a');
+            linkBack.href = '#';
+            linkBack.textContent = 'Volver usando enlace';
+            linkBack.style.display = 'block';
+            linkBack.style.textAlign = 'center';
+            linkBack.style.margin = '10px auto';
+            linkBack.style.color = '#3483FA';
+            
+            linkBack.addEventListener('click', (event) => {
+                event.preventDefault();
+                console.log('Enlace alternativo clickeado');
+                window.location.reload();
+            });
+            
+            fallbackContainer.appendChild(linkBack);
+        } else {
+            console.error('No se encontró ningún contenedor alternativo para los botones');
+            // Último recurso - añadir un botón flotante
+            const floatingButton = document.createElement('button');
+            floatingButton.textContent = 'Volver al Inicio';
+            floatingButton.style.position = 'fixed';
+            floatingButton.style.bottom = '20px';
+            floatingButton.style.right = '20px';
+            floatingButton.style.zIndex = '9999';
+            floatingButton.style.padding = '15px 25px';
+            floatingButton.style.backgroundColor = '#7A1DEA';
+            floatingButton.style.color = 'white';
+            floatingButton.style.border = 'none';
+            floatingButton.style.borderRadius = '5px';
+            floatingButton.style.cursor = 'pointer';
+            floatingButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+            
+            floatingButton.addEventListener('click', () => {
+                console.log('Botón flotante clickeado');
+                window.location.reload();
+            });
+            
+            document.body.appendChild(floatingButton);
+            console.log('Botón flotante agregado como último recurso');
         }
     }
+    
+    console.log('Configuración de pantalla de resultados completada');
 }
 
 // Guarda la puntuación

@@ -1,0 +1,98 @@
+Instrucciones para Depurar y Solucionar el Problema en la Pantalla de Resultados
+Verificar el ID y la Existencia del Botón
+
+plaintext
+Copiar
+1. Abre el archivo HTML de la pantalla de resultados.
+2. Asegúrate de que el botón tenga el atributo id="btnInicio".
+3. Confirma que el texto del botón aparezca en la página.
+4. Si no aparece el botón, revisa la ruta del archivo HTML y la forma en que se está cargando en Replit.
+Asegurar la Carga Correcta del Script
+
+plaintext
+Copiar
+1. Ubica la etiqueta <script> justo antes de cerrar el </body> en el HTML de resultados:
+   <body>
+       <!-- Contenido de la pantalla -->
+       <button id="btnInicio">Volver al Inicio</button>
+       <script src="./resultados.js"></script>
+   </body>
+2. Verifica que la ruta ./resultados.js (o la que corresponda) sea correcta según la estructura de tu proyecto.
+3. Agrega un console.log("Archivo resultados.js cargado") al inicio de resultados.js para confirmar que se ejecute.
+Agregar Mensajes de Consola para Depurar
+
+plaintext
+Copiar
+1. Dentro de resultados.js, coloca lo siguiente:
+   
+   console.log("Archivo resultados.js cargado correctamente");
+
+   const btnInicio = document.getElementById('btnInicio');
+   console.log("btnInicio:", btnInicio);
+
+   if (!btnInicio) {
+       console.error("ERROR: No se encontró el botón con ID 'btnInicio' en el DOM.");
+   } else {
+       btnInicio.addEventListener('click', () => {
+           console.log("Botón clicado: Redirigiendo al inicio...");
+           clearTimeout(timer);
+           window.location.href = './index.html';  // Ajustar ruta según tu proyecto
+       });
+   }
+
+   // Timer opcional de 10 segundos
+   const timer = setTimeout(() => {
+       console.log("Timer cumplido: Redirigiendo al inicio...");
+       window.location.href = './index.html';
+   }, 10000);
+2. Ejecuta la aplicación en Replit y abre la **Consola del Navegador** (F12 en la mayoría de navegadores).
+3. Verifica que aparezcan los mensajes de console.log en el orden esperado y sin errores.
+Probar la Redirección con un Enlace Sencillo
+
+plaintext
+Copiar
+1. Si el evento de JavaScript no funciona, prueba temporalmente con un enlace directo en el botón:
+   
+   <button>
+       <a href="./index.html" style="text-decoration: none; color: inherit;">
+           Volver al Inicio
+       </a>
+   </button>
+   
+2. Si este enlace directo tampoco funciona, revisa que el archivo index.html exista en esa ubicación.
+3. Si el enlace directo funciona, el problema está en la ejecución del script (o en la forma en que el DOM se carga).
+Verificar Errores en la Consola y en la Estructura de Archivos
+
+plaintext
+Copiar
+1. Observa si aparece algún mensaje de error en rojo en la consola (por ejemplo, 404 Not Found, Uncaught SyntaxError, etc.).
+2. Si hay un error de ruta, ajusta la ubicación del archivo HTML o JS en tu proyecto de Replit.
+3. Comprueba la estructura de carpetas: 
+   - ¿Estás usando subcarpetas como /public, /views, /scripts, etc.?
+   - ¿La ruta a index.html y resultados.js coincide con esa estructura?
+Descartar Bloqueos o Lógica Extra que Impida Salir
+
+plaintext
+Copiar
+1. Revisa si existe alguna función o condición que fuerce la permanencia en la pantalla de resultados, por ejemplo:
+   - Un setInterval que recarga la misma pantalla.
+   - Una validación que “bloquea” al usuario cuando el juego termina.
+2. Elimina temporalmente cualquier lógica no esencial y deja únicamente el botón y el timer para comprobar si así funciona.
+Confirmar el Tipo de Proyecto en Replit
+
+plaintext
+Copiar
+1. Si tu proyecto es HTML/JS puro, la redirección con window.location.href = './index.html' debería funcionar sin problemas.
+2. Si tu proyecto es Node.js con Express u otro framework, revisa si la ruta '/index.html' está realmente servida.
+3. En caso de usar React, Vue u otro SPA (Single Page Application), debes usar la navegación del framework en lugar de window.location.href.
+Realizar Pruebas Finales
+
+plaintext
+Copiar
+1. Carga la pantalla de resultados en el navegador desde la URL de Replit.
+2. Observa la consola (F12) desde que se abre la pantalla:
+   - Debe aparecer "Archivo resultados.js cargado correctamente".
+   - Debe aparecer "btnInicio:" con el objeto HTML si el ID está bien.
+   - Al hacer clic en el botón, se debe ver "Botón clicado: Redirigiendo al inicio..." y luego cargarse index.html.
+   - Si no se hace clic, después de 10 segundos debe verse "Timer cumplido: Redirigiendo al inicio...".
+3. Si alguno de estos pasos falla, revisa el mensaje de error que aparezca en la consola 
