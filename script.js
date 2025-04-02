@@ -509,9 +509,10 @@ function checkAnswer(selectedIndex) {
     // If game is not active or answer already selected, do nothing
     if (!gameState.gameActive || gameState.selectedAnswer !== null) return;
 
-    // Validate current question exists
-    if (!gameState.currentQuestion) {
-        console.error('No current question available');
+    // Validate current question exists and has correctIndex
+    if (!gameState.currentQuestion || typeof gameState.currentQuestion.correctIndex === 'undefined') {
+        console.error('Invalid question data:', gameState.currentQuestion);
+        endGame(false);
         return;
     }
 
@@ -1085,15 +1086,19 @@ function updateLeaderboard(scores) {
 // Save Score
 async function saveScore(name, prize, maxRound, finalPillar) {
     try {
+        if (!name || !gameState.player.phone) {
+            throw new Error('Missing required player data');
+        }
+
         // Create score data
         const scoreData = {
             name: name,
             phone: gameState.player.phone,
-            prize: prize,
-            questionsAnswered: gameState.player.questionsAnswered,
-            gameTimeSeconds: gameState.player.totalGameTimeSeconds,
-            maxRound: maxRound,
-            finalPillar: finalPillar,
+            prize: prize || 0,
+            questionsAnswered: gameState.player.questionsAnswered || 0,
+            gameTimeSeconds: gameState.player.totalGameTimeSeconds || 0,
+            maxRound: maxRound || 1,
+            finalPillar: finalPillar || 'Level 1',
             date: new Date().toISOString()
         };
 
