@@ -1,10 +1,10 @@
 /* Base Styles & Variables */
 :root {
     /* Theme colors */
-    --bg-color: #0A0A0A;
-    --text-color: #FF00FF;
-    --card-bg: #1A1A1A;
-    --border-color: rgba(255, 255, 255, 0.2);
+    --bg-color: #1a0033;
+    --text-color: #bf00ff;
+    --card-bg: #2b0052;
+    --border-color: rgba(255, 255, 255, 0.15);
     
     /* Dark theme palette */
     --ml-violet: #7A1DEA;
@@ -338,11 +338,11 @@ button {
 
 /* Start Screen */
 .start-container {
-    background: linear-gradient(135deg, var(--ml-dark-purple), var(--ml-purple));
+    background: linear-gradient(135deg, #1a0033, #2b0052);
     border-radius: var(--border-radius-large);
     padding: var(--space-large);
-    box-shadow: 0 20px 40px rgba(122, 29, 234, 0.3),
-                inset 0 1px 0 rgba(240, 171, 252, 0.1);
+    box-shadow: 0 20px 40px rgba(91, 0, 173, 0.4),
+                inset 0 1px 0 rgba(191, 0, 255, 0.1);
     max-width: 600px;
     width: 100%;
     border: 2px solid var(--accent-glow);
@@ -448,17 +448,21 @@ input:focus {
 .game-instructions {
     margin-top: var(--space-large);
     padding: var(--space-large);
-    background-color: var(--ml-white);
+    background-color: rgba(91, 0, 173, 0.2);
     border-radius: var(--border-radius-medium);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    color: var(--ml-dark-gray);
-    font-size: calc(var(--font-small) - 1px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color: #e6b3ff;
+    font-size: var(--font-medium);
+    border: 2px solid rgba(191, 0, 255, 0.3);
+    backdrop-filter: blur(5px);
 }
 
 .game-instructions h3 {
-    color: var(--ml-violet);
-    margin-bottom: var(--space-medium);
+    color: #bf00ff;
+    margin-bottom: var(--space-large);
     text-align: center;
+    font-size: var(--font-large);
+    text-shadow: 0 0 10px rgba(191, 0, 255, 0.5);
 }
 
 .game-instructions ul {
