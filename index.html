@@ -331,6 +331,7 @@
                     <div class="form-group">
                         <label for="phone">Teléfono:</label>
                         <input type="tel" id="phone" required placeholder="Número de teléfono">
+                        <div id="phone-error" class="error-message" style="color: #F44336; font-size: 14px; margin-top: 5px; display: none;">Este número de teléfono ya ha participado. Por favor, utiliza otro número.</div>
                     </div>
                     <button type="button" id="start-button" disabled>¡COMENZAR JUEGO!</button>
                 </form>
@@ -577,6 +578,10 @@
             const phone = phoneInput.value.trim();
             if (!phone) return;
             
+            // Ocultar cualquier mensaje de error previo
+            const phoneError = document.getElementById('phone-error');
+            phoneError.style.display = 'none';
+            
             try {
                 const response = await fetch('/api/validate-phone', {
                     method: 'POST',
@@ -587,7 +592,8 @@
                 const data = await response.json();
                 
                 if (!data.valid) {
-                    alert('Este número de teléfono ya ha participado. Por favor, utiliza otro número.');
+                    // Mostrar mensaje de error en la UI en lugar de un alert
+                    phoneError.style.display = 'block';
                     phoneInput.value = '';
                     phoneInput.focus();
                 }
