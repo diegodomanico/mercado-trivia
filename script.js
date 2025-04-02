@@ -1,3 +1,48 @@
+// API Endpoints from api.js
+const API_ENDPOINTS = {
+    questions: '/api/questions',
+    saveScore: '/api/score',
+    topScores: '/api/top-scores',
+    checkPhone: (phone) => `/api/check-phone/${phone}`
+};
+
+// Game Configuration
+const GAME_CONFIG = {
+    timePerDifficulty: {
+        facil_🟢: 45,
+        menos_facil_🟡: 40,
+        dificil_🔴: 35,
+        muy_dificil_🔥: 30,
+        complicada_💀: 25
+    },
+    lifelines: {
+        'fifty-fifty': true,
+        'audience-help': true,
+        'expert-call': true
+    },
+    chancesPerCorrectQuestions: 5 // 1 chance por cada 5 preguntas correctas
+};
+
+// Game Structure
+const GAME_STRUCTURE = {
+    totalRounds: 5,
+    questionsPerRound: 5,
+    pillars: [
+        "Reputación  ❤️",
+        "Oferta 💙",
+        "Servicio 💛",
+        "Tráfico 💜",
+        "Data driven 💗"
+    ],
+    difficultyLevels: [
+        "Fácil 🟢",
+        "Menos fácil 🟡",
+        "Difícil 🔴",
+        "Muy difícil 🔥",
+        "Complicada 💀"
+    ]
+};
+
 // DOM Elements
 const elements = {
     // Screens
@@ -8,25 +53,18 @@ const elements = {
     resultsScreen: document.getElementById('results-screen'),
     leaderboardScreen: document.getElementById('leaderboard-screen'),
     
-    // Error Screen
-    errorMessage: document.getElementById('error-message'),
-    retryButton: document.getElementById('retry-button'),
-    
-    // Error Modal
-    errorModal: document.getElementById('error-modal'),
-    errorText: document.getElementById('error-text'),
-    errorOkBtn: document.getElementById('error-ok-btn'),
-    
-    // Start Screen
+    // Start Screen Elements
     playerNameInput: document.getElementById('player-name'),
     playerPhoneInput: document.getElementById('player-phone'),
-    phoneError: document.getElementById('phone-error'),
+    startGameButton: document.getElementById('start-game-button'),
+    mobileStartButton: document.getElementById('mobile-start-button'),
     nameError: document.getElementById('name-error'),
-    startGameButton: document.getElementById('start-game-button'), // CAMBIADO: start-game -> start-game-button
+    phoneError: document.getElementById('phone-error'),
     statusIcon: document.getElementById('status-icon'),
     statusText: document.getElementById('status-text'),
+    viewLeaderboardStartButton: document.getElementById('view-leaderboard-start'),
     
-    // Game Screen
+    // Game Screen Elements
     playerNameDisplay: document.getElementById('player-name-display'),
     currentPrize: document.getElementById('current-prize'),
     currentDifficulty: document.getElementById('current-difficulty'),
@@ -37,10 +75,10 @@ const elements = {
     answers: Array.from(document.querySelectorAll('.answer')),
     answerTexts: Array.from(document.querySelectorAll('.answer-text')),
     progressDots: Array.from(document.querySelectorAll('.progress-dot')),
+    prizeLadder: Array.from(document.querySelectorAll('.prize-level')),
     lifelines: Array.from(document.querySelectorAll('.lifeline')),
-    prizeLevels: Array.from(document.querySelectorAll('.prize-level')),
     
-    // Results Screen
+    // Result Screen Elements
     resultTitle: document.getElementById('result-title'),
     resultPlayerName: document.getElementById('result-player-name'),
     resultPlayerPhone: document.getElementById('result-player-phone'),
@@ -48,9 +86,8 @@ const elements = {
     resultRound: document.getElementById('result-round'),
     resultPillar: document.getElementById('result-pillar'),
     viewLeaderboardButton: document.getElementById('view-leaderboard'),
-    viewLeaderboardStartButton: document.getElementById('view-leaderboard-start'),
     
-    // Leaderboard Screen
+    // Leaderboard Elements
     leaderboardLoading: document.getElementById('leaderboard-loading'),
     leaderboardTable: document.getElementById('leaderboard-table'),
     leaderboardBody: document.getElementById('leaderboard-body'),
@@ -66,33 +103,27 @@ const elements = {
     expertAdvice: document.getElementById('expert-advice'),
     closeExpertModalButton: document.getElementById('close-expert-modal'),
     audienceModal: document.getElementById('audience-modal'),
-    audienceChartBars: Array.from(document.querySelectorAll('.chart-bar')),
+    audienceChartBars: Array.from(document.querySelectorAll('.bar-fill')),
+    audiencePercentages: Array.from(document.querySelectorAll('.bar-percentage')),
     closeAudienceModalButton: document.getElementById('close-audience-modal'),
+    errorModal: document.getElementById('error-modal'),
+    errorText: document.getElementById('error-text'),
+    errorOkBtn: document.getElementById('error-ok-btn'),
     
-    // Confetti
-    confettiCanvas: document.getElementById('confetti-canvas')
+    // Other Elements
+    confettiCanvas: document.getElementById('confetti-canvas'),
+    errorMessage: document.getElementById('error-message'),
+    retryButton: document.getElementById('retry-button'),
+    debugMessage: document.getElementById('debug-message')
 };
 
 // Game State
 const gameState = {
-    // Game active status
     gameActive: false,
     gameStartTime: null,
     gameEndTime: null,
     gameCompleted: false,
     playerWon: false,
-    
-    // Timer
-    timer: null,
-    timeRemaining: 0,
-    
-    // Questions
-    allQuestions: null,
-    currentRoundQuestions: [],
-    currentQuestion: null,
-    selectedAnswer: null,
-    
-    // Player data
     player: {
         name: '',
         phone: '',
@@ -101,190 +132,261 @@ const gameState = {
         currentQuestionIndex: 0,
         questionsAnswered: 0,
         prize: 0,
-        completedRounds: [],
         totalGameTimeSeconds: 0,
+        completedRounds: [],
         usedLifelines: {
             'fifty-fifty': false,
             'audience-help': false,
             'expert-call': false
         }
-    }
+    },
+    selectedAnswer: null,
+    timeRemaining: 0,
+    timer: null,
+    answerTimeout: null,
+    allQuestions: null,
+    currentRoundQuestions: [],
+    currentQuestion: null,
+    availablePillarsByDifficulty: {}
 };
 
-// Initialize the game
+// Inicializar la aplicación al cargar el documento
 document.addEventListener('DOMContentLoaded', function() {
-    // Iniciar el juego para cargar preguntas, etc.
+    console.log("DOMContentLoaded: Juego inicializando");
+    
+    // Debug - mostrar todos los elementos importantes
+    logElementStatus();
+    
+    // Inicializar el juego
     initGame();
     
-    console.log("DOMContentLoaded: Configurando eventos para el juego");
+    // Configurar evento para botón estándar
+    setupStandardStartButton();
     
-    // Dejar claro qué elementos estamos observando con mensajes de log
-    console.log("Elementos disponibles al iniciar:");
-    console.log("player-form:", document.getElementById('player-form') ? "✅" : "❌");
-    console.log("start-game-button:", document.getElementById('start-game-button') ? "✅" : "❌");
-    console.log("player-name:", document.getElementById('player-name') ? "✅" : "❌");
-    console.log("player-phone:", document.getElementById('player-phone') ? "✅" : "❌");
+    // Configurar evento para botón móvil
+    setupMobileStartButton();
     
-    // Configurar el botón de inicio del juego (ahora con ID start-game-button)
-    const startGameBtn = document.getElementById('start-game-button');
-    const debugMsg = document.getElementById('debug-message');
-    
-    if (startGameBtn) {
-        console.log("Configurando evento para start-game-button");
-        
-        // Agregar un evento que SÓLO responda a click (para móviles y desktop)
-        startGameBtn.addEventListener('click', function(e) {
-            console.log("CLICK en Botón COMENZAR JUEGO");
-            debugMsg.textContent = "Botón presionado ✓";
-            
-            debugMsg.textContent = "Iniciando juego... versión mobile adaptada";
-            
-            try {
-                // Obtener datos del formulario con múltiples métodos de seguridad
-                const nameInput = document.getElementById('player-name');
-                const phoneInput = document.getElementById('player-phone');
-                
-                // Método alternativo si no se encuentran los campos
-                let name = "Jugador";
-                let phone = "1122334455";
-                
-                // Verificar si los elementos existen antes de intentar acceder a sus valores
-                if (nameInput && nameInput.value) {
-                    name = nameInput.value.trim();
-                    console.log("Nombre encontrado:", name);
-                } else {
-                    console.warn("Campo de nombre no encontrado - usando valor predeterminado");
-                }
-                
-                if (phoneInput && phoneInput.value) {
-                    phone = phoneInput.value.trim();
-                    console.log("Teléfono encontrado:", phone);
-                } else {
-                    console.warn("Campo de teléfono no encontrado - usando valor predeterminado");
-                }
-                
-                // Usar valores predeterminados si los campos están vacíos
-                if (!name) name = "Jugador";
-                if (!phone) phone = "1122334455";
-                
-                debugMsg.textContent = "Datos: " + name + " / " + phone;
-                
-                // Guardar directamente en el estado del juego los datos del usuario
-                gameState.player.name = name;
-                gameState.player.phone = phone;
-                
-                // SIMPLIFICACIÓN: Saltamos la verificación de teléfono y vamos directamente a iniciar el juego
-                console.log("Iniciando juego con:", name, phone);
-                
-                // Ocultar errores previos por seguridad
-                const phoneError = document.getElementById('phone-error');
-                const nameError = document.getElementById('name-error');
-                if (phoneError) phoneError.classList.add('hide');
-                if (nameError) nameError.classList.add('hide');
-                
-                // Iniciar el juego directamente
-                startGame();
-            } catch (err) {
-                console.error("Error al iniciar el juego:", err);
-                debugMsg.textContent = "Error: " + err.message;
-            }
-        });
-        
-        console.log("Evento click configurado para start-game-button ✓");
-    } else {
-        console.error("No se encontró el botón start-game-button en el DOM");
-        if (debugMsg) debugMsg.textContent = "ERROR: No se encontró el botón de inicio";
-    }
+    // Configurar otros eventos
+    setupEventListeners();
 });
 
-// Event Listeners para el resto de elementos
-elements.retryButton.addEventListener('click', initGame);
-elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
-elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
-elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
-elements.viewLeaderboardStartButton.addEventListener('click', showLeaderboard);
-elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
-
-// Configurar el botón adicional para mobile
-const mobileBtnStart = document.getElementById('mobile-start-button');
-if (mobileBtnStart) {
-    mobileBtnStart.addEventListener('click', function() {
-        console.log("CLICK en botón MOBILE");
-        const debugMsg = document.getElementById('debug-message');
-        if (debugMsg) debugMsg.textContent = "Botón MOBILE presionado";
-        
-        // Comenzar el juego directamente con un nombre y teléfono fijos
-        gameState.player.name = "Jugador Mobile";
-        gameState.player.phone = "1122334455";
-        
-        // Mostrar un mensaje de confirmación visual
-        debugMsg.textContent = "Comenzando juego en modo mobile...";
-        
-        // Iniciar el juego directamente
-        startGame();
+// Función para mostrar el estado de los elementos DOM importantes
+function logElementStatus() {
+    const elementsToCheck = [
+        'start-game-button', 
+        'mobile-start-button', 
+        'player-name', 
+        'player-phone',
+        'debug-message'
+    ];
+    
+    console.log("Elementos disponibles al iniciar:");
+    elementsToCheck.forEach(id => {
+        console.log(`${id}: ${document.getElementById(id) ? "✅" : "❌"}`);
     });
 }
-// Manejar el botón para continuar después de completar ronda o ganar chance
-elements.nextRoundButton.addEventListener('click', function() {
-    console.log("Botón Continuar presionado");
-    
-    // PRIMERO: Forzar la detención del temporizador en cualquier caso
-    if (gameState.timer) {
-        clearInterval(gameState.timer);
-        gameState.timer = null;
-        console.log("🛑 FORZANDO DETENCIÓN DEL TEMPORIZADOR al presionar Continuar");
-    }
-    
-    // Verificar si el juego ha sido completado primero
-    if (gameState.gameCompleted || gameState.playerWon) {
-        console.log("Juego completado con éxito. Mostrando pantalla final.");
-        
-        // Ocultar modal antes de mostrar pantalla de resultados
-        elements.roundCompleteModal.classList.add('hide');
-        elements.overlay.classList.add('hide');
-        
-        // Detener la animación de confetis
-        if (typeof stopConfetti === 'function') {
-            stopConfetti();
-        }
-        
-        // Llamar a endGame para ir a la pantalla de resultados
-        endGame(true);
+
+// Configurar el botón de inicio estándar
+function setupStandardStartButton() {
+    const startBtn = elements.startGameButton;
+    if (!startBtn) {
+        console.error("Botón de inicio estándar no encontrado");
         return;
     }
     
-    // Si no es fin de juego, continuar normalmente
-    // Ocultar el modal
-    elements.roundCompleteModal.classList.add('hide');
-    elements.overlay.classList.add('hide');
-    
-    // Remover las clases de estilo que podrían estar presentes
-    elements.roundCompleteTitle.classList.remove('violet-text');
-    elements.roundCompleteTitle.classList.remove('winner-text');
-    
-    // Detener la animación de confetis si está activa
-    if (typeof stopConfetti === 'function') {
-        stopConfetti();
+    startBtn.addEventListener('click', function(e) {
+        console.log("CLICK en botón estándar");
+        updateDebugMessage("Botón estándar presionado");
+        startGameWithValidation();
+    });
+}
+
+// Configurar el botón de inicio para móviles
+function setupMobileStartButton() {
+    const mobileBtn = elements.mobileStartButton;
+    if (!mobileBtn) {
+        console.error("Botón móvil no encontrado");
+        return;
     }
     
-    // Reactivar el juego para continuar
+    mobileBtn.addEventListener('click', function(e) {
+        console.log("CLICK en botón móvil");
+        updateDebugMessage("Botón móvil presionado - iniciando juego directo");
+        startGameDirectly();
+    });
+}
+
+// Configurar otros event listeners del juego
+function setupEventListeners() {
+    // Botones de pantallas
+    if (elements.retryButton) elements.retryButton.addEventListener('click', initGame);
+    if (elements.viewLeaderboardButton) elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
+    if (elements.viewLeaderboardStartButton) elements.viewLeaderboardStartButton.addEventListener('click', showLeaderboard);
+    if (elements.hideLeaderboardButton) elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
+    
+    // Elementos del juego
+    if (elements.answers && elements.answers.length) {
+        elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
+    }
+    
+    if (elements.lifelines && elements.lifelines.length) {
+        elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
+    }
+    
+    // Modal buttons
+    if (elements.closeExpertModalButton) elements.closeExpertModalButton.addEventListener('click', closeModals);
+    if (elements.closeAudienceModalButton) elements.closeAudienceModalButton.addEventListener('click', closeModals);
+    if (elements.errorOkBtn) elements.errorOkBtn.addEventListener('click', handleErrorModalClose);
+    
+    // Botón de siguiente ronda
+    if (elements.nextRoundButton) {
+        elements.nextRoundButton.addEventListener('click', function() {
+            console.log("Botón Continuar presionado");
+            
+            // PRIMERO: Forzar la detención del temporizador
+            stopTimer();
+            
+            // Verificar si el juego ha sido completado
+            if (gameState.gameCompleted || gameState.playerWon) {
+                console.log("Juego completado con éxito. Mostrando pantalla final.");
+                
+                // Ocultar modal
+                elements.roundCompleteModal.classList.add('hide');
+                elements.overlay.classList.add('hide');
+                
+                // Detener confeti
+                if (typeof stopConfetti === 'function') {
+                    stopConfetti();
+                }
+                
+                // Mostrar resultados
+                endGame(true);
+                return;
+            }
+            
+            // Continuar juego normalmente
+            elements.roundCompleteModal.classList.add('hide');
+            elements.overlay.classList.add('hide');
+            elements.roundCompleteTitle.classList.remove('violet-text', 'winner-text');
+            
+            // Detener confeti
+            if (typeof stopConfetti === 'function') {
+                stopConfetti();
+            }
+            
+            // Reactivar juego
+            gameState.gameActive = true;
+            
+            // Cargar siguiente pregunta
+            loadQuestion();
+            
+            // Iniciar temporizador con delay
+            setTimeout(() => {
+                console.log("Iniciando temporizador para nueva pregunta");
+                const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
+                gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
+                startTimer();
+            }, 1000);
+        });
+    }
+}
+
+// Función para actualizar mensaje de debug
+function updateDebugMessage(message) {
+    if (elements.debugMessage) {
+        elements.debugMessage.textContent = message;
+    }
+}
+
+// Iniciar el juego con validación de campos
+function startGameWithValidation() {
+    // Obtener y validar datos del formulario
+    const name = elements.playerNameInput ? elements.playerNameInput.value.trim() : "";
+    const phone = elements.playerPhoneInput ? elements.playerPhoneInput.value.trim() : "";
+    
+    // Validar campos
+    if (!name) {
+        updateDebugMessage("Por favor ingresa tu nombre");
+        if (elements.nameError) elements.nameError.classList.remove('hide');
+        if (elements.playerNameInput) elements.playerNameInput.focus();
+        return;
+    }
+    
+    if (!phone) {
+        updateDebugMessage("Por favor ingresa tu teléfono");
+        if (elements.phoneError) elements.phoneError.classList.remove('hide');
+        if (elements.playerPhoneInput) elements.playerPhoneInput.focus();
+        return;
+    }
+    
+    // Guardar datos del jugador
+    gameState.player.name = name;
+    gameState.player.phone = phone;
+    
+    updateDebugMessage("Validación correcta, iniciando juego...");
+    startGame();
+}
+
+// Iniciar el juego directamente (para botón móvil)
+function startGameDirectly() {
+    // Obtener datos o usar valores por defecto
+    let name = "Jugador";
+    let phone = "1122334455";
+    
+    // Intentar obtener los valores ingresados
+    const nameInput = elements.playerNameInput;
+    const phoneInput = elements.playerPhoneInput;
+    
+    if (nameInput && nameInput.value.trim()) {
+        name = nameInput.value.trim();
+    }
+    
+    if (phoneInput && phoneInput.value.trim()) {
+        phone = phoneInput.value.trim();
+    }
+    
+    // Actualizar estado del juego
+    gameState.player.name = name;
+    gameState.player.phone = phone;
+    
+    updateDebugMessage(`Iniciando juego con: ${name} / ${phone}`);
+    startGame();
+}
+
+// Start the Game
+function startGame() {
+    console.log("⭐ INICIO DE JUEGO con:", gameState.player.name, gameState.player.phone);
+    
+    // Set game as active and record start time
     gameState.gameActive = true;
+    gameState.gameStartTime = new Date();
     
-    // Cargar la siguiente pregunta
+    // Reset lifelines UI
+    elements.lifelines.forEach(lifeline => {
+        lifeline.classList.remove('used');
+    });
+    
+    // Update player name display
+    elements.playerNameDisplay.textContent = gameState.player.name;
+    
+    // Añadir mensaje de depuración
+    updateDebugMessage("Juego iniciado correctamente");
+    
+    // Select a random pillar
+    selectRandomPillar();
+    
+    // Prepare questions for the first round
+    prepareQuestionsForRound();
+    
+    // Update prize ladder
+    updatePrizeLadder();
+    
+    // Show game screen
+    showScreen(elements.gameScreen);
+    
+    // Load the first question
     loadQuestion();
-    
-    // Esperar un poco antes de iniciar el temporizador para dar tiempo al jugador
-    setTimeout(() => {
-        console.log("Iniciando nuevo temporizador después de ganar una chance");
-        // Reiniciar temporizador para la nueva pregunta
-        const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
-        gameState.timeRemaining = GAME_CONFIG.timePerDifficulty[difficultyKey];
-        startTimer();
-    }, 1000); // Aumentado el retraso para asegurar que la UI se actualice completamente
-});
-elements.closeExpertModalButton.addEventListener('click', closeModals);
-elements.closeAudienceModalButton.addEventListener('click', closeModals);
-elements.errorOkBtn.addEventListener('click', handleErrorModalClose);
+}
 
 // Initialize Game
 async function initGame() {
@@ -297,7 +399,7 @@ async function initGame() {
     // Set loading status for API connection
     elements.statusIcon.className = 'status-icon loading';
     elements.statusText.textContent = 'Verificando conexión a la base de datos...';
-    elements.startGameButton.disabled = true;
+    if (elements.startGameButton) elements.startGameButton.disabled = true;
     
     try {
         // Load all questions
@@ -305,11 +407,15 @@ async function initGame() {
         
         // Show start screen if questions were loaded successfully
         showScreen(elements.startScreen);
+        
+        // Mensaje inicial
+        updateDebugMessage("Juego cargado correctamente. Listo para jugar.");
     } catch (error) {
         // Show error screen with message
         console.error('Error initializing game:', error);
-        elements.errorMessage.textContent = `Error: ${error.message}. Por favor intenta nuevamente.`;
+        if (elements.errorMessage) elements.errorMessage.textContent = `Error: ${error.message}. Por favor intenta nuevamente.`;
         showScreen(elements.errorScreen);
+        updateDebugMessage("Error al cargar el juego: " + error.message);
     }
 }
 
@@ -407,7 +513,7 @@ function updateAirtableConnectionStatus(data, error = null) {
         // Connection error - no permitimos jugar sin Airtable
         elements.statusIcon.className = 'status-icon disconnected';
         elements.statusText.textContent = 'Error de conexión a Airtable. No se puede iniciar el juego.';
-        elements.startGameButton.disabled = true;
+        if (elements.startGameButton) elements.startGameButton.disabled = true;
         return;
     }
     
@@ -415,7 +521,7 @@ function updateAirtableConnectionStatus(data, error = null) {
         // No data o insuficientes preguntas - no permitimos jugar
         elements.statusIcon.className = 'status-icon disconnected';
         elements.statusText.textContent = 'No hay suficientes preguntas en Airtable. No se puede iniciar el juego.';
-        elements.startGameButton.disabled = true;
+        if (elements.startGameButton) elements.startGameButton.disabled = true;
         return;
     }
 
@@ -447,7 +553,7 @@ function updateAirtableConnectionStatus(data, error = null) {
     if (insufficientDifficulties.length > 0) {
         elements.statusIcon.className = 'status-icon disconnected';
         elements.statusText.textContent = `No hay preguntas para las siguientes dificultades: ${insufficientDifficulties.join(', ')}. Se necesita al menos un pilar con preguntas por cada dificultad.`;
-        elements.startGameButton.disabled = true;
+        if (elements.startGameButton) elements.startGameButton.disabled = true;
         return;
     }
     
@@ -478,7 +584,7 @@ function updateAirtableConnectionStatus(data, error = null) {
         elements.statusText.textContent = `Conectado a Airtable (${data.total} preguntas en ${pillaresDisponibles.length} pilares)`;
     }
     
-    elements.startGameButton.disabled = false;
+    if (elements.startGameButton) elements.startGameButton.disabled = false;
 }
 
 // Check if we have enough questions
@@ -528,133 +634,6 @@ function hasEnoughQuestions() {
     
     console.log("Pilares disponibles por dificultad:", availablePillarsByDifficulty);
     return true;
-}
-
-// Check Phone Number and Start Game
-async function checkPhoneAndStartGame(e) {
-    e.preventDefault();
-    
-    // Limpiar errores previos
-    elements.phoneError.classList.add('hide');
-    elements.playerPhoneInput.classList.remove('input-error');
-    elements.nameError.classList.add('hide');
-    elements.playerNameInput.classList.remove('input-error');
-    
-    // Get player input
-    const name = elements.playerNameInput.value.trim();
-    const phone = elements.playerPhoneInput.value.trim();
-    
-    // Validar el nombre
-    if (!name) {
-        elements.nameError.textContent = 'Por favor ingresa tu nombre';
-        elements.nameError.classList.remove('hide');
-        elements.playerNameInput.classList.add('input-error');
-        return;
-    }
-    
-    // Validar que el teléfono no esté vacío
-    if (!phone) {
-        elements.phoneError.textContent = 'Por favor ingresa tu número de teléfono';
-        elements.phoneError.classList.remove('hide');
-        elements.playerPhoneInput.classList.add('input-error');
-        return;
-    }
-    
-    // Simple phone validation (Argentina numbers)
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
-        elements.phoneError.textContent = 'El número de teléfono debe tener 10 dígitos (sin 0 ni 15)';
-        elements.phoneError.classList.remove('hide');
-        elements.playerPhoneInput.classList.add('input-error');
-        return;
-    }
-    
-    try {
-        // Check if phone has already played
-        // IMPORTANTE: Ya no permitimos jugar si hay un error en la validación
-        try {
-            // Asegurar que se envía como string
-            const phoneStr = String(phone);
-            const response = await fetch(API_ENDPOINTS.checkPhone(phoneStr));
-            if (!response.ok) {
-                throw new Error(`Error al verificar teléfono: ${response.status}`);
-            }
-            const data = await response.json();
-            
-            if (!data.valid) {
-                // Mostramos el mensaje de error personalizado que viene del servidor
-                elements.phoneError.textContent = data.message || 'Este número ya participó en el juego. Cada número solo puede participar una vez.';
-                elements.phoneError.classList.remove('hide');
-                elements.playerPhoneInput.classList.add('input-error');
-                return;
-            }
-        } catch (phoneError) {
-            console.warn('Error validando el teléfono:', phoneError);
-            // Ahora mostramos error y no permitimos jugar cuando hay error
-            elements.phoneError.textContent = 'Error al verificar el teléfono en la base de datos. Intenta nuevamente.';
-            elements.phoneError.classList.remove('hide');
-            elements.playerPhoneInput.classList.add('input-error');
-            return;
-        }
-        
-        // Clear any previous errors
-        elements.phoneError.classList.add('hide');
-        elements.playerPhoneInput.classList.remove('input-error');
-        
-        // Store player data
-        gameState.player.name = name;
-        gameState.player.phone = String(phone); // Aseguramos que sea string
-        
-        // Start the game
-        startGame();
-    } catch (error) {
-        console.error('Error checking phone:', error);
-        // Mostrar mensaje de error específico en un modal
-        if (error.message.includes('base de datos')) {
-            elements.errorText.textContent = 'Error al conectar con la base de datos. Por favor intenta de nuevo más tarde.';
-        } else {
-            elements.errorText.textContent = 'Error al verificar el número de teléfono. Por favor intenta de nuevo.';
-        }
-        elements.errorModal.classList.remove('hide');
-        elements.overlay.classList.remove('hide');
-        return; // Asegurarnos de que no continúe
-    }
-}
-
-// Start the Game
-function startGame() {
-    console.log("⭐ INICIO DE JUEGO con:", gameState.player.name, gameState.player.phone);
-    
-    // Set game as active and record start time
-    gameState.gameActive = true;
-    gameState.gameStartTime = new Date();
-    
-    // Reset lifelines UI
-    elements.lifelines.forEach(lifeline => {
-        lifeline.classList.remove('used');
-    });
-    
-    // Update player name display
-    elements.playerNameDisplay.textContent = gameState.player.name;
-    
-    // Añadir mensaje de depuración
-    const debugMsg = document.getElementById('debug-message');
-    if (debugMsg) debugMsg.textContent = "Juego iniciado correctamente";
-    
-    // Select a random pillar
-    selectRandomPillar();
-    
-    // Prepare questions for the first round
-    prepareQuestionsForRound();
-    
-    // Update prize ladder
-    updatePrizeLadder();
-    
-    // Show game screen
-    showScreen(elements.gameScreen);
-    
-    // Load the first question
-    loadQuestion();
 }
 
 // Select a Random Pillar
@@ -998,22 +977,38 @@ function handleCorrectAnswer() {
             // Increase difficulty level (move to next round)
             const oldDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
             
-            // Increment round for increased difficulty (solo si no estamos en el último nivel)
+            // Increment round for increased difficulty (solo si no hemos llegado al máximo)
             if (gameState.player.currentRound < GAME_STRUCTURE.totalRounds) {
                 gameState.player.currentRound++;
+                console.log(`Incrementando nivel dificultad a: ${gameState.player.currentRound}`);
             }
             
+            // Get new difficulty
             const newDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
             
-            elements.roundCompleteMessage.textContent = 
-                `¡Felicidades! Has ganado 1 Chance por responder correctamente 5 preguntas.
-                 Ahora avanzarás al nivel ${newDifficulty} de dificultad. 
-                 ¡Sigue así para ganar más chances!`;
+            // Update prize display
+            gameState.player.prize = newChances;
+            elements.currentPrize.textContent = `${newChances} ${newChances === 1 ? 'Chance' : 'Chances'}`;
             
-            // Set button text
+            // Update round complete message
+            elements.roundCompleteMessage.textContent = 
+                `¡EXCELENTE! Has completado el nivel ${oldDifficulty} 
+                 y has ganado ${newChances} ${newChances === 1 ? 'chance' : 'chances'}.
+                 Ahora avanzarás al nivel ${newDifficulty}.`;
+            
+            // Update next round button text
             elements.nextRoundButton.textContent = 'Continuar';
             
-            // Prepare questions for the new round
+            // Update prize ladder
+            updatePrizeLadder();
+            
+            // Mark current pillar as completed for this round
+            const roundKey = `${gameState.player.currentRound - 1}-${gameState.player.currentPillar}`;
+            if (!gameState.player.completedRounds.includes(roundKey)) {
+                gameState.player.completedRounds.push(roundKey);
+            }
+            
+            // Prepare questions for the next round
             prepareQuestionsForRound();
         }
         
@@ -1021,352 +1016,235 @@ function handleCorrectAnswer() {
         elements.roundCompleteModal.classList.remove('hide');
         elements.overlay.classList.remove('hide');
         
-        // The nextRoundButton click event will hide the modal and continue the game
-        
-        // Update prize ladder to show current level
-        updatePrizeLadder();
+        return;
     }
     
-    // Update prizes
-    gameState.player.prize = newChances;
-    
-    // Update prize display
-    updatePrizeDisplay();
-    
-    // Check if all questions in the round have been answered
+    // Check if all questions in this round have been answered
     if (gameState.player.currentQuestionIndex >= gameState.currentRoundQuestions.length) {
-        // Mark this pillar as completed
-        const completedPillarKey = `${gameState.player.currentRound}-${gameState.player.currentPillar}`;
-        gameState.player.completedRounds.push(completedPillarKey);
+        // Reset question index
+        gameState.player.currentQuestionIndex = 0;
         
-        // Check if all pillars have been completed in this round
-        const allPillarsComplete = checkAllPillarsComplete();
+        // Mark current pillar as completed for this round
+        const roundKey = `${gameState.player.currentRound}-${gameState.player.currentPillar}`;
+        if (!gameState.player.completedRounds.includes(roundKey)) {
+            gameState.player.completedRounds.push(roundKey);
+        }
         
-        if (allPillarsComplete) {
-            // If this was the last round, player wins
-            if (gameState.player.currentRound >= GAME_STRUCTURE.totalRounds) {
-                endGame(true);
-            } else {
-                // Otherwise, show round complete modal
-                completeRound();
-            }
+        // Check if all pillars for this round have been completed
+        if (checkAllPillarsComplete()) {
+            showPillarChangeModal();
         } else {
-            // Otherwise, select a new pillar and continue
+            // Select a new pillar
             selectNewPillar();
         }
     } else {
-        // Load next question
-        setTimeout(loadQuestion, 1500);
+        // Load the next question
+        loadQuestion();
     }
 }
 
 // Handle a wrong answer
 function handleWrongAnswer() {
-    // End game with loss
+    // End the game (player lost)
     endGame(false);
 }
 
-// Check if all pillars have been completed in the current round
+// Check if all pillars are completed for current round
 function checkAllPillarsComplete() {
-    // Verificar si ya se alcanzaron las 25 preguntas (5 chances) - esto es fin de juego
-    if (gameState.player.questionsAnswered >= 25) {
-        console.log("🎮 FIN DEL JUEGO: Se respondieron 25 preguntas (5 chances)");
-        gameState.gameCompleted = true;
-        gameState.playerWon = true;
-        return true;
-    }
-    
-    // Get current difficulty
     const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
-    
-    // Get available pillars for this difficulty
     const availablePillars = gameState.availablePillarsByDifficulty[currentDifficulty] || [];
     
-    // Si no hay temas disponibles, consideramos que ya están completos
     if (availablePillars.length === 0) {
-        console.warn(`No hay temas disponibles para la dificultad ${currentDifficulty}. Considerando ronda completada.`);
+        console.warn(`No hay pilares disponibles para la dificultad ${currentDifficulty}`);
         return true;
     }
     
-    // Count how many pillars have been completed in this round
-    const completedPillarsInRound = gameState.player.completedRounds.filter(key => 
-        key.startsWith(`${gameState.player.currentRound}-`)
-    ).length;
+    // Check if all available pillars for this round have been completed
+    const completedCount = availablePillars.filter(pillar => {
+        const pillarKey = `${gameState.player.currentRound}-${pillar}`;
+        return gameState.player.completedRounds.includes(pillarKey);
+    }).length;
     
-    console.log(`Pilares completados: ${completedPillarsInRound}/${availablePillars.length}`);
-    
-    // Check if all available pillars have been completed
-    return completedPillarsInRound >= availablePillars.length;
+    return completedCount >= availablePillars.length;
 }
 
-// Select a new pillar and prepare questions
+// Select a new pillar
 function selectNewPillar() {
     // Select a new random pillar
     selectRandomPillar();
     
-    // Prepare questions for the new pillar
+    // Prepare new set of questions for this pillar and round
     prepareQuestionsForRound();
     
-    // Show modal with pillar change info
+    // Show pillar change modal
     showPillarChangeModal();
 }
 
-// Show the pillar change modal
+// Show pillar change modal
 function showPillarChangeModal() {
-    // Si el juego está completado, ir directamente a la pantalla de resultados
-    if (gameState.gameCompleted || gameState.playerWon || gameState.player.questionsAnswered >= 25) {
-        console.log("🏆 Juego completado durante cambio de pilar, mostrando resultados finales");
-        gameState.gameCompleted = true;
-        gameState.playerWon = true;
-        
-        // Terminar el juego como ganador
-        endGame(true);
+    // Verificar si hemos respondido un número de preguntas múltiplo de 5
+    const isChanceEarned = gameState.player.questionsAnswered > 0 && gameState.player.questionsAnswered % 5 === 0;
+    
+    if (isChanceEarned) {
+        // Esta situación se maneja en handleCorrectAnswer()
         return;
     }
     
-    elements.roundCompleteTitle.textContent = `¡Cambiando de TEMA! 🔄`;
-    elements.roundCompleteMessage.textContent = 
-        `Ahora jugarás con preguntas del tema ${gameState.player.currentPillar}. ¡Mantén el buen desempeño!`;
+    // Detener el juego durante la transición
+    gameState.gameActive = false;
     
+    // Set modal title and message for pillar change
+    elements.roundCompleteTitle.textContent = '¡Has completado este TEMA!';
+    elements.roundCompleteTitle.classList.add('violet-text');
+    elements.roundCompleteMessage.textContent = `Ahora continuarás con preguntas del tema: ${gameState.player.currentPillar}`;
+    elements.nextRoundButton.textContent = 'Continuar';
+    
+    // Show the modal
     elements.roundCompleteModal.classList.remove('hide');
     elements.overlay.classList.remove('hide');
+}
+
+// End Game
+function endGame(isWinner) {
+    // Stop game activity
+    gameState.gameActive = false;
+    gameState.gameEndTime = new Date();
+    gameState.playerWon = isWinner;
     
-    // Auto-continue after 3 seconds
-    setTimeout(() => {
-        // Verificar nuevamente si el juego se completó mientras esperaba
-        if (gameState.gameCompleted || gameState.playerWon || gameState.player.questionsAnswered >= 25) {
-            console.log("🏆 Juego completado durante espera de 3 segundos, mostrando resultados finales");
-            endGame(true);
+    // Calculate total game time
+    const totalTimeMs = gameState.gameEndTime - gameState.gameStartTime;
+    gameState.player.totalGameTimeSeconds = Math.floor(totalTimeMs / 1000);
+    
+    // Stop the timer
+    stopTimer();
+    
+    // Update results UI
+    elements.resultTitle.textContent = isWinner ? '¡FELICIDADES!' : 'Juego Terminado';
+    elements.resultPlayerName.textContent = gameState.player.name;
+    elements.resultPlayerPhone.textContent = gameState.player.phone.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+    
+    // Calculate final prize
+    const finalChances = Math.floor(gameState.player.questionsAnswered / 5);
+    const totalQuestionsRequired = GAME_STRUCTURE.totalRounds * GAME_STRUCTURE.questionsPerRound;
+    elements.resultPrize.textContent = `${finalChances} ${finalChances === 1 ? 'Chance' : 'Chances'}`;
+    elements.resultRound.textContent = `${gameState.player.questionsAnswered} de ${totalQuestionsRequired}`;
+    elements.resultPillar.textContent = gameState.player.currentPillar;
+    
+    // Show results screen
+    showScreen(elements.resultsScreen);
+    
+    // Save the score
+    saveScore(gameState.player.name, finalChances, gameState.player.currentRound, gameState.player.currentPillar);
+}
+
+// Start Timer
+function startTimer() {
+    // Clear existing timer
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+        gameState.timer = null;
+    }
+    
+    // Reset timer UI
+    elements.timerBar.style.width = '100%';
+    
+    // Calculate time per frame based on total time
+    const fps = 30; // frames per second
+    const totalFrames = gameState.timeRemaining * fps;
+    const msPerFrame = 1000 / fps;
+    let currentFrame = 0;
+    
+    // Set timer interval
+    gameState.timer = setInterval(() => {
+        if (!gameState.gameActive) {
+            clearInterval(gameState.timer);
             return;
         }
         
-        elements.roundCompleteModal.classList.add('hide');
-        elements.overlay.classList.add('hide');
-        loadQuestion();
-    }, 3000);
-}
-
-// Complete the current round and prepare for the next
-function completeRound() {
-    // Si ya se han completado las 25 preguntas totales o se alcanzó el nivel final, 
-    // terminar como ganador en lugar de avanzar
-    if (gameState.player.questionsAnswered >= 25 || gameState.player.currentRound >= GAME_STRUCTURE.totalRounds) {
-        console.log("🏆 Última ronda completada, finalizando juego como ganador");
-        gameState.gameCompleted = true;
-        gameState.playerWon = true;
-        endGame(true);
-        return;
-    }
-    
-    // Play level up sound
-    if (typeof playSound === 'function') {
-        playSound('levelUp');
-    }
-    
-    // Show round complete modal
-    elements.roundCompleteTitle.textContent = `¡Ronda ${gameState.player.currentRound} Completada! 🎉`;
-    elements.roundCompleteTitle.classList.add('violet-text');
-    elements.roundCompleteMessage.textContent = 
-        `¡Felicidades! Has completado todos los temas de la dificultad ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}. 
-        Tienes ${formatCurrency(gameState.player.prize)} para participar en sorteos.
-        ¡Prepárate para la siguiente ronda!`;
-    
-    elements.roundCompleteModal.classList.remove('hide');
-    elements.overlay.classList.remove('hide');
-}
-
-// La función startNextRound ya no se utiliza porque fue reemplazada
-// por la función anónima en el event listener del botón nextRoundButton
-
-// End the game
-function endGame(isWinner) {
-    // Set game as inactive and record end time
-    gameState.gameActive = false;
-    gameState.gameEndTime = new Date();
-    
-    // Calculate total game time in seconds
-    if (gameState.gameStartTime) {
-        const gameTimeMs = gameState.gameEndTime - gameState.gameStartTime;
-        gameState.player.totalGameTimeSeconds = Math.floor(gameTimeMs / 1000);
-        console.log(`Juego completado en ${gameState.player.totalGameTimeSeconds} segundos`);
-    }
-    
-    // Asegurarnos de que el temporizador esté detenido
-    console.log("🛑 Deteniendo temporizador al finalizar juego");
-    stopTimer();
-    
-    // Update results screen
-    if (isWinner) {
-        elements.resultTitle.textContent = '¡FELICIDADES! ¡ERES UN VENDEDOR SUPER PRO!';
-        elements.resultTitle.classList.add('winner-text');
+        currentFrame++;
+        const percentRemaining = 100 - (currentFrame / totalFrames * 100);
         
-        // Play winner sound
-        if (typeof playSound === 'function') {
-            playSound('winner');
-        }
+        // Update timer UI
+        elements.timerBar.style.width = `${percentRemaining}%`;
         
-        // Show confetti
-        if (typeof showConfetti === 'function') {
-            showConfetti();
-        }
-    } else {
-        elements.resultTitle.classList.remove('winner-text');
-        if (gameState.timeRemaining <= 0) {
-            elements.resultTitle.textContent = '¡SE ACABÓ EL TIEMPO!';
-        } else {
-            elements.resultTitle.textContent = '¡JUEGO TERMINADO!';
-        }
-    }
-    
-    // Update result details
-    elements.resultPlayerName.textContent = gameState.player.name;
-    elements.resultPlayerPhone.textContent = gameState.player.phone;
-    elements.resultPrize.textContent = formatCurrency(gameState.player.prize);
-    elements.resultRound.textContent = `${gameState.player.questionsAnswered} de 25`;
-    
-    // Mostrar el nivel de dificultad alcanzado en lugar del pilar
-    const difficultyLevel = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
-    elements.resultPillar.textContent = difficultyLevel;
-    
-    // Save score to leaderboard - now using the same difficulty level
-    saveScore(
-        gameState.player.name, 
-        gameState.player.prize, 
-        gameState.player.currentRound,
-        difficultyLevel
-    );
-    
-    // Show results screen after a short delay
-    setTimeout(() => {
-        showScreen(elements.resultsScreen);
-    }, 1500);
-}
-
-// Timer Functions
-function startTimer() {
-    // No iniciar temporizador si el juego no está activo
-    if (!gameState.gameActive) {
-        console.log("⚠️ Intento de iniciar temporizador mientras el juego está inactivo. Ignorando.");
-        return;
-    }
-    
-    // Clear any existing timer
-    if (gameState.timer) {
-        clearInterval(gameState.timer);
-        gameState.timer = null;
-    }
-    
-    // Asegurar que el valor del tiempo restante es válido
-    if (typeof gameState.timeRemaining !== 'number' || gameState.timeRemaining <= 0) {
-        console.warn("⚠️ Valor de tiempo restante inválido:", gameState.timeRemaining);
-        // Establecer un valor predeterminado de seguridad
-        gameState.timeRemaining = 30;
-    }
-    
-    // Log para debugging
-    console.log("Iniciando temporizador con " + gameState.timeRemaining + " segundos");
-    
-    // Inicializar la visualización del temporizador
-    elements.timerBar.style.transition = 'none'; // Desactivar transición para reinicio instantáneo
-    elements.timerBar.style.width = '100%';
-    elements.timerBar.style.backgroundColor = 'var(--success-green)';
-    
-    // Forzar reflow para asegurar que los cambios se apliquen inmediatamente
-    void elements.timerBar.offsetWidth;
-    
-    // Restaurar transición
-    elements.timerBar.style.transition = 'width 1s linear, background-color 0.5s ease';
-    
-    // Actualizar la visualización del temporizador inmediatamente
-    updateTimerDisplay();
-    
-    // Start the timer immediately
-    gameState.timer = setInterval(() => {
-        // Decrement time remaining
-        gameState.timeRemaining--;
-        
-        console.log("Tiempo restante: " + gameState.timeRemaining);
-        
-        // Update timer display
-        updateTimerDisplay();
-        
-        // Play sounds based on time remaining
-        if (typeof playSound === 'function') {
-            if (gameState.timeRemaining <= 5) {
+        // Update class for color changes
+        if (percentRemaining <= 25) {
+            elements.timerBar.className = 'critical';
+            
+            // Play time low sound at 25%
+            if (percentRemaining <= 25.5 && percentRemaining >= 24.5 && typeof playSound === 'function') {
                 playSound('timeLow');
-            } else if (gameState.timeRemaining <= 15) {
+            }
+        } else if (percentRemaining <= 50) {
+            elements.timerBar.className = 'warning';
+            
+            // Play time running sound at 50%
+            if (percentRemaining <= 50.5 && percentRemaining >= 49.5 && typeof playSound === 'function') {
                 playSound('timeRunning');
             }
+        } else {
+            elements.timerBar.className = '';
         }
         
         // Check if time is up
-        if (gameState.timeRemaining <= 0) {
-            stopTimer();
+        if (currentFrame >= totalFrames) {
+            clearInterval(gameState.timer);
+            gameState.timer = null;
             timeUp();
         }
-    }, 1000);
+    }, msPerFrame);
 }
 
-// Stop the timer
+// Stop Timer
 function stopTimer() {
+    // Clear timer interval
     if (gameState.timer) {
         clearInterval(gameState.timer);
         gameState.timer = null;
+        console.log("🛑 Timer detenido");
     }
 }
 
-// Update the timer display
-function updateTimerDisplay() {
-    // Calculate the percentage of time remaining
-    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
-    const totalTime = GAME_CONFIG.timePerDifficulty[difficultyKey];
-    const percentage = (gameState.timeRemaining / totalTime) * 100;
-    
-    // Update the timer bar width
-    elements.timerBar.style.width = `${percentage}%`;
-    
-    // Update the color based on time remaining
-    if (percentage <= 20) {
-        elements.timerBar.style.backgroundColor = 'var(--danger-red)';
-    } else if (percentage <= 50) {
-        elements.timerBar.style.backgroundColor = 'var(--warning-orange)';
-    } else {
-        elements.timerBar.style.backgroundColor = 'var(--success-green)';
-    }
-}
-
-// Handle time up
+// Time Up
 function timeUp() {
-    // Disable all answers
-    elements.answers.forEach(answer => answer.classList.add('disabled'));
+    // Only proceed if game is active
+    if (!gameState.gameActive) return;
     
-    // Don't show correct answer when time is up
+    // Game over due to time up
+    console.log("Tiempo agotado");
     
-    // Play wrong sound
-    if (typeof playSound === 'function') {
-        playSound('wrong');
-    }
+    // Show message
+    elements.errorText.textContent = "¡Se acabó el tiempo!";
+    elements.errorModal.classList.remove('hide');
+    elements.overlay.classList.remove('hide');
     
-    // End game after a short delay
+    // Wait 2 seconds then end game
     setTimeout(() => {
-        endGame(false);
+        elements.errorModal.classList.add('hide');
+        elements.overlay.classList.add('hide');
+        
+        // End game (player lost)
+        handleWrongAnswer();
     }, 2000);
 }
 
-// Lifeline Functions
+// Use Lifeline
 function useLifeline(e) {
-    // Get the lifeline element and ID
-    const lifeline = e.currentTarget;
-    const lifelineId = lifeline.id;
+    // If game is not active, do nothing
+    if (!gameState.gameActive) return;
     
-    // Check if the lifeline is already used or game is not active
-    if (lifeline.classList.contains('used') || !gameState.gameActive) {
+    // Get the lifeline type from the element's ID
+    const lifeline = e.currentTarget.id;
+    
+    // Check if the lifeline has already been used
+    if (gameState.player.usedLifelines[lifeline]) {
+        console.log(`El comodín ${lifeline} ya ha sido usado`);
         return;
     }
     
     // Mark lifeline as used
-    lifeline.classList.add('used');
-    gameState.player.usedLifelines[lifelineId] = true;
+    gameState.player.usedLifelines[lifeline] = true;
+    e.currentTarget.classList.add('used');
     
     // Play lifeline sound
     if (typeof playSound === 'function') {
@@ -1374,7 +1252,7 @@ function useLifeline(e) {
     }
     
     // Apply the lifeline effect
-    switch(lifelineId) {
+    switch (lifeline) {
         case 'fifty-fifty':
             applyFiftyFifty();
             break;
@@ -1387,181 +1265,184 @@ function useLifeline(e) {
     }
 }
 
-// Apply the 50:50 lifeline
+// Apply 50:50 Lifeline
 function applyFiftyFifty() {
     // Get the correct answer index
     const correctIndex = gameState.currentQuestion.correctIndex;
     
-    // Get all incorrect answer indices
+    // Create an array of incorrect answer indices
     const incorrectIndices = [0, 1, 2, 3].filter(i => i !== correctIndex);
     
-    // Randomly select 2 incorrect answers to remove
+    // Shuffle the incorrect answers
     shuffleArray(incorrectIndices);
-    const indicesToRemove = incorrectIndices.slice(0, 2);
     
-    // Disable these answers
-    indicesToRemove.forEach(index => {
+    // Select two incorrect answers to remove (leave one incorrect and the correct)
+    const toRemove = incorrectIndices.slice(0, 2);
+    
+    // Hide the selected incorrect answers
+    toRemove.forEach(index => {
         elements.answers[index].classList.add('disabled');
+        elements.answers[index].style.opacity = '0.3';
+        elements.answerTexts[index].textContent = '...';
     });
 }
 
-// Show the audience help lifeline
+// Show Audience Help
 function showAudienceHelp() {
-    // Show overlay
-    elements.overlay.classList.remove('hide');
-    
-    // Get the correct answer index
+    // Get the current difficulty and correct answer index
+    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
     const correctIndex = gameState.currentQuestion.correctIndex;
     
-    // Generate audience percentages based on the difficulty
-    const difficultyKey = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
-    let percentages = generateAudiencePercentages(difficultyKey, correctIndex);
+    // Generate audience percentages
+    const percentages = generateAudiencePercentages(currentDifficulty, correctIndex);
     
-    // Update the audience chart
+    // Update the audience poll UI
     elements.audienceChartBars.forEach((bar, index) => {
-        const fill = bar.querySelector('.bar-fill');
-        const percentage = bar.querySelector('.bar-percentage');
-        const barLabel = bar.querySelector('.bar-label');
-        
-        // Reset height first
-        fill.style.height = '0%';
-        percentage.textContent = '0%';
-        
-        // Add or remove correct class
-        if (index === correctIndex) {
-            fill.classList.add('correct');
-            barLabel.classList.add('correct');
-        } else {
-            fill.classList.remove('correct');
-            barLabel.classList.remove('correct');
-        }
-        
-        // Animate the chart after a short delay
-        setTimeout(() => {
-            fill.style.height = `${percentages[index]}%`;
-            percentage.textContent = `${percentages[index]}%`;
-        }, 500 + index * 300);
+        bar.style.height = `${percentages[index]}%`;
     });
     
-    // Show the audience modal
+    elements.audiencePercentages.forEach((element, index) => {
+        element.textContent = `${percentages[index]}%`;
+    });
+    
+    // Show the audience help modal
     elements.audienceModal.classList.remove('hide');
+    elements.overlay.classList.remove('hide');
 }
 
-// Generate audience percentages based on difficulty and correct answer
+// Generate audience percentages for the poll
 function generateAudiencePercentages(difficulty, correctIndex) {
-    // Determine correct answer percentage based on difficulty
+    // Difficulty affects how accurate the audience is
     let correctPercentage;
-    switch(difficulty) {
-        case 'fácil_🟢':
-            correctPercentage = 65 + Math.floor(Math.random() * 20); // 65-84%
+    
+    switch (difficulty) {
+        case 'Fácil 🟢':
+            correctPercentage = 70 + Math.floor(Math.random() * 20); // 70-89%
             break;
-        case 'menos_fácil_🟡':
-            correctPercentage = 55 + Math.floor(Math.random() * 20); // 55-74%
+        case 'Menos fácil 🟡':
+            correctPercentage = 60 + Math.floor(Math.random() * 20); // 60-79%
             break;
-        case 'difícil_🔴':
-            correctPercentage = 45 + Math.floor(Math.random() * 20); // 45-64%
+        case 'Difícil 🔴':
+            correctPercentage = 50 + Math.floor(Math.random() * 20); // 50-69%
             break;
-        case 'muy_difícil_🔥':
+        case 'Muy difícil 🔥':
             correctPercentage = 40 + Math.floor(Math.random() * 20); // 40-59%
             break;
-        case 'complicada_💀':
-            correctPercentage = 30 + Math.floor(Math.random() * 25); // 30-54%
+        case 'Complicada 💀':
+            correctPercentage = 30 + Math.floor(Math.random() * 20); // 30-49%
             break;
         default:
-            correctPercentage = 50;
+            correctPercentage = 60;
     }
     
-    // Initialize percentages for all options
+    // Distribute the remaining percentage among the incorrect answers
+    const remainingPercentage = 100 - correctPercentage;
     let percentages = [0, 0, 0, 0];
+    
+    // Assign the correct percentage to the correct answer
     percentages[correctIndex] = correctPercentage;
     
-    // Distribute remaining percentage among incorrect options
-    const remainingPercentage = 100 - correctPercentage;
-    let distributed = 0;
+    // Get indices of incorrect answers
+    const incorrectIndices = [0, 1, 2, 3].filter(i => i !== correctIndex);
     
-    for (let i = 0; i < 4; i++) {
-        if (i !== correctIndex) {
-            // For the last incorrect option, assign all remaining percentage
-            if (i === 3 || (i === 2 && correctIndex === 3)) {
-                percentages[i] = remainingPercentage - distributed;
-            } else {
-                // Otherwise assign a random percentage
-                const maxAssign = remainingPercentage - distributed - (2 - [0, 1, 2].filter(idx => idx !== correctIndex && idx > i).length);
-                const assign = Math.max(1, Math.floor(Math.random() * maxAssign));
-                percentages[i] = assign;
-                distributed += assign;
-            }
-        }
+    // Distribute remaining percentage randomly
+    let remaining = remainingPercentage;
+    for (let i = 0; i < incorrectIndices.length - 1; i++) {
+        const maxForThis = remaining - (incorrectIndices.length - i - 1);
+        const randomPercent = Math.floor(Math.random() * maxForThis);
+        percentages[incorrectIndices[i]] = randomPercent;
+        remaining -= randomPercent;
     }
+    
+    // Assign the remaining percentage to the last incorrect answer
+    percentages[incorrectIndices[incorrectIndices.length - 1]] = remaining;
     
     return percentages;
 }
 
-// Show the expert call lifeline
+// Show Expert Call
 function showExpertCall() {
-    // Show overlay
-    elements.overlay.classList.remove('hide');
-    
-    // Get the correct answer index and option letter
+    // Get the correct answer
     const correctIndex = gameState.currentQuestion.correctIndex;
-    const correctOption = String.fromCharCode(65 + correctIndex); // A, B, C, D
+    const correctOption = String.fromCharCode(65 + correctIndex); // Convert 0-3 to A-D
     
-    // Determine confidence level based on difficulty
+    // Expert confidence level depends on question difficulty
+    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
+    
     let confidenceLevel;
-    const difficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1].toLowerCase().replace(/ /g, '_');
-    
-    switch(difficulty) {
-        case 'fácil_🟢':
-            confidenceLevel = Math.random() < 0.8 ? 'high' : 'medium';
+    switch (currentDifficulty) {
+        case 'Fácil 🟢':
+            confidenceLevel = 'very-confident'; // 95% correct
             break;
-        case 'menos_fácil_🟡':
-            confidenceLevel = Math.random() < 0.6 ? 'high' : (Math.random() < 0.8 ? 'medium' : 'low');
+        case 'Menos fácil 🟡':
+            confidenceLevel = 'confident'; // 80% correct
             break;
-        case 'difícil_🔴':
-            confidenceLevel = Math.random() < 0.4 ? 'high' : (Math.random() < 0.7 ? 'medium' : 'low');
+        case 'Difícil 🔴':
+            confidenceLevel = 'somewhat-confident'; // 70% correct
             break;
-        case 'muy_difícil_🔥':
-            confidenceLevel = Math.random() < 0.3 ? 'high' : (Math.random() < 0.6 ? 'medium' : 'low');
+        case 'Muy difícil 🔥':
+            confidenceLevel = 'unsure'; // 60% correct
             break;
-        case 'complicada_💀':
-            confidenceLevel = Math.random() < 0.2 ? 'high' : (Math.random() < 0.5 ? 'medium' : 'low');
+        case 'Complicada 💀':
+            confidenceLevel = 'guessing'; // 50% correct
             break;
         default:
-            confidenceLevel = 'medium';
+            confidenceLevel = 'confident';
     }
     
-    // Generate the expert advice
+    // Generate expert advice
     const advice = generateExpertAdvice(correctOption, confidenceLevel);
     
-    // Update the expert advice in the modal
+    // Update expert modal UI
     elements.expertAdvice.textContent = advice;
     
     // Show the expert modal
     elements.expertModal.classList.remove('hide');
+    elements.overlay.classList.remove('hide');
 }
 
-// Generate expert advice based on the correct option and confidence level
+// Generate expert advice based on confidence level
 function generateExpertAdvice(correctOption, confidenceLevel) {
-    // Select a random template
-    const template = EXPERT_ADVICE_TEMPLATES[Math.floor(Math.random() * EXPERT_ADVICE_TEMPLATES.length)];
+    const randomChance = Math.random() * 100;
     
-    // Select a random reason based on confidence level
-    const reasons = EXPERT_REASONS[confidenceLevel];
-    const reason = reasons[Math.floor(Math.random() * reasons.length)];
+    let isCorrect = false;
+    let adviceIntro = '';
     
-    // If confidence is not high, there's a chance the expert gives wrong advice
-    let option = correctOption;
-    if (confidenceLevel !== 'high' && Math.random() < (confidenceLevel === 'low' ? 0.3 : 0.15)) {
-        // Select a wrong option
-        const options = ['A', 'B', 'C', 'D'].filter(opt => opt !== correctOption);
-        option = options[Math.floor(Math.random() * options.length)];
+    // Determine if the expert gives the correct answer based on confidence level
+    switch (confidenceLevel) {
+        case 'very-confident':
+            isCorrect = randomChance < 95;
+            adviceIntro = 'Estoy muy seguro de que ';
+            break;
+        case 'confident':
+            isCorrect = randomChance < 80;
+            adviceIntro = 'Estoy bastante seguro de que ';
+            break;
+        case 'somewhat-confident':
+            isCorrect = randomChance < 70;
+            adviceIntro = 'Creo que ';
+            break;
+        case 'unsure':
+            isCorrect = randomChance < 60;
+            adviceIntro = 'No estoy completamente seguro, pero creo que ';
+            break;
+        case 'guessing':
+            isCorrect = randomChance < 50;
+            adviceIntro = 'Es difícil saberlo, pero si tuviera que adivinar diría que ';
+            break;
     }
     
-    // Fill the template with the option and reason
-    return template.replace('{option}', option).replace('{reason}', reason);
+    // If not correct, select a random wrong option
+    let suggestedOption = correctOption;
+    if (!isCorrect) {
+        const options = ['A', 'B', 'C', 'D'].filter(opt => opt !== correctOption);
+        suggestedOption = options[Math.floor(Math.random() * options.length)];
+    }
+    
+    return `${adviceIntro}la respuesta correcta es la opción ${suggestedOption}.`;
 }
 
-// UI Functions
+// Show a specific screen
 function showScreen(screen) {
     // Hide all screens
     elements.loadingScreen.classList.add('hide');
@@ -1571,418 +1452,218 @@ function showScreen(screen) {
     elements.resultsScreen.classList.add('hide');
     elements.leaderboardScreen.classList.add('hide');
     
-    // Detener la animación de confeti si existe y está funcionando
-    // excepto cuando vamos a la pantalla de resultados para un ganador
-    if (typeof stopConfetti === 'function' && !(screen === elements.resultsScreen && gameState.player.currentRound >= GAME_STRUCTURE.totalRounds)) {
-        stopConfetti();
-    }
-    
     // Show the requested screen
     screen.classList.remove('hide');
 }
 
-// Update the prize display
+// Update prize display
 function updatePrizeDisplay() {
-    elements.currentPrize.textContent = formatCurrency(gameState.player.prize);
+    const chances = Math.floor(gameState.player.questionsAnswered / 5);
+    elements.currentPrize.textContent = `${chances} ${chances === 1 ? 'Chance' : 'Chances'}`;
 }
 
-// Update the prize ladder
+// Update the prize ladder UI
 function updatePrizeLadder() {
-    // Highlight the current round in the prize ladder
-    elements.prizeLevels.forEach(level => {
-        level.classList.remove('current');
+    elements.prizeLadder.forEach(level => {
+        level.classList.remove('current', 'completed');
         
         const levelRound = parseInt(level.dataset.round);
-        if (levelRound === gameState.player.currentRound) {
+        
+        if (levelRound < gameState.player.currentRound) {
+            level.classList.add('completed');
+        } else if (levelRound === gameState.player.currentRound) {
             level.classList.add('current');
         }
     });
-    
-    // Asegurar que el nivel actual en la barra superior coincida con el del ladder
-    const currentDifficulty = GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1];
-    elements.currentDifficulty.textContent = `Nivel: ${currentDifficulty}`;
 }
 
-// Format currency (changed to show chances instead of money amount)
-function formatCurrency(amount) {
-    // If amount is 0, show "0 Chances"
-    if (amount === 0) {
-        return `0 Chances`;
-    } else if (amount === 1) {
-        return `1 Chance`;
-    } else {
-        return `${amount} Chances`;
-    }
-}
-
-// Update visual progress indicator (the 5 dots)
+// Update progress dots
 function updateProgressDots() {
-    console.log("Actualizando puntos de progreso: " + gameState.player.questionsAnswered);
-    // Calculate how many dots should be completed (1-5)
-    const currentProgress = Math.min(5, gameState.player.questionsAnswered % 5);
+    // Reset all dots
+    elements.progressDots.forEach(dot => {
+        dot.classList.remove('completed');
+    });
     
-    // Update each of the 5 dots
-    for (let i = 0; i < 5; i++) {
-        // Update the class of each progress dot
-        if (i < currentProgress) {
+    // Calculate how many dots to fill based on questions answered mod 5
+    const dotsToFill = gameState.player.questionsAnswered % 5;
+    
+    // Fill dots
+    for (let i = 0; i < dotsToFill; i++) {
+        if (elements.progressDots[i]) {
             elements.progressDots[i].classList.add('completed');
-        } else {
-            elements.progressDots[i].classList.remove('completed');
         }
     }
 }
 
-// Show the confetti animation
+// Show confetti animation
 function showConfetti() {
-    // Make sure the confetti canvas is visible
-    elements.confettiCanvas.classList.remove('hide');
-    
-    // Start the confetti animation if the function exists
+    // Check if confetti function exists
     if (typeof startConfetti === 'function') {
+        elements.confettiCanvas.classList.remove('hide');
         startConfetti();
     }
 }
 
 // Close all modals
 function closeModals() {
+    elements.overlay.classList.add('hide');
     elements.expertModal.classList.add('hide');
     elements.audienceModal.classList.add('hide');
-    elements.errorModal.classList.add('hide');
-    elements.overlay.classList.add('hide');
-    
-    // Asegurarnos de detener los confetis si están activos
-    if (typeof stopConfetti === 'function') {
-        stopConfetti();
-    }
+    elements.roundCompleteModal.classList.add('hide');
 }
 
-// Handle error modal close specifically
+// Handle error modal close
 function handleErrorModalClose() {
-    // Ocultar el modal de error
     elements.errorModal.classList.add('hide');
     elements.overlay.classList.add('hide');
-    
-    // Detener la animación de confetis si está activa
-    if (typeof stopConfetti === 'function') {
-        stopConfetti();
-    }
-    
-    // Volver a la pantalla inicial
-    showScreen(elements.startScreen);
 }
 
-// Show the leaderboard
-function showLeaderboard() {
-    // Show the leaderboard screen
+// Show leaderboard
+async function showLeaderboard() {
+    // Show leaderboard screen
     showScreen(elements.leaderboardScreen);
     
-    // Show loading indicator
-    elements.leaderboardTable.classList.add('hide');
+    // Show loading animation
     elements.leaderboardLoading.classList.remove('hide');
+    elements.leaderboardTable.classList.add('hide');
     
-    // Fetch and display leaderboard data
-    getLeaderboard();
-}
-
-// Hide the leaderboard and go back to the previous screen
-function hideLeaderboard() {
-    // Go back to start screen if not in a game
-    if (!gameState.gameActive) {
-        showScreen(elements.startScreen);
-    } else {
-        // Otherwise go back to game screen
-        showScreen(elements.gameScreen);
+    try {
+        // Get leaderboard data
+        const scores = await getLeaderboard();
+        
+        // Update leaderboard UI
+        updateLeaderboard(scores);
+        
+        // Hide loading animation
+        elements.leaderboardLoading.classList.add('hide');
+        elements.leaderboardTable.classList.remove('hide');
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        elements.leaderboardLoading.innerHTML = `
+            <p class="error-message">Error al cargar la tabla de líderes: ${error.message}</p>
+        `;
     }
 }
 
-// Update the leaderboard with new data
+// Hide leaderboard
+function hideLeaderboard() {
+    // Return to appropriate screen
+    if (gameState.gameActive) {
+        showScreen(elements.gameScreen);
+    } else if (gameState.gameEndTime) {
+        showScreen(elements.resultsScreen);
+    } else {
+        showScreen(elements.startScreen);
+    }
+}
+
+// Update leaderboard UI
 function updateLeaderboard(scores) {
-    // Clear the leaderboard table
+    // Clear existing leaderboard
     elements.leaderboardBody.innerHTML = '';
     
-    // Add each score to the table
+    if (!scores || !scores.length) {
+        // No scores yet
+        elements.leaderboardBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-scores">No hay puntajes registrados aún</td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Format and add each score to the table
     scores.forEach((score, index) => {
         const row = document.createElement('tr');
         
-        // Format the date
-        const date = new Date(score.date);
-        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        // Format date
+        const scoreDate = new Date(score.date);
+        const formattedDate = `${scoreDate.getDate()}/${scoreDate.getMonth() + 1}/${scoreDate.getFullYear()}`;
         
-        // Determinar número de preguntas respondidas
-        const questionsAnswered = score.questionsAnswered || score.maxRound * 5 || 0;
-        
-        // Determinar tiempo de juego (si existe)
-        let gameTime = 'N/A';
-        if (score.totalGameTimeSeconds) {
-            const minutes = Math.floor(score.totalGameTimeSeconds / 60);
-            const seconds = score.totalGameTimeSeconds % 60;
-            gameTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        // Generar HTML para el nivel con color según dificultad
-        let levelHtml = score.finalPillar;
-        
-        if (score.finalPillar) {
-            if (score.finalPillar.includes('Fácil')) {
-                levelHtml = `<span style="color: #4CAF50; font-weight: bold;">${score.finalPillar}</span>`;
-            } else if (score.finalPillar.includes('Menos fácil')) {
-                levelHtml = `<span style="color: #FFC107; font-weight: bold;">${score.finalPillar}</span>`;
-            } else if (score.finalPillar.includes('Difícil')) {
-                levelHtml = `<span style="color: #F44336; font-weight: bold;">${score.finalPillar}</span>`;
-            } else if (score.finalPillar.includes('Muy difícil')) {
-                levelHtml = `<span style="color: #FF5722; font-weight: bold;">${score.finalPillar}</span>`;
-            } else if (score.finalPillar.includes('Complicada')) {
-                levelHtml = `<span style="color: #9C27B0; font-weight: bold;">${score.finalPillar}</span>`;
-            }
-        }
-        
-        // Create the row content con estilos en línea para colores más fuertes
         row.innerHTML = `
-            <td style="color: var(--ml-violet); font-weight: bold;">${index + 1}</td>
-            <td style="font-weight: bold;">${score.name}</td>
-            <td style="color: black; font-weight: bold;">${score.chances !== undefined ? score.chances : Math.floor(score.score / 5)} Chances</td>
-            <td style="color: #3483FA; font-weight: bold;">${questionsAnswered}</td>
-            <td>${gameTime}</td>
-            <td>${levelHtml}</td>
+            <td>${index + 1}</td>
+            <td>${score.name}</td>
+            <td>${score.prize}</td>
+            <td>${score.questionsAnswered || 0}</td>
+            <td>${score.gameTimeSeconds || '-'}</td>
+            <td>${score.maxRound || 1}</td>
             <td>${formattedDate}</td>
         `;
         
-        // Add the row to the table
         elements.leaderboardBody.appendChild(row);
     });
-    
-    // Hide loading indicator and show the table
-    elements.leaderboardLoading.classList.add('hide');
-    elements.leaderboardTable.classList.remove('hide');
 }
 
-// Save the player's score to the leaderboard
+// Save score to the server
 async function saveScore(name, prize, maxRound, finalPillar) {
     try {
-        // Mostrar un mensaje explícito de depuración de datos
-        console.log("------------- DEPURACIÓN DE DATOS -------------");
-        console.log("- Nombre del jugador:", name);
-        console.log("- Teléfono:", gameState.player.phone);
-        console.log("- Premio/Chances real:", prize);
-        console.log("- Ronda máxima:", maxRound);
-        console.log("- Nivel final:", finalPillar);
-        console.log("- Preguntas respondidas:", gameState.player.questionsAnswered);
-        console.log("- Tiempo total:", gameState.player.totalGameTimeSeconds);
-        console.log("--------------------------------------------");
-        
-        // Calcular el número de chances basado en preguntas correctas
-        const chances = Math.floor(gameState.player.questionsAnswered / 5);
-        
-        // SOLUCIÓN PARA TELÉFONOS: Asegurarse de que el teléfono sea string y nunca sea null/undefined
-        let phone = "";
-        if (gameState.player && gameState.player.phone) {
-            phone = String(gameState.player.phone).trim();
-        }
-        if (!phone) {
-            console.warn("⚠️ ¡Teléfono vacío! Usando valor predeterminado '0000000000'");
-            phone = "0000000000"; // Valor predeterminado para evitar null/undefined
-        }
-        
-        // Sanitizar nombre para evitar problemas con Airtable
-        const cleanName = (name || "").trim() || "Jugador";
-        
-        // Datos del puntaje con valores predeterminados para campos críticos
         const scoreData = {
-            name: cleanName, 
-            phone: phone,
-            score: Number(prize) || 0, 
-            prize: Number(prize) || 0,
-            chances: Number(chances) || 0,
-            maxRound: Number(maxRound) || 1,
-            questionsAnswered: Number(gameState.player.questionsAnswered) || 0,
-            totalGameTimeSeconds: Number(gameState.player.totalGameTimeSeconds) || 0,
-            finalPillar: String(finalPillar || "Fácil 🟢")
+            name: name,
+            phone: gameState.player.phone,
+            prize: prize,
+            questionsAnswered: gameState.player.questionsAnswered,
+            gameTimeSeconds: gameState.player.totalGameTimeSeconds,
+            maxRound: maxRound,
+            finalPillar: finalPillar,
+            date: new Date().toISOString()
         };
         
-        console.log('Guardando puntuación:', JSON.stringify(scoreData, null, 2));
+        console.log('Guardando puntaje:', scoreData);
         
-        // Intentos múltiples para guardar la puntuación
-        let attempts = 0;
-        const maxAttempts = 3;
-        let success = false;
-        let lastError = null;
+        // Call API to save score
+        const response = await fetch(API_ENDPOINTS.saveScore, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(scoreData)
+        });
         
-        while (attempts < maxAttempts && !success) {
-            attempts++;
-            try {
-                console.log(`Intento ${attempts} de guardar puntuación...`);
-                
-                // Hacer una solicitud con tiempo de espera explícito
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
-                
-                const response = await fetch(API_ENDPOINTS.scores, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(scoreData),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId); // Limpiar el timeout si la respuesta llega antes
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`Error respuesta del servidor (intento ${attempts}):`, errorText);
-                    lastError = new Error(`Error en respuesta del servidor: ${response.status} ${response.statusText}`);
-                    
-                    // Si no es el último intento, esperar un poco antes de reintentar
-                    if (attempts < maxAttempts) {
-                        await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos entre intentos
-                    }
-                } else {
-                    const result = await response.json();
-                    console.log('✅ ¡Puntuación guardada exitosamente!:', result);
-                    success = true;
-                    
-                    // Activar confeti para celebrar
-                    if (typeof startConfetti === 'function') {
-                        startConfetti();
-                        setTimeout(() => {
-                            if (typeof stopConfetti === 'function') stopConfetti();
-                        }, 3000);
-                    }
-                    
-                    // Get the leaderboard after saving
-                    getLeaderboard();
-                    return true; // Éxito
-                }
-            } catch (attemptError) {
-                console.error(`Error en intento ${attempts}:`, attemptError);
-                lastError = attemptError;
-                
-                // Si no es el último intento, esperar un poco antes de reintentar
-                if (attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos entre intentos
-                }
-            }
+        if (!response.ok) {
+            throw new Error(`Error al guardar el puntaje: ${response.status} ${response.statusText}`);
         }
         
-        if (!success) {
-            throw lastError || new Error('No se pudo guardar la puntuación después de múltiples intentos');
-        }
+        const data = await response.json();
+        console.log('Puntaje guardado exitosamente:', data);
         
-        return success;
+        return data;
     } catch (error) {
-        console.error('❌ Error final guardando puntuación:', error);
-        // A pesar del error, actualizar la tabla de líderes de todos modos
-        try {
-            getLeaderboard();
-        } catch (e) {
-            console.error('Error adicional obteniendo tabla de líderes:', e);
-        }
-        return false;
+        console.error('Error saving score:', error);
+        // Show error message
+        elements.errorText.textContent = `Error al guardar tu puntaje: ${error.message}`;
+        elements.errorModal.classList.remove('hide');
+        elements.overlay.classList.remove('hide');
+        
+        throw error;
     }
 }
 
-// Get the leaderboard data from the server
+// Get leaderboard data from the server
 async function getLeaderboard() {
     try {
-        // Mostrar indicador de carga
-        elements.leaderboardLoading.classList.remove('hide');
-        elements.leaderboardTable.classList.add('hide');
-        
-        console.log("Cargando tabla de líderes...");
-        
-        // Fetch the top scores from the server
+        // Call API to get top scores
         const response = await fetch(API_ENDPOINTS.topScores);
         
         if (!response.ok) {
-            console.error(`Error de servidor: ${response.status} ${response.statusText}`);
-            throw new Error('Error al cargar la tabla de líderes');
+            throw new Error(`Error al obtener tabla de líderes: ${response.status} ${response.statusText}`);
         }
         
-        // Parse the response
-        const scores = await response.json();
+        const data = await response.json();
+        console.log('Tabla de líderes cargada:', data);
         
-        console.log("Datos de tabla de líderes recibidos:", scores);
-        
-        // Verificar si los datos son válidos
-        if (!Array.isArray(scores)) {
-            console.error("Los datos recibidos no son un array:", scores);
-            throw new Error('Formato de datos incorrecto');
-        }
-        
-        // Ordenar los puntajes por:
-        // 1. Mayor número de preguntas respondidas
-        // 2. Menor tiempo de juego (si ambos jugadores tienen la misma cantidad de preguntas)
-        const sortedScores = [...scores].sort((a, b) => {
-            // Determinar preguntas respondidas (usar valores por defecto si no existen)
-            const aQuestions = a.questionsAnswered || a.maxRound * 5 || 0;
-            const bQuestions = b.questionsAnswered || b.maxRound * 5 || 0;
-            
-            // Si tienen diferentes cantidades de preguntas, ordenar por eso primero
-            if (aQuestions !== bQuestions) {
-                return bQuestions - aQuestions; // Mayor número primero
-            }
-            
-            // Si tienen la misma cantidad de preguntas, ordenar por tiempo
-            const aTime = a.totalGameTimeSeconds || Number.MAX_SAFE_INTEGER;
-            const bTime = b.totalGameTimeSeconds || Number.MAX_SAFE_INTEGER;
-            return aTime - bTime; // Menor tiempo primero
-        });
-        
-        // Update the leaderboard with the sorted scores
-        updateLeaderboard(sortedScores);
+        return data;
     } catch (error) {
-        console.error('Error loading leaderboard:', error);
-        
-        // Show error message
-        elements.leaderboardBody.innerHTML = `
-            <tr>
-                <td colspan="7" class="error-message">
-                    Error al cargar la tabla de líderes. Inténtalo de nuevo más tarde.
-                </td>
-            </tr>
-        `;
-        
-        // Hide loading indicator and show the table
-        elements.leaderboardLoading.classList.add('hide');
-        elements.leaderboardTable.classList.remove('hide');
+        console.error('Error fetching leaderboard:', error);
+        throw error;
     }
 }
 
-// Reset the game and start again
-function resetAndStartGame() {
-    // Reset game state completely
-    resetGameState();
-    
-    // Reset lifelines UI
-    elements.lifelines.forEach(lifeline => {
-        lifeline.classList.remove('used');
-    });
-    
-    // Reset progress dots
-    elements.progressDots.forEach(dot => {
-        dot.classList.remove('completed');
-    });
-    
-    // Reset form inputs
-    elements.playerNameInput.value = '';
-    elements.playerPhoneInput.value = '';
-    elements.playerPhoneInput.classList.remove('input-error');
-    
-    // Detener cualquier animación de confeti
-    if (typeof stopConfetti === 'function') {
-        stopConfetti();
-    }
-    
-    // Show start screen
-    showScreen(elements.startScreen);
-}
-
-// Utility Functions
+// Utility function to shuffle an array
 function shuffleArray(array) {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; // Swap elements
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
     return newArray;
 }
