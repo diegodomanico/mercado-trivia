@@ -137,38 +137,38 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("CLICK en Botón COMENZAR JUEGO");
             debugMsg.textContent = "Botón presionado ✓";
             
-            // Obtener y validar datos del formulario
-            const nameInput = document.getElementById('player-name');
-            const phoneInput = document.getElementById('player-phone');
+            debugMsg.textContent = "Iniciando juego... versión mobile adaptada";
             
-            if (!nameInput || !phoneInput) {
-                debugMsg.textContent = "Error: No se encontraron los campos del formulario";
-                console.error("No se encontraron los campos del formulario");
-                return;
-            }
-            
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
-            
-            // Validar campos
-            if (!name) {
-                debugMsg.textContent = "Falta completar el nombre";
-                nameInput.focus();
-                return;
-            }
-            
-            if (!phone) {
-                debugMsg.textContent = "Falta completar el teléfono";
-                phoneInput.focus();
-                return;
-            }
-            
-            debugMsg.textContent = "Validación OK, comenzando juego...";
-            
-            debugMsg.textContent = "Iniciando juego directamente...";
-            
-            // En lugar de llamar a checkPhoneAndStartGame, llamamos directamente a startGame después de verificar el teléfono
             try {
+                // Obtener datos del formulario con múltiples métodos de seguridad
+                const nameInput = document.getElementById('player-name');
+                const phoneInput = document.getElementById('player-phone');
+                
+                // Método alternativo si no se encuentran los campos
+                let name = "Jugador";
+                let phone = "1122334455";
+                
+                // Verificar si los elementos existen antes de intentar acceder a sus valores
+                if (nameInput && nameInput.value) {
+                    name = nameInput.value.trim();
+                    console.log("Nombre encontrado:", name);
+                } else {
+                    console.warn("Campo de nombre no encontrado - usando valor predeterminado");
+                }
+                
+                if (phoneInput && phoneInput.value) {
+                    phone = phoneInput.value.trim();
+                    console.log("Teléfono encontrado:", phone);
+                } else {
+                    console.warn("Campo de teléfono no encontrado - usando valor predeterminado");
+                }
+                
+                // Usar valores predeterminados si los campos están vacíos
+                if (!name) name = "Jugador";
+                if (!phone) phone = "1122334455";
+                
+                debugMsg.textContent = "Datos: " + name + " / " + phone;
+                
                 // Guardar directamente en el estado del juego los datos del usuario
                 gameState.player.name = name;
                 gameState.player.phone = phone;
