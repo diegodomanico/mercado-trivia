@@ -2,508 +2,223 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
     <title>¿Quién quiere ser un Vendedor SUPER PRO?</title>
-    <style>
-        /* Base Styles & Variables */
-        :root {
-            /* Mercado Libre & DomUp Colors */
-            --ml-yellow: #FFE600;
-            --ml-blue: #3483FA;
-            --ml-violet: #7A1DEA;
-            --ml-light-violet: #9e60f7;
-            --ml-gray: #555555;
-            --ml-light-gray: #EEEEEE;
-            --ml-dark-gray: #222222;
-            --ml-black: #111111;
-            --ml-white: #FFFFFF;
-            
-            /* UI Colors */
-            --success-green: #39B54A;
-            --warning-orange: #F19F4D;
-            --danger-red: #F44336;
-            
-            /* Pillar Colors */
-            --reputacion-color: #FF9800; /* Reputación ❤️ */
-            --oferta-color: #4CAF50; /* Oferta 💙 */
-            --servicio-color: #FFC107; /* Servicio 💛 */
-            --trafico-color: #9C27B0; /* Tráfico 💜 */
-            --data-driven-color: #E91E63; /* Data driven 💗 */
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
+    
+    <!-- Fix para dispositivos móviles - Ocultar barra de navegación y elementos no deseados -->
+    <style id="hide-replit-elements-global">
+        /* Ocultar absolutamente todos los elementos de navegación y UI de Replit */
+        #navbar, .navbar, nav, header, 
+        div[class*="xterm"], div[class*="xterm-"], div[class*="ansi"], div[class*="ansi-"], 
+        div[class*="monaco"], div[class*="editor"],
+        .toggle-bar, .toggle-bar-spacer,
+        .replit-ui-theme-root, 
+        [class*="css-"], [class*="jsx-"],
+        [class*="replit-ui-"], div[role="navigation"],
+        .jsx-2626493671, .jsx-1189939650, .css-19n4s7f, .css-1f84tvl, 
+        .css-1vbeog1, .css-1x65030, .css-l1b29f, .css-1j2ow70, .css-1ggvgc2, .css-1gwk1i8 {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+            left: -9999px !important;
+            top: -9999px !important;
         }
         
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Asegurar que los campos de entrada de texto funcionen correctamente */
+        input, textarea, select {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            height: auto !important;
+            width: 100% !important;
+            position: relative !important;
+            z-index: auto !important;
+            left: auto !important;
+            top: auto !important;
+        }
+        
+        /* Asegurar que los botones sean clicables */
+        button, .button, [role="button"], a[href], select, option {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            position: relative !important;
+            z-index: auto !important;
+            left: auto !important;
+            top: auto !important;
+        }
+        
+        /* Ajustar el contenedor principal para llenar toda la pantalla */
+        body, html {
+            position: fixed !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+            background-color: black !important;
         }
         
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--ml-black);
-            color: var(--ml-light-gray);
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            user-select: none;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        
-        /* Typography */
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: var(--ml-yellow);
-            text-align: center;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-        }
-        
-        h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: var(--ml-light-violet);
-        }
-        
-        /* Buttons */
-        button {
-            cursor: pointer;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            background-color: var(--ml-blue);
-            color: white;
-            margin: 5px;
-            transition: all 0.2s ease;
-        }
-        
-        button:hover {
-            background-color: var(--ml-violet);
-        }
-        
-        button:disabled {
-            background-color: var(--ml-gray);
-            cursor: not-allowed;
-        }
-        
-        /* Logo */
-        .logo {
-            max-width: 150px;
-            margin: 0 auto 15px auto;
-            border: 3px solid var(--ml-violet);
-            border-radius: 10px;
-            padding: 5px;
-            background-color: var(--ml-black);
-            box-shadow: 0 0 20px rgba(122, 29, 234, 0.8);
-            display: block;
-        }
-        
-        /* Screens */
-        .screen {
-            display: none;
-            margin-top: 20px;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        /* Player Info */
-        #player-info {
-            background-color: var(--ml-dark-gray);
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            text-align: center;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        
-        #player-info span {
-            display: inline-block;
-            margin: 5px;
-            font-weight: bold;
-        }
-        
-        /* Connection Status */
-        #connection-status {
-            background-color: var(--ml-dark-gray);
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .status-indicator {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .connected {
-            background-color: var(--success-green);
-        }
-        
-        .disconnected {
-            background-color: var(--danger-red);
-        }
-        
-        /* Lifelines */
-        .lifelines {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .lifeline {
-            width: 50px;
-            height: 50px;
-            margin: 0 10px;
-            background-color: var(--ml-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .lifeline.used {
-            background-color: var(--ml-gray);
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* Timer */
-        #timer {
-            width: 100%;
-            height: 10px;
-            background-color: var(--ml-dark-gray);
-            margin-bottom: 20px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        #timer-bar {
-            height: 100%;
-            width: 100%;
-            background-color: var(--ml-blue);
-            transition: width 1s linear, background-color 0.5s ease;
-        }
-        
-        /* Progress Dots */
-        .progress-dots {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0;
-        }
-        
-        .dot {
-            width: 15px;
-            height: 15px;
-            margin: 0 5px;
-            background-color: var(--ml-dark-gray);
-            border-radius: 50%;
-        }
-        
-        .dot.completed {
-            background-color: var(--ml-yellow);
-        }
-        
-        /* Question Container */
-        #question-container {
-            background-color: var(--ml-dark-gray);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        #question {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: var(--ml-yellow);
-        }
-        
-        /* Answers */
-        .answer {
-            background-color: white;
-            color: black;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-        }
-        
-        .answer-letter {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
-            background-color: var(--ml-blue);
-            color: white;
-            border-radius: 50%;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        
-        .answer:hover {
-            background-color: #f0f0f0;
-        }
-        
-        .correct {
-            background-color: var(--success-green);
-            color: white;
-        }
-        
-        .incorrect {
-            background-color: var(--danger-red);
-            color: white;
-        }
-        
-        /* Results */
-        #result-container {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: var(--ml-dark-gray);
-            text-align: center;
-        }
-        
-        /* Form Container */
-        #form-container {
-            background-color: var(--ml-dark-gray);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: left;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--ml-yellow);
-        }
-        
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        /* Leaderboard */
-        #leaderboard {
-            background-color: var(--ml-dark-gray);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: left;
-        }
-        
-        #leaderboard h2 {
-            color: var(--ml-yellow);
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid var(--ml-gray);
-            color: var(--ml-light-gray);
-        }
-        
-        .leaderboard-entry:last-child {
-            border-bottom: none;
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 600px) {
-            .answer {
-                font-size: 14px;
-            }
-            
-            #question {
-                font-size: 16px;
-            }
-            
-            .lifeline {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-            
-            #player-info {
-                flex-direction: column;
-            }
-            
-            #player-info span {
-                margin: 5px 0;
-            }
-        }
-        
-        /* SVG Logo */
-        .logo-svg {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px auto;
-            border: 3px solid var(--ml-violet);
-            border-radius: 10px;
-            padding: 5px;
-            background-color: black;
-            box-shadow: 0 0 20px rgba(122, 29, 234, 0.8);
-            display: block;
+        /* Ajustar el contenedor del juego */
+        #game-container {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: auto !important;
+            -webkit-overflow-scrolling: touch;
+            z-index: 1 !important;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Logo en SVG para eliminar dependencia de archivo externo -->
-        <svg class="logo-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="black"/>
-            <g transform="translate(100, 150) scale(0.8)">
-                <!-- Gamepad shape -->
-                <path d="M50,0 C30,0 0,20 0,60 L0,120 C0,150 30,180 60,180 L180,180 C210,180 240,150 240,120 L240,60 C240,20 210,0 190,0 Z" fill="none" stroke="#7A1DEA" stroke-width="10"/>
-                <!-- Plus button -->
-                <path d="M60,60 L80,60 L80,40 L100,40 L100,60 L120,60 L120,80 L100,80 L100,100 L80,100 L80,80 L60,80 Z" fill="#7A1DEA"/>
-                <!-- Dollar sign in gamepad -->
-                <text x="160" y="80" font-family="Arial" font-size="40" fill="#7A1DEA">$</text>
-                <!-- Shopping cart -->
-                <path d="M100,200 L120,200 L150,260 L50,260 L80,200 Z" fill="none" stroke="#7A1DEA" stroke-width="10"/>
-                <circle cx="80" cy="280" r="10" fill="none" stroke="#7A1DEA" stroke-width="5"/>
-                <circle cx="120" cy="280" r="10" fill="none" stroke="#7A1DEA" stroke-width="5"/>
-            </g>
-            <!-- Text -->
-            <text x="270" y="180" font-family="Arial" font-weight="bold" font-size="45" fill="#7A1DEA">DOMUP</text>
-            <text x="270" y="230" font-family="Arial" font-weight="bold" font-size="45" fill="#CCCCCC">GAMES</text>
-            <text x="270" y="270" font-family="Arial" font-size="20" fill="#CCCCCC">PLAY. SELL. WIN.</text>
-        </svg>
-        
-        <h1>¿Quién quiere ser un Vendedor SUPER PRO?</h1>
-        
-        <!-- Indicador de estado de conexión con Airtable -->
-        <div id="connection-status">
-            <div class="status-indicator disconnected" id="status-dot"></div>
-            <span id="status-text">Verificando conexión con la base de datos...</span>
-        </div>
-        
-        <!-- Pantalla de Inicio -->
-        <div id="start-screen" class="screen active">
-            <div id="form-container">
-                <h2>Datos del participante</h2>
-                <form id="player-form">
-                    <div>
-                        <label for="name">Nombre:</label>
-                        <input type="text" id="name" required>
-                    </div>
-                    <div>
-                        <label for="phone">Teléfono:</label>
-                        <input type="tel" id="phone" required>
-                    </div>
-                    <button type="button" id="start-button" disabled>¡Comenzar juego!</button>
-                </form>
+    <!-- Implementación del script hide-navbar para asegurar que la interfaz sea limpia -->
+    <script src="hide-navbar.js"></script>
+
+    <div id="game-container">
+        <div class="game-wrapper">
+            <!-- Logo del juego -->
+            <div class="logo-container">
+                <img src="domup_games_logo_violeta_gris.png" alt="Logo DomUp Games" class="logo">
             </div>
             
-            <!-- Tabla de líderes -->
-            <div id="leaderboard">
-                <h2>Mejores jugadores</h2>
-                <div id="leaderboard-entries">
-                    <div class="leaderboard-entry">
-                        <span>Cargando...</span>
-                        <span></span>
+            <!-- Título del juego -->
+            <h1 class="game-title">¿Quién quiere ser un Vendedor SUPER PRO?</h1>
+            
+            <!-- Indicador de estado de conexión con Airtable -->
+            <div id="connection-status" class="connection-status">
+                <div class="status-indicator disconnected" id="status-dot"></div>
+                <span id="status-text">Verificando conexión con la base de datos...</span>
+            </div>
+            
+            <!-- Pantalla inicial -->
+            <div id="start-screen" class="screen active">
+                <div class="registration-form">
+                    <h2>Ingresa tus datos para comenzar</h2>
+                    <form id="player-form">
+                        <div class="form-group">
+                            <label for="name">Nombre:</label>
+                            <input type="text" id="name" required placeholder="Tu nombre completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono:</label>
+                            <input type="tel" id="phone" required placeholder="Número de teléfono">
+                        </div>
+                        <button type="button" id="start-button" class="cta-button" disabled>¡COMENZAR JUEGO!</button>
+                    </form>
+                </div>
+                
+                <!-- Tabla de clasificación -->
+                <div class="leaderboard">
+                    <h2>Mejores jugadores</h2>
+                    <div id="leaderboard-entries" class="leaderboard-entries">
+                        <div class="leaderboard-entry loading">
+                            <span>Cargando mejores puntuaciones...</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Pantalla de Juego -->
-        <div id="game-screen" class="screen">
-            <div id="player-info">
-                <span id="player-name-display">Jugador: </span>
-                <span id="current-level">Nivel: 1 - Fácil 🟢</span>
-                <span id="current-prize">Chances: 0</span>
-            </div>
             
-            <div class="lifelines">
-                <div class="lifeline" id="fifty-fifty">50:50</div>
-                <div class="lifeline" id="audience">👥</div>
-                <div class="lifeline" id="phone">📞</div>
-            </div>
-            
-            <div id="timer">
-                <div id="timer-bar"></div>
-            </div>
-            
-            <!-- Indicador de progreso (5 preguntas = 1 chance) -->
-            <div class="progress-dots">
-                <div class="dot" id="dot-1"></div>
-                <div class="dot" id="dot-2"></div>
-                <div class="dot" id="dot-3"></div>
-                <div class="dot" id="dot-4"></div>
-                <div class="dot" id="dot-5"></div>
-            </div>
-            
-            <div id="question-container">
-                <div id="question">Cargando pregunta...</div>
-                <div class="answer" data-index="0">
-                    <div class="answer-letter">A</div>
-                    <div class="answer-text">Cargando opción A...</div>
+            <!-- Pantalla de juego -->
+            <div id="game-screen" class="screen">
+                <!-- Header info - Player, Level, Prize -->
+                <div class="game-header">
+                    <div id="player-info" class="player-info">
+                        <span id="player-name-display">Jugador: -</span>
+                        <span id="current-level">Nivel: 1 - Fácil 🟢</span>
+                        <span id="current-prize">Chances: 0</span>
+                    </div>
+                    
+                    <!-- Comodines / Lifelines -->
+                    <div class="lifelines">
+                        <div class="lifeline" id="fifty-fifty" title="Elimina dos respuestas incorrectas">50:50</div>
+                        <div class="lifeline" id="audience" title="Pide ayuda al público">👥</div>
+                        <div class="lifeline" id="phone" title="Llama a un experto">📞</div>
+                    </div>
                 </div>
-                <div class="answer" data-index="1">
-                    <div class="answer-letter">B</div>
-                    <div class="answer-text">Cargando opción B...</div>
+                
+                <!-- Temporizador -->
+                <div class="timer-container">
+                    <div id="timer-bar"></div>
                 </div>
-                <div class="answer" data-index="2">
-                    <div class="answer-letter">C</div>
-                    <div class="answer-text">Cargando opción C...</div>
+                
+                <!-- Indicador de progreso - 5 preguntas = 1 chance -->
+                <div class="progress-dots">
+                    <div class="dot" id="dot-1"></div>
+                    <div class="dot" id="dot-2"></div>
+                    <div class="dot" id="dot-3"></div>
+                    <div class="dot" id="dot-4"></div>
+                    <div class="dot" id="dot-5"></div>
                 </div>
-                <div class="answer" data-index="3">
-                    <div class="answer-letter">D</div>
-                    <div class="answer-text">Cargando opción D...</div>
+                
+                <!-- Contenedor de pregunta -->
+                <div id="question-container" class="question-container">
+                    <p id="question" class="question">¿Pregunta de ejemplo?</p>
+                    
+                    <div class="answer-grid">
+                        <div class="answer" data-index="0">
+                            <div class="answer-letter">A</div>
+                            <div class="answer-text">Respuesta A</div>
+                        </div>
+                        <div class="answer" data-index="1">
+                            <div class="answer-letter">B</div>
+                            <div class="answer-text">Respuesta B</div>
+                        </div>
+                        <div class="answer" data-index="2">
+                            <div class="answer-letter">C</div>
+                            <div class="answer-text">Respuesta C</div>
+                        </div>
+                        <div class="answer" data-index="3">
+                            <div class="answer-letter">D</div>
+                            <div class="answer-text">Respuesta D</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mensaje de resultado de respuesta -->
+                <div id="result-container" class="result-container" style="display: none;">
+                    <h2 id="result-text">¡Respuesta correcta!</h2>
+                    <button id="next-button" class="cta-button">Siguiente pregunta</button>
                 </div>
             </div>
             
-            <div id="result-container" style="display: none;">
-                <h2 id="result-text">¡Respuesta correcta!</h2>
-                <button id="next-button">Siguiente pregunta</button>
+            <!-- Pantalla de resultados finales -->
+            <div id="result-screen" class="screen">
+                <div class="final-result">
+                    <h2>¡Juego Terminado!</h2>
+                    
+                    <div class="result-details">
+                        <p><span class="result-label">Nombre:</span> <span id="result-name">-</span></p>
+                        <p><span class="result-label">Teléfono:</span> <span id="result-phone">-</span></p>
+                        <p><span class="result-label">Chances ganadas:</span> <span id="result-prize">0</span></p>
+                        <p><span class="result-label">Nivel máximo alcanzado:</span> <span id="result-level">1</span></p>
+                    </div>
+                    
+                    <button id="play-again" class="cta-button">Jugar otra vez</button>
+                </div>
             </div>
-        </div>
-        
-        <!-- Pantalla de Resultados -->
-        <div id="result-screen" class="screen">
-            <h2>¡Juego terminado!</h2>
-            <div id="final-result">
-                <p>Nombre: <span id="result-name"></span></p>
-                <p>Teléfono: <span id="result-phone"></span></p>
-                <p>Chances ganadas: <span id="result-prize">0</span></p>
-                <p>Nivel máximo alcanzado: <span id="result-level">1</span></p>
-            </div>
-            <button id="play-again">Jugar de nuevo</button>
         </div>
     </div>
-    
+
     <script>
         // Elementos del DOM
         const startScreen = document.getElementById('start-screen');
@@ -698,9 +413,11 @@
                         
                         const nameSpan = document.createElement('span');
                         nameSpan.textContent = score.name;
+                        nameSpan.className = 'leaderboard-name';
                         
                         const scoreSpan = document.createElement('span');
                         scoreSpan.textContent = `${score.chances || score.score} chances`;
+                        scoreSpan.className = 'leaderboard-score';
                         
                         entry.appendChild(nameSpan);
                         entry.appendChild(scoreSpan);
@@ -708,11 +425,11 @@
                         leaderboardEntries.appendChild(entry);
                     });
                 } else {
-                    leaderboardEntries.innerHTML = '<div class="leaderboard-entry"><span>No hay puntuaciones disponibles</span><span></span></div>';
+                    leaderboardEntries.innerHTML = '<div class="leaderboard-entry"><span class="leaderboard-name">No hay puntuaciones disponibles</span><span class="leaderboard-score"></span></div>';
                 }
             } catch (error) {
                 console.error('Error al cargar tabla de líderes:', error);
-                leaderboardEntries.innerHTML = '<div class="leaderboard-entry"><span>Error al cargar puntuaciones</span><span></span></div>';
+                leaderboardEntries.innerHTML = '<div class="leaderboard-entry"><span class="leaderboard-name">Error al cargar puntuaciones</span><span class="leaderboard-score"></span></div>';
             }
         }
         
@@ -850,6 +567,15 @@
             // Actualizar UI
             questionElement.textContent = gameState.currentQuestion.text;
             
+            // Añadir clase de tema según el pilar
+            const questionContainer = document.getElementById('question-container');
+            questionContainer.className = 'question-container';
+            
+            const pilarTema = gameState.currentPillar?.toLowerCase().split(' ')[0];
+            if (pilarTema) {
+                questionContainer.classList.add(`${pilarTema}-theme`);
+            }
+            
             // Actualizar opciones de respuesta
             answers.forEach((answer, index) => {
                 const answerText = answer.querySelector('.answer-text');
@@ -890,7 +616,7 @@
             // Resetear estado del timer
             clearInterval(gameState.timerInterval);
             timerBar.style.width = '100%';
-            timerBar.style.backgroundColor = 'var(--ml-blue)';
+            timerBar.style.backgroundColor = 'var(--success-green)';
             
             // Iniciar cuenta regresiva
             gameState.timerInterval = setInterval(() => {

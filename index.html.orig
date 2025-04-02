@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
+    <title>¿Quién quiere ser un Vendedor SUPER PRO?</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="./domup_games_logo_violeta_gris.png" type="image/png">
+    
+    <!-- Fix para dispositivos móviles - Ocultar barra de navegación y elementos no deseados -->
+    <style id="hide-replit-elements-global">
+        /* Ocultar absolutamente todos los elementos de navegación y UI de Replit */
+        #navbar, .navbar, nav, header, 
+        div[class*="xterm"], div[class*="xterm-"], div[class*="ansi"], div[class*="ansi-"], 
+        div[class*="monaco"], div[class*="editor"],
+        .toggle-bar, .toggle-bar-spacer,
+        .replit-ui-theme-root, 
+        [class*="css-"], [class*="jsx-"],
+        [class*="replit-ui-"], div[role="navigation"],
+        .jsx-2626493671, .jsx-1189939650, .css-19n4s7f, .css-1f84tvl, 
+        .css-1vbeog1, .css-1x65030, .css-l1b29f, .css-1j2ow70, .css-1ggvgc2, .css-1gwk1i8 {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+            left: -9999px !important;
+            top: -9999px !important;
+        }
+        
+        /* Asegurar que los campos de entrada de texto funcionen correctamente */
+        input, textarea, select {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            height: auto !important;
+            width: 100% !important;
+            position: relative !important;
+            z-index: auto !important;
+            left: auto !important;
+            top: auto !important;
+        }
+        
+        /* Evitar efectos de hover persistentes */
+        .no-hover {
+            pointer-events: none !important;
+        }
+        
+        /* Evitar efectos de hover en móviles */
+        @media (hover: none) {
+            a:hover, button:hover, input:hover, 
+            .answer:hover, .prize-level:hover, 
+            .lifeline:hover, .cta-button:hover,
+            .secondary-button:hover {
+                transform: none !important;
+                box-shadow: none !important;
+                border-color: inherit !important;
+                background-color: inherit !important;
+            }
+            
+            a:active, button:active, input:active,
+            .answer:active, .prize-level:active,
+            .lifeline:active, .cta-button:active,
+            .secondary-button:active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s !important;
+            }
+        }
+        #monaco-editor-embed, #editor-container-0, .toggle-bar, .toggle-bar-spacer,
+        .toggle-bar-container, .jsx-1189939650, .jsx-2626493671, .jsx-3457456006,
+        nav, header, [aria-label="Replit Header"], #replit-logo, .webcontainer,
+        [class*="monaco"], [class*="editor"], [class*="toggle"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            overflow: hidden !important;
+        }
+        
+        /* Asegurar que el logo se vea siempre */
+        .logo {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            max-width: 150px !important;
+            margin: 0 auto 15px auto !important;
+            box-shadow: 0 0 20px rgba(122, 29, 234, 0.8) !important;
+            border: 3px solid #7A1DEA !important;
+            background-color: #000 !important;
+            border-radius: 10px !important;
+            padding: 5px !important;
+        }
+        
+        /* Asegurar que el timer se vea siempre */
+        .timer-container {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: 25px !important;
+            margin: 10px auto !important;
+            border: 3px solid #333 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+        }
+        
+        /* Evitar que la página haga scroll */
+        html, body {
+            overflow: hidden !important;
+            position: fixed !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: black !important;
+        }
+        
+        /* Hacer que las pantallas llenen completamente el viewport */
+        .screen {
+            width: 100% !important;
+            height: 100% !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
+        
+        /* Clase específica para pantalla completa */
+        .fullscreen-container {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            background-color: black !important;
+            z-index: 9999 !important;
+        }
+        
+        /* Evitar efectos de hover persistentes */
+        .no-hover {
+            pointer-events: none !important;
+        }
+        
+        /* Evitar efectos de hover en móviles */
+        @media (hover: none) {
+            a:hover, button:hover, input:hover, 
+            .answer:hover, .prize-level:hover, 
+            .lifeline:hover, .cta-button:hover,
+            .secondary-button:hover {
+                transform: none !important;
+                box-shadow: none !important;
+                border-color: inherit !important;
+                background-color: inherit !important;
+            }
+            
+            a:active, button:active, input:active,
+            .answer:active, .prize-level:active,
+            .lifeline:active, .cta-button:active,
+            .secondary-button:active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s !important;
+            }
+        }
+        
+        /* Ajustes para la escalera de premios */
+        .prize-ladder {
+            width: 100% !important;
+            max-width: 100% !important;
+            order: 2 !important;
+            margin-top: 10px !important;
+        }
+        
+        .prize-level {
+            padding: 6px !important;
+            font-size: 14px !important;
+            text-align: left !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen">
+        <div class="loading-container">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+            <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
+            <div class="loading-animation">
+                <div class="spinner"></div>
+                <p>Cargando preguntas...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Screen -->
+    <div id="error-screen" class="screen hide">
+        <div class="error-container">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+            <h1>¡Ups! Algo salió mal</h1>
+            <p id="error-message">Error al cargar el juego.</p>
+            <button id="retry-button" class="cta-button">Reintentar</button>
+        </div>
+    </div>
+    
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen hide">
+        <div class="start-container">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+            <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
+            <p class="subtitle">Pon a prueba tus conocimientos sobre Mercado Libre</p>
+            
+            <form id="player-form" class="player-form">
+                <div class="form-group">
+                    <label for="player-name">Nombre:</label>
+                    <input type="text" id="player-name" required placeholder="Tu nombre">
+                    <p id="name-error" class="error-text hide">Por favor ingresa tu nombre</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="player-phone">Teléfono:</label>
+                    <input type="tel" id="player-phone" required placeholder="Tu número de teléfono (10 dígitos)">
+                    <p id="phone-error" class="error-text hide">Formato incorrecto de teléfono</p>
+                </div>
+                
+                <div id="airtable-status" class="airtable-status">
+                    <div class="status-indicator">
+                        <span id="status-icon" class="status-icon"></span>
+                        <span id="status-text" style="color: #333; font-weight: bold;">Verificando conexión a Airtable...</span>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" id="start-game" class="cta-button">¡Comenzar Juego!</button>
+                    <button type="button" id="view-leaderboard-start" class="secondary-button">Ver Tabla de Líderes</button>
+                </div>
+            </form>
+            
+            <div class="game-instructions">
+                <h3>✨ Instrucciones del Juego ✨</h3>
+                <ul>
+                    <li>🎮 Responde correctamente 25 preguntas para convertirte en un Vendedor SUPER PRO. 🏆</li>
+                    <li>🎮 Por cada 5 preguntas correctas, ganarás 1 Chance para participar en los sorteos. 🎁</li>
+                    <li>🎮 Usa los comodines para obtener ayuda: 50:50, Ayuda del Público y Llamada a un Experto. 🔍</li>
+                    <li>🎮 Tienes un tiempo limitado para responder cada pregunta. ⏱️</li>
+                    <li>🎮 Las preguntas aumentarán en dificultad en cada ronda. 📈</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hide">
+        <div class="top-bar">
+            <div class="player-info">
+                <span id="player-name-display"></span>
+                <span id="current-prize">0 Chances</span>
+            </div>
+            
+            <div class="game-info">
+                <span id="current-difficulty">Nivel: Fácil 🟢</span>
+                <span id="current-pillar">TEMA: Reputación ❤️</span>
+            </div>
+            
+            <div class="lifelines">
+                <div id="fifty-fifty" class="lifeline" title="50:50">
+                    <span>50:50</span>
+                </div>
+                <div id="audience-help" class="lifeline" title="Ayuda del Público">
+                    <span>👥</span>
+                </div>
+                <div id="expert-call" class="lifeline" title="Llamada a un Experto">
+                    <span>📞</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-header">
+                <div id="question-number">Pregunta 1 de 5</div>
+                <div class="progress-indicator">
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                </div>
+            </div>
+            
+            <div id="question-text" class="question-text">
+                ¿Cuál es la respuesta correcta a esta pregunta?
+            </div>
+            
+            <div class="answers">
+                <div class="answer" data-index="0">
+                    <div class="answer-letter">A</div>
+                    <div class="answer-text">Primera opción de respuesta</div>
+                </div>
+                
+                <div class="answer" data-index="1">
+                    <div class="answer-letter">B</div>
+                    <div class="answer-text">Segunda opción de respuesta</div>
+                </div>
+                
+                <div class="answer" data-index="2">
+                    <div class="answer-letter">C</div>
+                    <div class="answer-text">Tercera opción de respuesta</div>
+                </div>
+                
+                <div class="answer" data-index="3">
+                    <div class="answer-letter">D</div>
+                    <div class="answer-text">Cuarta opción de respuesta</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="prize-ladder">
+            <div class="prize-level complicada-level" data-round="5">Nivel 5: Complicada 💀</div>
+            <div class="prize-level muy-dificil-level" data-round="4">Nivel 4: Muy Difícil 🔥</div>
+            <div class="prize-level dificil-level" data-round="3">Nivel 3: Difícil 🔴</div>
+            <div class="prize-level media-level" data-round="2">Nivel 2: Menos Fácil 🟡</div>
+            <div class="prize-level facil-level current" data-round="1">Nivel 1: Fácil 🟢</div>
+        </div>
+    </div>
+    
+    <!-- Results Screen -->
+    <div id="results-screen" class="screen hide">
+        <div class="results-container">
+            <h1 id="result-title" class="result-title">¡JUEGO TERMINADO!</h1>
+            
+            <div class="results-info">
+                <div class="result-item">
+                    <span class="result-label">Nombre:</span>
+                    <span id="result-player-name" class="result-value">Jugador</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Teléfono:</span>
+                    <span id="result-player-phone" class="result-value">1122334455</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Chances ganadas:</span>
+                    <span id="result-prize" class="result-value highlight">0 Chances</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Preguntas respondidas:</span>
+                    <span id="result-round" class="result-value">0 de 25</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">TEMA:</span>
+                    <span id="result-pillar" class="result-value">Reputación ❤️</span>
+                </div>
+            </div>
+            
+            <div class="result-buttons">
+                <button id="view-leaderboard" class="cta-button">Ver Tabla de Líderes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen hide">
+        <div class="leaderboard-container">
+            <h1>Tabla de Líderes</h1>
+            
+            <div id="leaderboard-loading" class="loading-animation">
+                <div class="spinner"></div>
+                <p>Cargando tabla de líderes...</p>
+            </div>
+            
+            <div id="leaderboard-table" class="leaderboard-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Nombre</th>
+                            <th>Chances</th>
+                            <th>Nº Preguntas</th>
+                            <th>Tiempo (seg)</th>
+                            <th>Nivel Máximo</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Leaderboard rows will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button id="hide-leaderboard" class="cta-button">Volver</button>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="overlay" class="overlay hide"></div>
+    
+    <!-- Round Complete Modal -->
+    <div id="round-complete-modal" class="modal hide">
+        <h2 id="round-complete-title">¡Ronda Completada!</h2>
+        <p id="round-complete-message">Has completado todas las preguntas de la ronda. ¡Felicidades!</p>
+        <button id="next-round-button" class="cta-button">Siguiente Ronda</button>
+    </div>
+    
+    <!-- Expert Call Modal -->
+    <div id="expert-modal" class="modal hide">
+        <h2>Consejo del Experto</h2>
+        <div class="expert-container">
+            <div class="expert-icon">👨‍💼</div>
+            <p id="expert-advice">Creo que la respuesta correcta es la opción A. Estoy bastante seguro de ello.</p>
+        </div>
+        <button id="close-expert-modal" class="cta-button">Entendido</button>
+    </div>
+    
+    <!-- Audience Help Modal -->
+    <div id="audience-modal" class="modal hide">
+        <h2>Ayuda del Público</h2>
+        <div class="audience-chart">
+            <div class="chart-bar">
+                <div class="bar-label">A</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="bar-label">B</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="bar-label">C</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="bar-label">D</div>
+                <div class="bar-container">
+                    <div class="bar-fill"></div>
+                </div>
+                <div class="bar-percentage">0%</div>
+            </div>
+        </div>
+        <button id="close-audience-modal" class="cta-button">Entendido</button>
+    </div>
+    
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal hide">
+        <div class="modal-content">
+            <h2>Error</h2>
+            <p id="error-text"></p>
+            <button id="error-ok-btn" class="cta-button">Aceptar</button>
+        </div>
+    </div>
+    
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas" class="confetti-canvas hide"></canvas>
+    
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="assets/sounds.js"></script>
+    <script src="assets/confetti.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- Script para ocultar la barra de navegación en Replit durante el juego -->
+    <script>
+        // Función para ocultar la barra de navegación cuando se inicia el juego
+        function hideNavbarOnGameStart() {
+            const gameScreen = document.getElementById('game-screen');
+            
+            // Variables para controlar el estado de pantalla completa
+            let isFullscreen = false;
+            let fullscreenAttempts = 0;
+            const MAX_FULLSCREEN_ATTEMPTS = 3;
+            
+            // Activar modo fullscreen/pantalla completa en móviles
+            function activateFullscreen() {
+                // Evitar múltiples intentos
+                if (fullscreenAttempts >= MAX_FULLSCREEN_ATTEMPTS) return;
+                fullscreenAttempts++;
+                
+                // Crear un contenedor de pantalla completa si no existe
+                let fullscreenContainer = document.querySelector('.fullscreen-container');
+                if (!fullscreenContainer) {
+                    fullscreenContainer = document.createElement('div');
+                    fullscreenContainer.className = 'fullscreen-container';
+                    document.body.appendChild(fullscreenContainer);
+                    
+                    // Mover todo el contenido al contenedor de pantalla completa
+                    while (document.body.firstChild !== fullscreenContainer) {
+                        fullscreenContainer.appendChild(document.body.firstChild);
+                    }
+                }
+                
+                // Solicitar pantalla completa al navegador si es posible
+                try {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(e => console.warn('Fullscreen request failed:', e));
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        document.documentElement.msRequestFullscreen();
+                    }
+                    isFullscreen = true;
+                    
+                    // Ocultar elementos de UI inmediatamente
+                    hideAllNavigationElements();
+                } catch (err) {
+                    console.warn('Error activating fullscreen:', err);
+                }
+            }
+            
+            // Función para asegurarnos que todo esté oculto
+            function hideAllNavigationElements() {
+                // Inyectar un estilo directo en el head
+                if (!document.getElementById('hide-replit-elements')) {
+                    const style = document.createElement('style');
+                    style.id = 'hide-replit-elements';
+                    style.textContent = `
+                        #navbar, .navbar, nav, header, 
+                        [class*="xterm"], [class*="ansi"], 
+                        [class*="monaco"], [class*="editor"],
+                        .toggle-bar, .toggle-bar-spacer,
+                        .replit-ui-theme-root, .css-1ggvgc2,
+                        .css-1gwk1i8, .css-1vbeog1, .css-1x65030,
+                        .css-l1b29f, .css-1j2ow70,
+                        [class*="replit-ui-"], [class*="jsx-"] {
+                            display: none !important;
+                            visibility: hidden !important;
+                            opacity: 0 !important;
+                            height: 0 !important;
+                            width: 0 !important;
+                            overflow: hidden !important;
+                            position: absolute !important;
+                            z-index: -9999 !important;
+                            pointer-events: none !important;
+                            left: -9999px !important;
+                            top: -9999px !important;
+                        }
+                        
+                        input, textarea, select {
+                            pointer-events: auto !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                        }
+                        
+                        form input, form textarea, form select, 
+                        .form-group input, .form-group textarea, .form-group select {
+                            display: block !important;
+                            height: auto !important;
+                            width: 100% !important;
+                            position: static !important;
+                            z-index: auto !important;
+                            left: auto !important;
+                            top: auto !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // También ocultamos elementos específicos
+                const elementsToHide = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"], .toggle-bar, .toggle-bar-spacer');
+                elementsToHide.forEach(el => {
+                    if (el) {
+                        el.style.display = 'none';
+                        el.style.visibility = 'hidden';
+                        el.style.opacity = '0';
+                        el.style.height = '0';
+                        el.style.width = '0';
+                        el.style.overflow = 'hidden';
+                        el.style.position = 'absolute';
+                        el.style.zIndex = '-9999';
+                        el.style.pointerEvents = 'none';
+                        el.style.left = '-9999px';
+                        el.style.top = '-9999px';
+                    }
+                });
+            }
+            
+            // Manejar el cambio de estado de pantalla completa
+            document.addEventListener('fullscreenchange', function() {
+                if (document.fullscreenElement === null) {
+                    // Si salimos de pantalla completa, intentar volver a activarla
+                    if (isFullscreen) {
+                        setTimeout(activateFullscreen, 500);
+                    }
+                }
+            });
+            
+            // Intentar activar pantalla completa en múltiples eventos
+            document.addEventListener('click', function() {
+                activateFullscreen();
+                hideAllNavigationElements();
+            });
+            
+            document.addEventListener('touchstart', function() {
+                activateFullscreen();
+                hideAllNavigationElements();
+            });
+            
+            // Limpiar el estado de hover después de tocar la pantalla
+            // Pero NO interferir con campos de entrada de texto
+            document.addEventListener('touchend', function(e) {
+                // NO aplicar si estamos tocando un campo de entrada o un elemento dentro de un formulario
+                if (e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'TEXTAREA' || 
+                    e.target.tagName === 'SELECT' ||
+                    e.target.closest('form') ||
+                    e.target.getAttribute('contenteditable') === 'true') {
+                    return;
+                }
+                
+                // Remover cualquier clase de hover o active en otros elementos
+                const hoveredElements = document.querySelectorAll(':hover:not(input):not(textarea):not(select)');
+                hoveredElements.forEach(el => {
+                    if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && el.tagName !== 'SELECT') {
+                        el.blur();
+                        
+                        // Añadir un bloqueo temporal de estilos hover/active
+                        el.classList.add('no-hover');
+                        setTimeout(() => {
+                            el.classList.remove('no-hover');
+                        }, 300);
+                    }
+                });
+            });
+            
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (!gameScreen.classList.contains('hide')) {
+                            document.body.classList.add('game-active');
+                            
+                            // Forzar ocultar cualquier elemento de navbar que pueda existir
+                            const navbars = document.querySelectorAll('#navbar, .navbar, nav, header, [class*="xterm"], [class*="ansi"], [class*="monaco"], [class*="editor"]');
+                            navbars.forEach(nav => {
+                                if (nav) {
+                                    nav.style.display = 'none';
+                                    nav.style.visibility = 'hidden';
+                                    nav.style.opacity = '0';
+                                    nav.style.height = '0';
+                                    nav.style.width = '0';
+                                    nav.style.overflow = 'hidden';
+                                    nav.style.position = 'absolute';
+                                    nav.style.zIndex = '-9999';
+                                    nav.style.pointerEvents = 'none';
+                                    nav.style.left = '-9999px';
+                                    nav.style.top = '-9999px';
+                                }
+                            });
+                        } else {
+                            document.body.classList.remove('game-active');
+                        }
+                    }
+                });
+            });
+            
+            // Comenzar a observar cambios en la clase del gameScreen
+            observer.observe(gameScreen, { attributes: true });
+            
+            // Buscar el timer para asegurarnos que sea visible
+            const timerCheck = setInterval(() => {
+                const timerContainer = document.querySelector('.timer-container');
+                const timerBar = document.querySelector('#timer-bar');
+                if (timerContainer && timerBar) {
+                    timerContainer.style.zIndex = '9999';
+                    timerContainer.style.position = 'relative';
+                    timerContainer.style.display = 'block';
+                    timerContainer.style.visibility = 'visible';
+                    timerBar.style.display = 'block';
+                    timerBar.style.visibility = 'visible';
+                }
+            }, 1000); // Verificar cada segundo
+        }
+        
+        // Ejecutar cuando el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', hideNavbarOnGameStart);
+    </script>
+</body>
+</html>
