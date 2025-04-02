@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Quién quiere ser un Vendedor SUPER PRO?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 150px;
+            margin: 0 auto 15px auto;
+            border: 3px solid #7A1DEA;
+            border-radius: 10px;
+            padding: 5px;
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(122, 29, 234, 0.8);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #FFE600;
+            text-align: center;
+        }
+        
+        button {
+            background-color: #3483FA;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #7A1DEA;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        #question-container {
+            background-color: #111;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        #question {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #FFE600;
+        }
+        
+        .answer {
+            background-color: #fff;
+            color: #000;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .answer-letter {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            background-color: #3483FA;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .answer:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .correct {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .incorrect {
+            background-color: #F44336;
+            color: white;
+        }
+        
+        #form-container {
+            background-color: #111;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #FFE600;
+        }
+        
+        .lifelines {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .lifeline {
+            width: 40px;
+            height: 40px;
+            margin: 0 10px;
+            background-color: #3483FA;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .lifeline.used {
+            background-color: #333;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #111;
+            text-align: center;
+        }
+
+        #player-info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #player-info span {
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+
+        #timer {
+            width: 100%;
+            height: 10px;
+            background-color: #333;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #3483FA;
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+        <h1>¿Quién quiere ser un Vendedor SUPER PRO?</h1>
+        
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="screen active">
+            <div id="form-container">
+                <h2>Datos del participante</h2>
+                <form id="player-form">
+                    <div>
+                        <label for="name">Nombre:</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div>
+                        <label for="phone">Teléfono:</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+                    <button type="button" id="start-button">¡Comenzar juego!</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Pantalla de Juego -->
+        <div id="game-screen" class="screen">
+            <div id="player-info">
+                <span id="player-name-display">Jugador: </span>
+                <span id="current-level">Nivel: 1 - Fácil 🟢</span>
+                <span id="current-prize">Chances: 0</span>
+            </div>
+            
+            <div class="lifelines">
+                <div class="lifeline" id="fifty-fifty">50:50</div>
+                <div class="lifeline" id="audience">👥</div>
+                <div class="lifeline" id="phone">📞</div>
+            </div>
+            
+            <div id="timer">
+                <div id="timer-bar"></div>
+            </div>
+            
+            <div id="question-container">
+                <div id="question">¿Qué característica es más importante para la reputación de un vendedor en Mercado Libre?</div>
+                <div class="answer" data-index="0">
+                    <div class="answer-letter">A</div>
+                    <div class="answer-text">Tener muchos seguidores en redes sociales</div>
+                </div>
+                <div class="answer" data-index="1">
+                    <div class="answer-letter">B</div>
+                    <div class="answer-text">Cumplir con los tiempos de entrega prometidos</div>
+                </div>
+                <div class="answer" data-index="2">
+                    <div class="answer-letter">C</div>
+                    <div class="answer-text">Tener el precio más bajo</div>
+                </div>
+                <div class="answer" data-index="3">
+                    <div class="answer-letter">D</div>
+                    <div class="answer-text">Publicar muchos anuncios diariamente</div>
+                </div>
+            </div>
+            
+            <div id="result-container" style="display: none;">
+                <h2 id="result-text">¡Respuesta correcta!</h2>
+                <button id="next-button">Siguiente pregunta</button>
+            </div>
+        </div>
+        
+        <!-- Pantalla de Resultados -->
+        <div id="result-screen" class="screen">
+            <h2>¡Juego terminado!</h2>
+            <div id="final-result">
+                <p>Nombre: <span id="result-name"></span></p>
+                <p>Teléfono: <span id="result-phone"></span></p>
+                <p>Chances ganadas: <span id="result-prize">0</span></p>
+                <p>Nivel máximo alcanzado: <span id="result-level">1</span></p>
+            </div>
+            <button id="play-again">Jugar de nuevo</button>
+        </div>
+    </div>
+    
+    <script>
+        // Elementos del DOM
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const playerForm = document.getElementById('player-form');
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const startButton = document.getElementById('start-button');
+        
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const currentLevel = document.getElementById('current-level');
+        const currentPrize = document.getElementById('current-prize');
+        
+        const questionElement = document.getElementById('question');
+        const answers = document.querySelectorAll('.answer');
+        
+        const resultContainer = document.getElementById('result-container');
+        const resultText = document.getElementById('result-text');
+        const nextButton = document.getElementById('next-button');
+        
+        const resultName = document.getElementById('result-name');
+        const resultPhone = document.getElementById('result-phone');
+        const resultPrize = document.getElementById('result-prize');
+        const resultLevel = document.getElementById('result-level');
+        const playAgainButton = document.getElementById('play-again');
+        
+        const timerBar = document.getElementById('timer-bar');
+        
+        const fiftyFifty = document.getElementById('fifty-fifty');
+        const audience = document.getElementById('audience');
+        const phone = document.getElementById('phone');
+        
+        // Estado del juego
+        const gameState = {
+            player: {
+                name: '',
+                phone: '',
+                level: 1,
+                prize: 0,
+                questionsAnswered: 0
+            },
+            lifelines: {
+                fiftyFifty: true,
+                audience: true,
+                phone: true
+            },
+            currentQuestionIndex: 0,
+            timerInterval: null,
+            timeLeft: 0,
+            currentQuestion: null
+        };
+        
+        // Preguntas predefinidas
+        const questions = [
+            {
+                text: "¿Qué característica es más importante para la reputación de un vendedor en Mercado Libre?",
+                options: ["Tener muchos seguidores en redes sociales", "Cumplir con los tiempos de entrega prometidos", "Tener el precio más bajo", "Publicar muchos anuncios diariamente"],
+                correctIndex: 1,
+                level: 1
+            },
+            {
+                text: "¿Cuál es una buena práctica para mejorar la oferta de productos?",
+                options: ["Usar fotos genéricas de internet", "Crear descripciones cortas y poco detalladas", "Mostrar fotos reales del producto desde diferentes ángulos", "Vender solo productos de muy alta demanda"],
+                correctIndex: 2,
+                level: 1
+            },
+            {
+                text: "¿Qué aspecto es fundamental para un buen servicio al cliente?",
+                options: ["Responder preguntas solo en horario comercial", "Dar respuestas rápidas y claras a todas las consultas", "Ignorar comentarios negativos", "Ofrecer siempre el envío gratis aunque aumente el precio"],
+                correctIndex: 1,
+                level: 1
+            },
+            {
+                text: "Para mejorar el tráfico a tus publicaciones, ¿qué es recomendable?",
+                options: ["Usar palabras clave relevantes en títulos y descripciones", "Cambiar constantemente el precio", "Crear varias publicaciones idénticas", "Etiquetar a la competencia"],
+                correctIndex: 0,
+                level: 1
+            },
+            {
+                text: "¿Qué permite tomar mejores decisiones basadas en datos?",
+                options: ["Revisar solo las ventas totales", "Ignorar las estadísticas de la competencia", "Analizar métricas como CTR, conversión y visitas", "Compararse únicamente con los vendedores más grandes"],
+                correctIndex: 2,
+                level: 1
+            },
+            {
+                text: "¿Qué factor impacta más negativamente en la reputación de un vendedor?",
+                options: ["Tener pocos productos", "Cancelar ventas confirmadas", "Ofrecer envío estándar", "Vender solo productos económicos"],
+                correctIndex: 1,
+                level: 2
+            },
+            {
+                text: "Para optimizar una oferta de productos, ¿qué estrategia es más efectiva?",
+                options: ["Tener el catálogo más grande posible", "Enfocarse en calidad sobre cantidad", "Cambiar frecuentemente de categoría", "Vender exclusivamente productos importados"],
+                correctIndex: 1,
+                level: 2
+            },
+            {
+                text: "¿Cuál es un buen indicador de un servicio de calidad?",
+                options: ["Alto nivel de reclamos resueltos a favor del vendedor", "Bajo tiempo promedio de respuesta a consultas", "Gran cantidad de preguntas recibidas", "Muchas devoluciones procesadas rápidamente"],
+                correctIndex: 1,
+                level: 2
+            },
+            {
+                text: "¿Qué técnica puede mejorar significativamente el tráfico?",
+                options: ["Mercado pago como único método de pago", "Publicidad en Mercado Ads", "Envío gratis siempre", "Mantener el precio sin cambios"],
+                correctIndex: 1,
+                level: 2
+            },
+            {
+                text: "¿Qué aspecto del análisis de datos es más valioso para un vendedor?",
+                options: ["Cantidad de visitas totales", "Conversión de visitas a ventas", "Total de ingresos brutos", "Número de preguntas recibidas"],
+                correctIndex: 1,
+                level: 2
+            }
+        ];
+        
+        // Inicializar evento al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botón para iniciar el juego
+            startButton.addEventListener('click', startGame);
+            
+            // Eventos para las respuestas
+            answers.forEach(answer => {
+                answer.addEventListener('click', function() {
+                    checkAnswer(parseInt(this.dataset.index));
+                });
+            });
+            
+            // Botón para siguiente pregunta
+            nextButton.addEventListener('click', loadNextQuestion);
+            
+            // Botón para jugar de nuevo
+            playAgainButton.addEventListener('click', resetGame);
+            
+            // Eventos para los comodines
+            fiftyFifty.addEventListener('click', useFiftyFifty);
+            audience.addEventListener('click', useAudience);
+            phone.addEventListener('click', usePhone);
+        });
+        
+        // Función para iniciar el juego
+        function startGame() {
+            // Validar formulario
+            if (!nameInput.value || !phoneInput.value) {
+                alert("Por favor completa todos los campos");
+                return;
+            }
+            
+            // Guardar datos del jugador
+            gameState.player.name = nameInput.value;
+            gameState.player.phone = phoneInput.value;
+            
+            // Mostrar nombre en la pantalla
+            playerNameDisplay.textContent = `Jugador: ${gameState.player.name}`;
+            
+            // Cambiar a pantalla de juego
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            
+            // Cargar primera pregunta
+            loadQuestion();
+        }
+        
+        // Cargar pregunta actual
+        function loadQuestion() {
+            // Ocultar resultados
+            resultContainer.style.display = 'none';
+            
+            // Obtener preguntas para el nivel actual
+            const levelQuestions = questions.filter(q => q.level === gameState.player.level);
+            
+            // Si no hay más preguntas de este nivel, avanzar al siguiente o finalizar
+            if (levelQuestions.length === 0 || gameState.currentQuestionIndex >= levelQuestions.length) {
+                if (gameState.player.level < 5) {
+                    gameState.player.level++;
+                    gameState.currentQuestionIndex = 0;
+                    
+                    // Actualizar nivel en pantalla
+                    const levels = ["Fácil 🟢", "Menos fácil 🟡", "Difícil 🔴", "Muy difícil 🔥", "Complicada 💀"];
+                    currentLevel.textContent = `Nivel: ${gameState.player.level} - ${levels[gameState.player.level-1]}`;
+                    
+                    // Cargar pregunta del nuevo nivel
+                    loadQuestion();
+                    return;
+                } else {
+                    // Si completó todos los niveles, finalizar como ganador
+                    endGame(true);
+                    return;
+                }
+            }
+            
+            // Seleccionar pregunta
+            gameState.currentQuestion = levelQuestions[gameState.currentQuestionIndex];
+            
+            // Actualizar UI
+            questionElement.textContent = gameState.currentQuestion.text;
+            
+            // Actualizar opciones de respuesta
+            answers.forEach((answer, index) => {
+                const answerText = answer.querySelector('.answer-text');
+                answerText.textContent = gameState.currentQuestion.options[index];
+                
+                // Resetear clases
+                answer.classList.remove('correct', 'incorrect');
+                answer.style.display = 'flex';
+            });
+            
+            // Iniciar temporizador
+            startTimer();
+        }
+        
+        // Iniciar temporizador
+        function startTimer() {
+            // Tiempo según nivel
+            const times = [45, 40, 35, 30, 25];
+            gameState.timeLeft = times[gameState.player.level - 1] || 30;
+            
+            // Resetear estado del timer
+            clearInterval(gameState.timerInterval);
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = '#3483FA';
+            
+            // Iniciar cuenta regresiva
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                
+                // Actualizar barra de tiempo
+                const percentage = (gameState.timeLeft / times[gameState.player.level - 1]) * 100;
+                timerBar.style.width = `${percentage}%`;
+                
+                // Cambiar color según el tiempo restante
+                if (gameState.timeLeft <= 10) {
+                    timerBar.style.backgroundColor = '#F44336';
+                } else if (gameState.timeLeft <= 20) {
+                    timerBar.style.backgroundColor = '#FFE600';
+                }
+                
+                // Si se acaba el tiempo
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    timeUp();
+                }
+            }, 1000);
+        }
+        
+        // Tiempo agotado
+        function timeUp() {
+            clearInterval(gameState.timerInterval);
+            
+            // Mostrar respuesta correcta
+            answers.forEach((answer, index) => {
+                if (index === gameState.currentQuestion.correctIndex) {
+                    answer.classList.add('correct');
+                }
+                answer.style.pointerEvents = 'none';
+            });
+            
+            resultText.textContent = "¡Tiempo agotado! Has perdido.";
+            resultContainer.style.display = 'block';
+            
+            // Finalizar juego como perdedor
+            setTimeout(() => endGame(false), 2000);
+        }
+        
+        // Comprobar respuesta
+        function checkAnswer(selectedIndex) {
+            clearInterval(gameState.timerInterval);
+            
+            const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
+            
+            // Mostrar resultado
+            answers.forEach((answer, index) => {
+                if (index === gameState.currentQuestion.correctIndex) {
+                    answer.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    answer.classList.add('incorrect');
+                }
+                answer.style.pointerEvents = 'none';
+            });
+            
+            if (isCorrect) {
+                resultText.textContent = "¡Respuesta correcta!";
+                
+                // Actualizar estado del juego
+                gameState.player.questionsAnswered++;
+                
+                // Cada 5 preguntas = 1 chance
+                if (gameState.player.questionsAnswered % 5 === 0) {
+                    gameState.player.prize++;
+                    currentPrize.textContent = `Chances: ${gameState.player.prize}`;
+                    resultText.textContent = `¡Respuesta correcta! ¡Has ganado 1 chance! Total: ${gameState.player.prize}`;
+                }
+                
+                resultContainer.style.display = 'block';
+                
+                // Avanzar al siguiente índice
+                gameState.currentQuestionIndex++;
+            } else {
+                resultText.textContent = "Respuesta incorrecta. ¡Has perdido!";
+                resultContainer.style.display = 'block';
+                
+                // Finalizar juego como perdedor
+                setTimeout(() => endGame(false), 2000);
+            }
+        }
+        
+        // Cargar siguiente pregunta
+        function loadNextQuestion() {
+            loadQuestion();
+        }
+        
+        // Finalizar juego
+        function endGame(isWinner) {
+            // Guardar estadísticas finales
+            resultName.textContent = gameState.player.name;
+            resultPhone.textContent = gameState.player.phone;
+            resultPrize.textContent = gameState.player.prize;
+            resultLevel.textContent = gameState.player.level;
+            
+            // Cambiar a pantalla de resultados
+            gameScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+        }
+        
+        // Reiniciar juego
+        function resetGame() {
+            // Reiniciar estado del juego
+            gameState.player.level = 1;
+            gameState.player.prize = 0;
+            gameState.player.questionsAnswered = 0;
+            gameState.currentQuestionIndex = 0;
+            
+            gameState.lifelines = {
+                fiftyFifty: true,
+                audience: true,
+                phone: true
+            };
+            
+            // Resetear UI
+            currentLevel.textContent = "Nivel: 1 - Fácil 🟢";
+            currentPrize.textContent = "Chances: 0";
+            
+            fiftyFifty.classList.remove('used');
+            audience.classList.remove('used');
+            phone.classList.remove('used');
+            
+            // Volver a pantalla de inicio
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            
+            // Limpiar formulario
+            nameInput.value = '';
+            phoneInput.value = '';
+        }
+        
+        // Comodín 50:50
+        function useFiftyFifty() {
+            if (!gameState.lifelines.fiftyFifty) return;
+            
+            // Marcar como usado
+            gameState.lifelines.fiftyFifty = false;
+            fiftyFifty.classList.add('used');
+            
+            // Determinar opciones a eliminar
+            const correctIndex = gameState.currentQuestion.correctIndex;
+            const indicesToRemove = [0, 1, 2, 3].filter(i => i !== correctIndex);
+            
+            // Eliminar aleatoriamente dos opciones incorrectas
+            shuffle(indicesToRemove);
+            const removeThese = indicesToRemove.slice(0, 2);
+            
+            // Ocultar las opciones seleccionadas
+            removeThese.forEach(index => {
+                answers[index].style.display = 'none';
+            });
+        }
+        
+        // Comodín ayuda del público
+        function useAudience() {
+            if (!gameState.lifelines.audience) return;
+            
+            // Marcar como usado
+            gameState.lifelines.audience = false;
+            audience.classList.add('used');
+            
+            // Generar porcentajes
+            const correctIndex = gameState.currentQuestion.correctIndex;
+            const percentages = generateAudiencePercentages(correctIndex);
+            
+            // Mostrar los porcentajes
+            let audienceMessage = "El público opina:\n";
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            for (let i = 0; i < 4; i++) {
+                audienceMessage += `${letters[i]}: ${percentages[i]}%\n`;
+            }
+            
+            alert(audienceMessage);
+        }
+        
+        // Generar porcentajes para la ayuda del público
+        function generateAudiencePercentages(correctIndex) {
+            const percentages = [0, 0, 0, 0];
+            
+            // Dar mayor porcentaje a la respuesta correcta (entre 40% y 65%)
+            percentages[correctIndex] = Math.floor(Math.random() * 25) + 40;
+            
+            // Repartir el resto entre las demás opciones
+            const remaining = 100 - percentages[correctIndex];
+            let allocated = 0;
+            
+            for (let i = 0; i < 4; i++) {
+                if (i !== correctIndex) {
+                    if (i === 3) {
+                        // La última opción recibe lo que queda
+                        percentages[i] = remaining - allocated;
+                    } else {
+                        // Las demás reciben una parte aleatoria de lo que queda
+                        const max = Math.floor((remaining - allocated) / (3 - i));
+                        percentages[i] = Math.floor(Math.random() * max) + 5;
+                        allocated += percentages[i];
+                    }
+                }
+            }
+            
+            return percentages;
+        }
+        
+        // Comodín llamada a un experto
+        function usePhone() {
+            if (!gameState.lifelines.phone) return;
+            
+            // Marcar como usado
+            gameState.lifelines.phone = false;
+            phone.classList.add('used');
+            
+            // Generar consejo del experto
+            const correctIndex = gameState.currentQuestion.correctIndex;
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            // 80% de probabilidad de que el experto acierte
+            const expertIsCorrect = Math.random() < 0.8;
+            
+            let expertAnswer;
+            if (expertIsCorrect) {
+                expertAnswer = letters[correctIndex];
+            } else {
+                // Seleccionar una respuesta incorrecta aleatoria
+                const incorrectOptions = letters.filter((_, i) => i !== correctIndex);
+                expertAnswer = incorrectOptions[Math.floor(Math.random() * incorrectOptions.length)];
+            }
+            
+            let confidence;
+            if (expertIsCorrect) {
+                confidence = ["estoy bastante seguro", "estoy casi completamente seguro", "tengo mucha confianza"];
+            } else {
+                confidence = ["no estoy 100% seguro", "podría equivocarme", "es mi mejor suposición"];
+            }
+            
+            const confidencePhrase = confidence[Math.floor(Math.random() * confidence.length)];
+            
+            alert(`El experto dice: "Creo que la respuesta es ${expertAnswer}, ${confidencePhrase}."`);
+        }
+        
+        // Función para mezclar un array (algoritmo Fisher-Yates)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>

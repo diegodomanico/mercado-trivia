@@ -13,10 +13,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "New Game Server"
+args = "Simple Game"
 
 [[workflows.workflow]]
-name = "New Game Server"
+name = "Simple Game"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -27,7 +27,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server-simple.js"
+args = "node serve-basic.js"
 waitForPort = 5000
 
 [deployment]
