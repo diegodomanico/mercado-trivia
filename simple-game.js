@@ -136,7 +136,7 @@ function initGame() {
     levelNameElement = document.getElementById('level-name');
     
     // Inicializar confetti
-    confettiEffect = new ConfettiEffect();
+    window.confettiEffect = new ConfettiEffect();
     
     // Inicializar sonidos (si está disponible)
     if (typeof initializeSounds === 'function') {
@@ -638,9 +638,9 @@ function autoAdvance() {
 // Muestra celebración de chance ganado
 function showChanceEarnedCelebration() {
     // Iniciar confetti
-    if (confettiEffect) {
-        confettiEffect.start();
-        setTimeout(() => confettiEffect.stop(), 3000);
+    if (window.confettiEffect) {
+        startConfetti();
+        setTimeout(() => stopConfetti(), 3000);
     }
     
     // Reproducir sonido de ganador
@@ -658,9 +658,9 @@ function showChanceEarnedCelebration() {
 // Muestra celebración de pilar completado
 function showPillarCompletedCelebration() {
     // Iniciar confetti
-    if (confettiEffect) {
-        confettiEffect.start();
-        setTimeout(() => confettiEffect.stop(), 3000);
+    if (window.confettiEffect) {
+        startConfetti();
+        setTimeout(() => stopConfetti(), 3000);
     }
     
     // Actualizar nombre del pilar
@@ -681,9 +681,9 @@ function showPillarCompletedCelebration() {
 // Muestra celebración de nivel completado
 function showLevelUpCelebration() {
     // Iniciar confetti
-    if (confettiEffect) {
-        confettiEffect.start();
-        setTimeout(() => confettiEffect.stop(), 3000);
+    if (window.confettiEffect) {
+        startConfetti();
+        setTimeout(() => stopConfetti(), 3000);
     }
     
     // Actualizar nombre del nivel
@@ -712,9 +712,9 @@ async function endGame(isWinner) {
     resultLevel.textContent = gameState.player.level;
     
     // Si es ganador, mostrar confetti
-    if (isWinner && confettiEffect) {
-        confettiEffect.start();
-        setTimeout(() => confettiEffect.stop(), 5000);
+    if (isWinner && window.confettiEffect) {
+        startConfetti();
+        setTimeout(() => stopConfetti(), 5000);
         
         // Reproducir sonido de ganador
         if (typeof playSound === 'function') {
@@ -895,3 +895,6 @@ function shuffleArray(array) {
     }
     return array;
 }
+
+// Registrar confettiEffect como global para acceso en otras funciones
+window.confettiEffect = null;
