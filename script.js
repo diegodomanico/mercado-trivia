@@ -506,13 +506,12 @@ function selectAnswer(e) {
 
 // Check if the answer is correct
 function checkAnswer(selectedIndex) {
-    clearInterval(gameState.timer); // Corrected: Use gameState.timer
-
-    // Validar que existe una pregunta actual
     if (!gameState.currentQuestion) {
         console.error('No hay pregunta actual para verificar');
         return;
     }
+
+    clearInterval(gameState.timer);
 
     const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
 
@@ -708,7 +707,18 @@ function endGame(isWinner) {
     const resultContainer = document.getElementById('result-container');
     if (resultContainer) {
         resultContainer.style.display = 'block';
-        document.getElementById('result-text').textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
+        const resultText = document.getElementById('result-text');
+        if (resultText) {
+            resultText.textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
+        }
+
+        // Agregar botón de volver
+        const volverBtn = document.createElement('button');
+        volverBtn.textContent = 'Volver a jugar';
+        volverBtn.style.marginTop = '10px';
+        volverBtn.onclick = () => window.location.reload();
+        resultContainer.appendChild(volverBtn);
+
     }
 
     // Esperar un momento antes de mostrar la pantalla de resultados
@@ -754,7 +764,7 @@ function endGame(isWinner) {
             gameScreen.classList.add('hide');
             resultScreen.classList.remove('hide');
         }
-    }, 1500);
+    }, 3000);
 }
 
 // Start Timer
