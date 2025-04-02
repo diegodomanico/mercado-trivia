@@ -641,7 +641,39 @@
                 </div>
                 
                 <div id="result-buttons" class="button-container">
-                    <!-- Los botones se añadirán dinámicamente desde JavaScript -->
+                    <!-- Botón directo en HTML -->
+                    <button id="btnDirecto" onclick="window.location.reload();" class="result-button" style="background-color: #7A1DEA; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">Reiniciar juego</button>
+                    
+                    <!-- Enlace directo alternativo -->
+                    <a href="javascript:window.location.reload();" style="display: block; margin: 10px auto; color: #3483FA; text-align: center; text-decoration: none; font-weight: bold;">Volver al inicio</a>
+                    
+                    <!-- Script independiente para redirección automática -->
+                    <script>
+                    (function() {
+                        console.log("Script de redirección independiente iniciado");
+                        const timerEl = document.createElement('div');
+                        timerEl.id = 'timerIndependiente';
+                        timerEl.style.color = '#FFE600';
+                        timerEl.style.textAlign = 'center';
+                        timerEl.style.marginTop = '15px';
+                        timerEl.style.fontWeight = 'bold';
+                        document.getElementById('result-buttons').appendChild(timerEl);
+                        
+                        let seconds = 5; // Tiempo reducido para prueba
+                        timerEl.textContent = `Redirección en ${seconds} segundos...`;
+                        
+                        const intervalId = setInterval(function() {
+                            seconds--;
+                            timerEl.textContent = `Redirección en ${seconds} segundos...`;
+                            
+                            if (seconds <= 0) {
+                                clearInterval(intervalId);
+                                console.log("Redirección forzada activada");
+                                window.location.reload();
+                            }
+                        }, 1000);
+                    })();
+                    </script>
                 </div>
             </div>
         </div>
