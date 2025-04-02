@@ -600,18 +600,33 @@
         </div>
         
         <!-- Pantalla de resultados -->
-        <div id="result-screen" class="screen">
-            <div class="final-result">
-                <h2>¡Juego Terminado!</h2>
-                
-                <div class="result-details">
-                    <p><span class="result-label">Nombre:</span> <span id="result-name">-</span></p>
-                    <p><span class="result-label">Teléfono:</span> <span id="result-phone">-</span></p>
-                    <p><span class="result-label">Chances ganadas:</span> <span id="result-prize">0</span></p>
-                    <p><span class="result-label">Nivel máximo alcanzado:</span> <span id="result-level">1</span></p>
-                </div>
+        <div id="results-screen" class="screen">
+    <div class="results-container">
+        <h2 id="result-title" class="result-title">¡Juego Terminado!</h2>
+        <div class="results-info">
+            <div class="result-item">
+                <span class="result-label">Jugador:</span>
+                <span id="result-player-name" class="result-value">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Teléfono:</span>
+                <span id="result-player-phone" class="result-value">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Chances ganadas:</span>
+                <span id="result-prize" class="result-value highlight">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Nivel alcanzado:</span>
+                <span id="result-round" class="result-value">1</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Último tema:</span>
+                <span id="result-pillar" class="result-value">-</span>
             </div>
         </div>
+    </div>
+</div>
     </div>
 
     <script src="assets/confetti.js"></script>

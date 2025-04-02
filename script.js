@@ -12,7 +12,7 @@ const GAME_CONFIG = {
         'audience-help': true,
         'expert-call': true
     },
-    chancesPerCorrectQuestions: 5 // 1 chance por cada 5 preguntas correctas
+    chancesPerCorrectQuestions: 5
 };
 
 // Game Structure
@@ -528,7 +528,7 @@ function handleCorrectAnswer() {
     updateProgressDots();
 
     // Check if player just earned a new chance
-    const earnedChance = gameState.player.questionsAnswered > 0 && 
+    const earnedChance = gameState.player.questionsAnswered > 0 &&
                           gameState.player.questionsAnswered % GAME_CONFIG.chancesPerCorrectQuestions === 0;
 
     if (earnedChance) {
@@ -580,7 +580,7 @@ function showChanceEarnedCelebration(chances) {
 
     if (isGameComplete) {
         // Game completed message
-        elements.roundCompleteMessage.textContent = 
+        elements.roundCompleteMessage.textContent =
             `¡FELICIDADES! Has completado todos los niveles y has ganado ${chances} chances en total.
              ¡Eres un Vendedor SUPER PRO de Mercado Libre!`;
 
@@ -597,7 +597,7 @@ function showChanceEarnedCelebration(chances) {
         }
 
         // Update message
-        elements.roundCompleteMessage.textContent = 
+        elements.roundCompleteMessage.textContent =
             `¡EXCELENTE! Has ganado ${chances} ${chances === 1 ? 'chance' : 'chances'}.
              Ahora avanzarás al nivel ${GAME_STRUCTURE.difficultyLevels[gameState.player.currentRound - 1]}.`;
 
@@ -678,68 +678,70 @@ function completeRound() {
 
 // End Game
 async function endGame(isWinner) {
-    // Guardar estadísticas finales
+    // Stop timer
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+        gameState.timer = null;
+    }
+
+    // Calculate game time
+    gameState.gameEndTime = new Date();
+    if (gameState.gameStartTime) {
+        gameState.player.totalGameTimeSeconds = Math.floor(
+            (gameState.gameEndTime - gameState.gameStartTime) / 1000
+        );
+    }
+
+    // Update results screen
+    elements.resultTitle.textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
     elements.resultPlayerName.textContent = gameState.player.name;
     elements.resultPlayerPhone.textContent = gameState.player.phone;
     elements.resultPrize.textContent = gameState.player.prize;
-    // Assuming resultLevel exists, otherwise remove this line.  No context provided to determine what to do.
-    //elements.resultLevel.textContent = gameState.player.level;
+    elements.resultRound.textContent = gameState.player.currentRound;
+    elements.resultPillar.textContent = gameState.player.currentPillar;
 
-    // Si es ganador, mostrar confetti
-    if (isWinner && window.confettiEffect) {
-        startConfetti();
+    // Show confetti for winners
+    if (isWinner && typeof showConfetti === 'function') {
+        showConfetti();
         setTimeout(() => stopConfetti(), 5000);
-
-        // Reproducir sonido de ganador
-        if (typeof playSound === 'function') {
-            playSound('winner');
-        }
     }
 
-    // Guardar puntuación en Airtable
+    // Play appropriate sound
+    if (typeof playSound === 'function') {
+        playSound(isWinner ? 'winner' : 'gameOver');
+    }
+
     try {
+        // Save score to server
         await saveScore();
     } catch (error) {
         console.error('Error al guardar puntuación:', error);
     }
 
-    // Crear botones
+    // Show results screen
+    showScreen(elements.resultsScreen);
+
+    // Create retry buttons
     const buttonsContainer = document.createElement('div');
-    buttonsContainer.style.marginTop = '20px';
-    buttonsContainer.style.display = 'flex';
-    buttonsContainer.style.justifyContent = 'center';
-    buttonsContainer.style.gap = '10px';
+    buttonsContainer.className = 'result-buttons';
 
     const playAgainButton = document.createElement('button');
+    playAgainButton.className = 'cta-button';
     playAgainButton.textContent = 'Jugar de nuevo';
-    playAgainButton.style.padding = '10px 20px';
-    playAgainButton.style.backgroundColor = '#3483FA';
-    playAgainButton.style.color = 'white';
-    playAgainButton.style.border = 'none';
-    playAgainButton.style.borderRadius = '5px';
-    playAgainButton.style.cursor = 'pointer';
     playAgainButton.onclick = () => location.reload();
 
-    const homeButton = document.createElement('button');
-    homeButton.textContent = 'Volver al inicio';
-    homeButton.style.padding = '10px 20px';
-    homeButton.style.backgroundColor = '#7A1DEA';
-    homeButton.style.color = 'white';
-    homeButton.style.border = 'none';
-    homeButton.style.borderRadius = '5px';
-    homeButton.style.cursor = 'pointer';
-    homeButton.onclick = () => location.reload();
+    const viewLeaderboardButton = document.createElement('button');
+    viewLeaderboardButton.className = 'secondary-button';
+    viewLeaderboardButton.textContent = 'Ver tabla de líderes';
+    viewLeaderboardButton.onclick = showLeaderboard;
 
     buttonsContainer.appendChild(playAgainButton);
-    buttonsContainer.appendChild(homeButton);
+    buttonsContainer.appendChild(viewLeaderboardButton);
 
-    // Agregar botones al contenedor de resultados
-    const finalResult = document.querySelector('.final-result'); //Selector needs to be adjusted based on actual HTML structure.
-    if(finalResult) finalResult.appendChild(buttonsContainer);
-
-    // Cambiar a pantalla de resultados
-    elements.gameScreen.classList.remove('active');
-    elements.resultsScreen.classList.add('active');
+    const resultsContainer = document.querySelector('.final-result');
+    if (resultsContainer) {
+        resultsContainer.appendChild(buttonsContainer);
+    }
 }
 
 // Start Timer
