@@ -13,10 +13,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Airtable Game"
+args = "Simple Game"
 
 [[workflows.workflow]]
-name = "Airtable Game"
+name = "Simple Game"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -27,7 +27,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server-airtable.js"
+args = "node simple-server.js"
 waitForPort = 5000
 
 [deployment]
