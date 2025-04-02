@@ -122,129 +122,134 @@ function playOscillatorSequence(sequence) {
         gainNode.gain.setValueAtTime(note.volume || 0.3, startTime + note.duration - 0.01);
         gainNode.gain.linearRampToValueAtTime(0, startTime + note.duration);
         
+        // Connect nodes
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
+        // Schedule start/stop
         oscillator.start(startTime);
         oscillator.stop(startTime + note.duration);
         
+        // Update start time for next note
         startTime += note.duration;
     });
 }
 
-// Create game start sound (triumphant fanfare)
+// Create game start sound
 function createStartSound() {
     sounds.start = {
         type: 'sequence',
         sequence: [
-            { frequency: 392, duration: 0.2, volume: 0.3, type: 'triangle' },
-            { frequency: 493.88, duration: 0.2, volume: 0.3, type: 'triangle' },
-            { frequency: 587.33, duration: 0.4, volume: 0.3, type: 'triangle' },
-            { frequency: 783.99, duration: 0.6, volume: 0.3, type: 'triangle' }
+            { type: 'sine', frequency: 523.25, duration: 0.15, volume: 0.3 },  // C5
+            { type: 'sine', frequency: 659.25, duration: 0.15, volume: 0.3 },  // E5
+            { type: 'sine', frequency: 783.99, duration: 0.3, volume: 0.3 }    // G5
         ]
     };
 }
 
-// Create question appearance sound (subtle attention sound)
+// Create new question sound
 function createQuestionSound() {
     sounds.question = {
         type: 'sine',
-        frequency: [440, 550],
+        frequency: [400, 600],
         duration: 0.3,
         volume: 0.2
     };
 }
 
-// Create answer selection sound (click)
+// Create select sound
 function createSelectSound() {
     sounds.select = {
-        type: 'square',
-        frequency: 330,
+        type: 'sine',
+        frequency: 440,
         duration: 0.1,
-        volume: 0.1
+        volume: 0.2
     };
 }
 
-// Create correct answer sound (happy ascending notes)
+// Create correct answer sound
 function createCorrectSound() {
     sounds.correct = {
         type: 'sequence',
         sequence: [
-            { frequency: 523.25, duration: 0.15, volume: 0.3, type: 'triangle' },
-            { frequency: 659.25, duration: 0.15, volume: 0.3, type: 'triangle' },
-            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'triangle' }
+            { type: 'sine', frequency: 523.25, duration: 0.1, volume: 0.3 },  // C5
+            { type: 'sine', frequency: 659.25, duration: 0.1, volume: 0.3 },  // E5
+            { type: 'sine', frequency: 783.99, duration: 0.1, volume: 0.3 },  // G5
+            { type: 'sine', frequency: 1046.50, duration: 0.3, volume: 0.3 }  // C6
         ]
     };
 }
 
-// Create wrong answer sound (descending notes)
+// Create wrong answer sound
 function createWrongSound() {
     sounds.wrong = {
         type: 'sequence',
         sequence: [
-            { frequency: 392, duration: 0.15, volume: 0.3, type: 'sawtooth' },
-            { frequency: 349.23, duration: 0.15, volume: 0.3, type: 'sawtooth' },
-            { frequency: 293.66, duration: 0.3, volume: 0.3, type: 'sawtooth' }
+            { type: 'sawtooth', frequency: 440, duration: 0.1, volume: 0.2 },
+            { type: 'sawtooth', frequency: 349.23, duration: 0.1, volume: 0.2 },
+            { type: 'sawtooth', frequency: 293.66, duration: 0.3, volume: 0.2 }
         ]
     };
 }
 
-// Create timer running sound (ticking)
+// Create time running sound
 function createTimeRunningSound() {
     sounds.timeRunning = {
-        type: 'square',
-        frequency: 440,
+        type: 'sine',
+        frequency: 220,
         duration: 0.1,
-        volume: 0.15
+        volume: 0.1
     };
 }
 
 // Create time low sound (urgent ticking)
 function createTimeLowSound() {
     sounds.timeLow = {
-        type: 'square',
-        frequency: 880,
+        type: 'triangle',
+        frequency: 440,
         duration: 0.1,
-        volume: 0.3
+        volume: 0.2
     };
 }
 
-// Create lifeline use sound (helpful tone)
+// Create lifeline use sound
 function createLifelineSound() {
     sounds.lifeline = {
         type: 'sequence',
         sequence: [
-            { frequency: 587.33, duration: 0.15, volume: 0.3, type: 'sine' },
-            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'sine' }
+            { type: 'sine', frequency: 587.33, duration: 0.1, volume: 0.3 },  // D5
+            { type: 'sine', frequency: 659.25, duration: 0.1, volume: 0.3 },  // E5
+            { type: 'sine', frequency: 783.99, duration: 0.2, volume: 0.3 }   // G5
         ]
     };
 }
 
-// Create winner sound (celebratory melody)
+// Create winner celebration sound
 function createWinnerSound() {
     sounds.winner = {
         type: 'sequence',
         sequence: [
-            { frequency: 523.25, duration: 0.15, volume: 0.3, type: 'triangle' },
-            { frequency: 659.25, duration: 0.15, volume: 0.3, type: 'triangle' },
-            { frequency: 783.99, duration: 0.15, volume: 0.3, type: 'triangle' },
-            { frequency: 1046.50, duration: 0.4, volume: 0.3, type: 'triangle' }
+            { type: 'sine', frequency: 523.25, duration: 0.1, volume: 0.3 },  // C5
+            { type: 'sine', frequency: 587.33, duration: 0.1, volume: 0.3 },  // D5
+            { type: 'sine', frequency: 659.25, duration: 0.1, volume: 0.3 },  // E5
+            { type: 'sine', frequency: 698.46, duration: 0.1, volume: 0.3 },  // F5
+            { type: 'sine', frequency: 783.99, duration: 0.1, volume: 0.3 },  // G5
+            { type: 'sine', frequency: 880.00, duration: 0.1, volume: 0.3 },  // A5
+            { type: 'sine', frequency: 987.77, duration: 0.1, volume: 0.3 },  // B5
+            { type: 'sine', frequency: 1046.50, duration: 0.3, volume: 0.4 }  // C6
         ]
     };
 }
 
-// Create level up sound (ascending arpeggio)
+// Create level up sound
 function createLevelUpSound() {
     sounds.levelUp = {
         type: 'sequence',
         sequence: [
-            { frequency: 392, duration: 0.1, volume: 0.3, type: 'sine' },
-            { frequency: 493.88, duration: 0.1, volume: 0.3, type: 'sine' },
-            { frequency: 587.33, duration: 0.1, volume: 0.3, type: 'sine' },
-            { frequency: 783.99, duration: 0.3, volume: 0.3, type: 'sine' }
+            { type: 'sine', frequency: 523.25, duration: 0.1, volume: 0.3 },  // C5
+            { type: 'sine', frequency: 659.25, duration: 0.1, volume: 0.3 },  // E5
+            { type: 'sine', frequency: 783.99, duration: 0.1, volume: 0.3 },  // G5
+            { type: 'sine', frequency: 1046.50, duration: 0.3, volume: 0.4 }  // C6
         ]
     };
 }
-
-// Initialize sounds on load
-document.addEventListener('DOMContentLoaded', initializeSounds);

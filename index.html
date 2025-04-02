@@ -16,30 +16,44 @@
             background-color: #000000;
             color: #ffffff;
             line-height: 1.5;
-            padding: 10px;
+            padding: 0;
+            margin: 0;
             -webkit-user-select: none;
             user-select: none;
             overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
         }
         
         .logo {
-            display: block;
             width: 150px;
-            margin: 0 auto 15px;
+            margin: 0 auto;
+            display: block;
             border-radius: 8px;
         }
         
         h1 {
-            font-size: 24px;
+            font-size: 28px;
             text-align: center;
             color: #9e60f7;
             margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(122, 29, 234, 0.5);
         }
         
         /* Pantallas */
@@ -54,11 +68,11 @@
         /* Indicador de conexión */
         .connection-status {
             text-align: center;
-            padding: 8px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-bottom: 20px;
             background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            border: 1px solid #222;
+            border-radius: 20px;
+            border: 2px solid #222;
         }
         
         .status-indicator {
@@ -72,101 +86,129 @@
         
         .connected {
             background-color: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
         }
         
         .disconnected {
             background-color: #F44336;
+            box-shadow: 0 0 10px #F44336;
         }
         
         /* Pantalla de inicio */
         .form-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background-color: rgba(58, 52, 250, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
             border: 2px solid #7A1DEA;
+            box-shadow: 0 0 20px rgba(122, 29, 234, 0.3);
         }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: #FFE600;
+            font-weight: bold;
+            font-size: 18px;
         }
         
         input {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
             border: none;
             background-color: #f9f9f9;
+            font-size: 16px;
         }
         
         button {
             background-color: #7A1DEA;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            background-color: #6515c2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
         
         button:disabled {
             background-color: #666;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         /* Pantalla de juego */
         .player-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
             border: 1px solid #3483FA;
+            font-size: 16px;
+            font-weight: bold;
         }
         
         .lifelines {
             display: flex;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .lifeline {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background-color: #3483FA;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
+            margin: 0 15px;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .lifeline:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
         
         .lifeline.used {
             background-color: #333;
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         #timer {
             width: 100%;
-            height: 8px;
+            height: 10px;
             background-color: #222;
-            margin-bottom: 10px;
-            border-radius: 4px;
+            margin-bottom: 15px;
+            border-radius: 5px;
             overflow: hidden;
         }
         
@@ -181,63 +223,72 @@
         .progress-dots {
             display: flex;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .dot {
-            width: 12px;
-            height: 12px;
+            width: 15px;
+            height: 15px;
             background-color: #333;
             border-radius: 50%;
-            margin: 0 5px;
+            margin: 0 8px;
+            transition: background-color 0.3s ease;
         }
         
         .dot.completed {
             background-color: #FFE600;
+            box-shadow: 0 0 10px #FFE600;
         }
         
         /* Preguntas y respuestas */
         .question-container {
             background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 15px;
+            padding: 20px;
             margin-bottom: 20px;
             border: 2px solid #7A1DEA;
+            box-shadow: 0 0 20px rgba(122, 29, 234, 0.3);
         }
         
         .question {
-            font-size: 18px;
-            margin-bottom: 20px;
+            font-size: 20px;
+            margin-bottom: 25px;
             color: #FFE600;
+            text-align: center;
+            font-weight: bold;
         }
         
         .answer {
             background-color: white;
             color: black;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .answer:hover {
+            background-color: #f0f0f0;
+            transform: translateX(5px);
         }
         
         .answer-letter {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background-color: #3483FA;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px;
+            margin-right: 15px;
             font-weight: bold;
-        }
-        
-        .answer:hover {
-            background-color: #f0f0f0;
+            font-size: 18px;
         }
         
         .correct {
@@ -255,23 +306,39 @@
             text-align: center;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 15px;
             margin-top: 20px;
             border: 2px solid #3483FA;
+            display: none;
+        }
+        
+        #result-text {
+            font-size: 24px;
+            color: #FFE600;
+            margin-bottom: 15px;
         }
         
         /* Pantalla de final */
         .final-result {
             background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 15px;
+            padding: 30px;
             text-align: center;
             border: 2px solid #7A1DEA;
+            box-shadow: 0 0 30px rgba(122, 29, 234, 0.5);
+        }
+        
+        .final-result h2 {
+            font-size: 28px;
+            color: #FFE600;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(255, 230, 0, 0.5);
         }
         
         .result-details {
             margin: 20px 0;
             text-align: left;
+            font-size: 18px;
         }
         
         .result-label {
@@ -282,15 +349,15 @@
         /* Tabla de líderes */
         .leaderboard {
             background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 15px;
+            padding: 20px;
             margin-top: 20px;
             border: 1px solid #3483FA;
         }
         
         .leaderboard h2 {
             color: #FFE600;
-            font-size: 18px;
+            font-size: 20px;
             text-align: center;
             margin-bottom: 15px;
         }
@@ -298,7 +365,7 @@
         .leaderboard-entry {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
+            padding: 10px;
             border-bottom: 1px solid #333;
             color: #fff;
         }
@@ -306,11 +373,140 @@
         .leaderboard-entry:last-child {
             border-bottom: none;
         }
+        
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* Celebración */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 90;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .celebration.active {
+            opacity: 1;
+        }
+        
+        .celebration-content {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 3px solid #FFE600;
+            box-shadow: 0 0 30px rgba(255, 230, 0, 0.7);
+            max-width: 90%;
+            pointer-events: auto;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .celebration-content h2 {
+            font-size: 28px;
+            color: #FFE600;
+            margin-bottom: 15px;
+        }
+        
+        .celebration-content p {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive fixes */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .form-container, .question-container {
+                padding: 20px;
+            }
+            
+            .answer {
+                padding: 12px;
+            }
+            
+            .lifeline {
+                width: 50px;
+                height: 50px;
+                font-size: 16px;
+                margin: 0 8px;
+            }
+            
+            .answer-letter {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+            
+            .celebration-content {
+                padding: 20px;
+            }
+            
+            .celebration-content h2 {
+                font-size: 24px;
+            }
+            
+            .celebration-content p {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
+    <canvas id="confetti-canvas"></canvas>
+    
+    <div class="celebration" id="chance-celebration">
+        <div class="celebration-content">
+            <h2>¡Felicitaciones!</h2>
+            <p>Has ganado 1 CHANCE</p>
+        </div>
+    </div>
+    
+    <div class="celebration" id="pillar-celebration">
+        <div class="celebration-content">
+            <h2>¡Pilar completado!</h2>
+            <p id="pillar-name"></p>
+        </div>
+    </div>
+    
+    <div class="celebration" id="level-up-celebration">
+        <div class="celebration-content">
+            <h2>¡Nivel completado!</h2>
+            <p id="level-name"></p>
+        </div>
+    </div>
+    
     <div class="container">
-        <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+        <div class="logo-container">
+            <img src="domup_games_logo_violeta_gris.png" alt="DomUp Games Logo" class="logo">
+        </div>
         
         <h1>¿Quién quiere ser un Vendedor SUPER PRO?</h1>
         
@@ -397,7 +593,7 @@
                 </div>
             </div>
             
-            <div id="result-container" style="display: none;">
+            <div id="result-container">
                 <h2 id="result-text">¡Respuesta correcta!</h2>
                 <div id="timer-next" style="width: 100%; height: 5px; background-color: #3483FA; margin-top: 10px;"></div>
             </div>
@@ -418,6 +614,8 @@
         </div>
     </div>
 
+    <script src="assets/confetti.js"></script>
+    <script src="assets/sounds.js"></script>
     <script>
         // Elementos del DOM
         const startScreen = document.getElementById('start-screen');
@@ -438,13 +636,11 @@
         
         const resultContainer = document.getElementById('result-container');
         const resultText = document.getElementById('result-text');
-        const nextButton = document.getElementById('next-button');
         
         const resultName = document.getElementById('result-name');
         const resultPhone = document.getElementById('result-phone');
         const resultPrize = document.getElementById('result-prize');
         const resultLevel = document.getElementById('result-level');
-        const playAgainButton = document.getElementById('play-again');
         
         const timerBar = document.getElementById('timer-bar');
         
@@ -455,6 +651,16 @@
         const statusDot = document.getElementById('status-dot');
         const statusText = document.getElementById('status-text');
         const leaderboardEntries = document.getElementById('leaderboard-entries');
+        
+        // Celebraciones
+        const chanceCelebration = document.getElementById('chance-celebration');
+        const pillarCelebration = document.getElementById('pillar-celebration');
+        const pillarNameElement = document.getElementById('pillar-name');
+        const levelUpCelebration = document.getElementById('level-up-celebration');
+        const levelNameElement = document.getElementById('level-name');
+        
+        // Confetti effect
+        let confettiEffect;
         
         // Puntos de progreso
         const progressDots = [
@@ -479,14 +685,14 @@
                 audience: true,
                 phone: true
             },
-            currentQuestionIndex: 0,
             timerInterval: null,
             timeLeft: 0,
             currentQuestion: null,
             questionsInRound: 0,
             allQuestions: null,
             currentPillar: null,
-            pillarsCompleted: []
+            pillarsCompleted: [],
+            usedQuestionIds: [] // Para evitar repetir preguntas
         };
         
         // Definiciones globales de estructura del juego
@@ -511,6 +717,14 @@
         
         // Inicializar evento al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar confetti
+            confettiEffect = new ConfettiEffect();
+            
+            // Inicializar sonidos
+            if (typeof initializeSounds === 'function') {
+                initializeSounds();
+            }
+            
             // Comprobar conexión a Airtable
             checkConnection();
             
@@ -668,6 +882,11 @@
             // Mostrar nombre en la pantalla
             playerNameDisplay.textContent = `Jugador: ${gameState.player.name}`;
             
+            // Reproducir sonido de inicio
+            if (typeof playSound === 'function') {
+                playSound('start');
+            }
+            
             // Cambiar a pantalla de juego
             startScreen.classList.remove('active');
             gameScreen.classList.add('active');
@@ -682,15 +901,18 @@
         // Preparar juego
         function prepareGame() {
             // Reiniciar estado
-            gameState.currentQuestionIndex = 0;
             gameState.questionsInRound = 0;
             gameState.pillarsCompleted = [];
+            gameState.usedQuestionIds = [];
             
             // Seleccionar el primer pilar aleatoriamente
             gameState.currentPillar = getRandomPillar();
             
             // Reiniciar puntos de progreso
             updateProgressDots();
+            
+            // Actualizar display de nivel
+            updateLevelDisplay();
         }
         
         // Obtener un pilar aleatorio que no haya sido completado
@@ -734,8 +956,11 @@
                     gameState.pillarsCompleted = []; // Reiniciar pilares para el nuevo nivel
                     gameState.currentPillar = getRandomPillar();
                     updateLevelDisplay();
+                    
+                    // Mostrar celebración de nivel
+                    showLevelUpCelebration();
                 } else {
-                    // Completó todos los niveles
+                    // Completó todos los niveles - ganó el juego
                     endGame(true);
                     return;
                 }
@@ -749,20 +974,46 @@
                 // Marcar este pilar como completado
                 gameState.pillarsCompleted.push(gameState.currentPillar);
                 
+                // Mostrar celebración de pilar completado
+                showPillarCompletedCelebration();
+                
                 // Obtener siguiente pilar
                 gameState.currentPillar = getRandomPillar();
                 
                 // Intentar cargar pregunta de nuevo
-                loadQuestion();
+                setTimeout(() => loadQuestion(), 3000); // Dar tiempo para la celebración
                 return;
             }
             
-            // Seleccionar una pregunta aleatoria
-            const randomIndex = Math.floor(Math.random() * questions.length);
-            gameState.currentQuestion = questions[randomIndex];
+            // Filtrar preguntas que ya han sido usadas
+            const availableQuestions = questions.filter(q => !gameState.usedQuestionIds.includes(q.id));
+            
+            // Si no quedan preguntas sin usar, reutilizar todas
+            if (availableQuestions.length === 0) {
+                gameState.usedQuestionIds = gameState.usedQuestionIds.filter(id => {
+                    // Mantener solo IDs que no sean de este nivel y pilar
+                    return !questions.some(q => q.id === id);
+                });
+                
+                // Ahora todas las preguntas están disponibles de nuevo
+                const randomIndex = Math.floor(Math.random() * questions.length);
+                gameState.currentQuestion = questions[randomIndex];
+            } else {
+                // Seleccionar una pregunta aleatoria entre las disponibles
+                const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                gameState.currentQuestion = availableQuestions[randomIndex];
+            }
+            
+            // Marcar esta pregunta como usada
+            gameState.usedQuestionIds.push(gameState.currentQuestion.id);
             
             // Actualizar UI
             questionElement.textContent = gameState.currentQuestion.text;
+            
+            // Reproducir sonido de pregunta
+            if (typeof playSound === 'function') {
+                playSound('question');
+            }
             
             // Actualizar opciones de respuesta
             answers.forEach((answer, index) => {
@@ -818,8 +1069,18 @@
                 // Cambiar color según el tiempo restante
                 if (gameState.timeLeft <= 10) {
                     timerBar.style.backgroundColor = '#F44336';
+                    
+                    // Reproducir sonido de tiempo bajo
+                    if (gameState.timeLeft === 10 && typeof playSound === 'function') {
+                        playSound('timeLow');
+                    }
                 } else if (gameState.timeLeft <= 20) {
                     timerBar.style.backgroundColor = '#FFE600';
+                    
+                    // Reproducir sonido de tiempo corriendo
+                    if (gameState.timeLeft === 20 && typeof playSound === 'function') {
+                        playSound('timeRunning');
+                    }
                 }
                 
                 // Si se acaba el tiempo
@@ -833,6 +1094,11 @@
         // Tiempo agotado
         function timeUp() {
             clearInterval(gameState.timerInterval);
+            
+            // Reproducir sonido de error
+            if (typeof playSound === 'function') {
+                playSound('wrong');
+            }
             
             // Deshabilitar respuestas pero no mostrar la correcta
             answers.forEach((answer) => {
@@ -852,14 +1118,29 @@
             
             const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
             
+            // Reproducir sonido de selección
+            if (typeof playSound === 'function') {
+                playSound('select');
+            }
+            
             // Mostrar resultado (mostrar correcto solo si acierta)
             answers.forEach((answer, index) => {
                 answer.style.pointerEvents = 'none';
                 
                 if (isCorrect && index === gameState.currentQuestion.correctIndex) {
                     answer.classList.add('correct');
+                    
+                    // Reproducir sonido de correcto
+                    if (typeof playSound === 'function') {
+                        playSound('correct');
+                    }
                 } else if (!isCorrect && index === selectedIndex) {
                     answer.classList.add('incorrect');
+                    
+                    // Reproducir sonido de incorrecto
+                    if (typeof playSound === 'function') {
+                        playSound('wrong');
+                    }
                 }
             });
             
@@ -878,6 +1159,9 @@
                     gameState.player.prize++;
                     currentPrize.textContent = `Chances: ${gameState.player.prize}`;
                     resultText.textContent = `¡Respuesta correcta! ¡Has ganado 1 chance! Total: ${gameState.player.prize}`;
+                    
+                    // Mostrar celebración de chance ganado
+                    showChanceEarnedCelebration();
                 }
                 
                 resultContainer.style.display = 'block';
@@ -889,6 +1173,8 @@
                 if (gameState.questionsInRound >= GAME_STRUCTURE.questionsPerRound) {
                     gameState.pillarsCompleted.push(gameState.currentPillar);
                     gameState.questionsInRound = 0;
+                    
+                    // La siguiente pregunta mostrará la celebración del pilar
                     gameState.currentPillar = getRandomPillar();
                 }
             } else {
@@ -898,11 +1184,6 @@
                 // Finalizar juego como perdedor
                 setTimeout(() => endGame(false), 2000);
             }
-        }
-        
-        // Cargar siguiente pregunta automáticamente
-        function loadNextQuestion() {
-            loadQuestion();
         }
         
         // Función para avanzar automáticamente después de una respuesta correcta
@@ -915,9 +1196,77 @@
                 
                 if (width <= 0) {
                     clearInterval(interval);
-                    loadNextQuestion();
+                    loadQuestion();
                 }
             }, 50); // 50ms * 50 iteraciones = ~2.5 segundos
+        }
+        
+        // Mostrar celebración de chance ganado
+        function showChanceEarnedCelebration() {
+            // Iniciar confetti
+            if (confettiEffect) {
+                confettiEffect.start();
+                setTimeout(() => confettiEffect.stop(), 3000);
+            }
+            
+            // Reproducir sonido de ganador
+            if (typeof playSound === 'function') {
+                playSound('winner');
+            }
+            
+            // Mostrar mensaje de celebración
+            chanceCelebration.classList.add('active');
+            setTimeout(() => {
+                chanceCelebration.classList.remove('active');
+            }, 3000);
+        }
+        
+        // Mostrar celebración de pilar completado
+        function showPillarCompletedCelebration() {
+            // Iniciar confetti
+            if (confettiEffect) {
+                confettiEffect.start();
+                setTimeout(() => confettiEffect.stop(), 3000);
+            }
+            
+            // Actualizar nombre del pilar
+            pillarNameElement.textContent = `¡Has completado el pilar ${gameState.currentPillar}!`;
+            
+            // Reproducir sonido de nivel superado
+            if (typeof playSound === 'function') {
+                playSound('levelUp');
+            }
+            
+            // Mostrar mensaje de celebración
+            pillarCelebration.classList.add('active');
+            setTimeout(() => {
+                pillarCelebration.classList.remove('active');
+            }, 3000);
+        }
+        
+        // Mostrar celebración de nivel completado
+        function showLevelUpCelebration() {
+            // Iniciar confetti
+            if (confettiEffect) {
+                confettiEffect.start();
+                setTimeout(() => confettiEffect.stop(), 3000);
+            }
+            
+            // Actualizar nombre del nivel
+            const levelIndex = gameState.player.level - 1;
+            const levelName = GAME_STRUCTURE.difficultyLevels[levelIndex] || 'Desconocido';
+            levelNameElement.textContent = `¡Ahora estás en el nivel ${gameState.player.level} - ${levelName}!`;
+            
+            // Reproducir sonido de nivel superado
+            if (typeof playSound === 'function') {
+                playSound('levelUp');
+            }
+            
+            // Mostrar mensaje de celebración
+            levelUpCelebration.classList.add('active');
+            setTimeout(() => {
+                levelUpCelebration.classList.remove('active');
+            }, 3000);
         }
         
         // Finalizar juego
@@ -928,6 +1277,17 @@
             resultPrize.textContent = gameState.player.prize;
             resultLevel.textContent = gameState.player.level;
             
+            // Si es ganador, mostrar confetti
+            if (isWinner && confettiEffect) {
+                confettiEffect.start();
+                setTimeout(() => confettiEffect.stop(), 5000);
+                
+                // Reproducir sonido de ganador
+                if (typeof playSound === 'function') {
+                    playSound('winner');
+                }
+            }
+            
             // Guardar puntuación en Airtable
             try {
                 await saveScore(
@@ -935,7 +1295,8 @@
                     gameState.player.phone,
                     gameState.player.prize,
                     gameState.player.level,
-                    gameState.currentPillar
+                    gameState.currentPillar,
+                    gameState.player.questionsAnswered
                 );
             } catch (error) {
                 console.error('Error al guardar puntuación:', error);
@@ -947,7 +1308,7 @@
         }
         
         // Guardar puntuación
-        async function saveScore(name, phone, prize, level, pillar) {
+        async function saveScore(name, phone, prize, level, pillar, questionsAnswered) {
             try {
                 const response = await fetch('/api/save-score', {
                     method: 'POST',
@@ -957,7 +1318,8 @@
                         phone,
                         prize,
                         maxLevel: level,
-                        pillar
+                        pillar,
+                        questionsAnswered
                     })
                 });
                 
@@ -974,45 +1336,6 @@
             }
         }
         
-        // Reiniciar juego
-        function resetGame() {
-            // Reiniciar estado del juego
-            gameState.player.level = 1;
-            gameState.player.prize = 0;
-            gameState.player.questionsAnswered = 0;
-            gameState.currentQuestionIndex = 0;
-            gameState.questionsInRound = 0;
-            gameState.pillarsCompleted = [];
-            
-            gameState.lifelines = {
-                fiftyFifty: true,
-                audience: true,
-                phone: true
-            };
-            
-            // Resetear UI
-            updateLevelDisplay();
-            currentPrize.textContent = "Chances: 0";
-            
-            fiftyFifty.classList.remove('used');
-            audience.classList.remove('used');
-            phone.classList.remove('used');
-            
-            // Resetear puntos de progreso
-            updateProgressDots();
-            
-            // Actualizar tabla de líderes
-            loadLeaderboard();
-            
-            // Volver a pantalla de inicio
-            resultScreen.classList.remove('active');
-            startScreen.classList.add('active');
-            
-            // Limpiar formulario
-            nameInput.value = '';
-            phoneInput.value = '';
-        }
-        
         // Comodín 50:50
         function useFiftyFifty() {
             if (!gameState.lifelines.fiftyFifty) return;
@@ -1020,6 +1343,11 @@
             // Marcar como usado
             gameState.lifelines.fiftyFifty = false;
             fiftyFifty.classList.add('used');
+            
+            // Reproducir sonido de comodín
+            if (typeof playSound === 'function') {
+                playSound('lifeline');
+            }
             
             // Determinar opciones a eliminar
             const correctIndex = gameState.currentQuestion.correctIndex;
@@ -1042,6 +1370,11 @@
             // Marcar como usado
             gameState.lifelines.audience = false;
             audience.classList.add('used');
+            
+            // Reproducir sonido de comodín
+            if (typeof playSound === 'function') {
+                playSound('lifeline');
+            }
             
             // Generar porcentajes
             const correctIndex = gameState.currentQuestion.correctIndex;
@@ -1093,6 +1426,11 @@
             // Marcar como usado
             gameState.lifelines.phone = false;
             phone.classList.add('used');
+            
+            // Reproducir sonido de comodín
+            if (typeof playSound === 'function') {
+                playSound('lifeline');
+            }
             
             // Generar consejo del experto
             const correctIndex = gameState.currentQuestion.correctIndex;
