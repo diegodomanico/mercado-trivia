@@ -1,10 +1,10 @@
 /* Base Styles & Variables */
 :root {
     /* Theme colors */
-    --bg-color: #FFFFFF;
-    --text-color: #0A0A0A;
-    --card-bg: #FFFFFF;
-    --border-color: rgba(255, 255, 255, 0.1);
+    --bg-color: #0A0A0A;
+    --text-color: #FF00FF;
+    --card-bg: #1A1A1A;
+    --border-color: rgba(255, 255, 255, 0.2);
     
     /* Dark theme palette */
     --ml-violet: #7A1DEA;
@@ -104,9 +104,10 @@ body {
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: var(--ml-black);
-    color: var(--ml-light-gray);
+    background-color: var(--bg-color);
+    color: var(--text-color);
     line-height: 1.6;
+    font-weight: bold;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
@@ -903,8 +904,9 @@ input:focus {
 .answer-text {
     font-size: var(--font-medium);
     transition: transform 0.2s ease;
-    color: var(--ml-black);
+    color: #FF00FF;
     font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .answer:hover .answer-text {
