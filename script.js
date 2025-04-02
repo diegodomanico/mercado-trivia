@@ -679,32 +679,66 @@ function completeRound() {
 // End Game
 function endGame(isWinner) {
     clearInterval(gameState.timer);
-
-    // Actualizar pantalla de resultados
-    const resultScreen = document.getElementById('results-screen');
-    if (resultScreen) {
-        const resultTitle = document.getElementById('result-title');
-        const resultPrize = document.getElementById('result-prize');
-
-        resultTitle.textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
-        resultPrize.textContent = gameState.player.prize || 0;
-
-        // Mostrar botón de reinicio
-        const playAgainBtn = document.createElement('button');
-        playAgainBtn.textContent = 'Jugar de nuevo';
-        playAgainBtn.className = 'cta-button';
-        playAgainBtn.onclick = () => location.reload();
-
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'result-buttons';
-        buttonsContainer.appendChild(playAgainBtn);
-
-        resultScreen.querySelector('.final-result').appendChild(buttonsContainer);
+    
+    // Limpiar cualquier timeout pendiente
+    if (gameState.answerTimeout) {
+        clearTimeout(gameState.answerTimeout);
     }
 
-    // Ocultar pantalla de juego y mostrar resultados
-    document.getElementById('game-screen').classList.add('hide');
-    resultScreen.classList.remove('hide');
+    // Desactivar interacciones durante la transición
+    gameState.gameActive = false;
+
+    // Mostrar mensaje de resultado inmediato
+    const resultContainer = document.getElementById('result-container');
+    if (resultContainer) {
+        resultContainer.style.display = 'block';
+        document.getElementById('result-text').textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
+    }
+
+    // Esperar un momento antes de mostrar la pantalla de resultados
+    setTimeout(() => {
+        // Actualizar pantalla de resultados
+        const resultScreen = document.getElementById('results-screen');
+        const gameScreen = document.getElementById('game-screen');
+        
+        if (resultScreen && gameScreen) {
+            // Actualizar valores
+            if (document.getElementById('result-title')) {
+                document.getElementById('result-title').textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
+            }
+            if (document.getElementById('result-prize')) {
+                document.getElementById('result-prize').textContent = gameState.player.prize || 0;
+            }
+            if (document.getElementById('result-player-name')) {
+                document.getElementById('result-player-name').textContent = gameState.player.name || 'Jugador';
+            }
+            if (document.getElementById('result-player-phone')) {
+                document.getElementById('result-player-phone').textContent = gameState.player.phone || '-';
+            }
+
+            // Asegurarse que existe el contenedor de botones
+            let buttonsContainer = resultScreen.querySelector('.result-buttons');
+            if (!buttonsContainer) {
+                buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'result-buttons';
+                resultScreen.querySelector('.final-result').appendChild(buttonsContainer);
+            }
+
+            // Limpiar botones existentes
+            buttonsContainer.innerHTML = '';
+
+            // Agregar botón de reinicio
+            const playAgainBtn = document.createElement('button');
+            playAgainBtn.textContent = 'Jugar de nuevo';
+            playAgainBtn.className = 'cta-button';
+            playAgainBtn.onclick = () => location.reload();
+            buttonsContainer.appendChild(playAgainBtn);
+
+            // Cambiar pantallas
+            gameScreen.classList.add('hide');
+            resultScreen.classList.remove('hide');
+        }
+    }, 1500);
 }
 
 // Start Timer
