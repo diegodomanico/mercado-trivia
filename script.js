@@ -114,8 +114,36 @@ const gameState = {
 // Initialize the game
 document.addEventListener('DOMContentLoaded', initGame);
 
+// Theme handling
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeToggle(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggle(newTheme);
+}
+
+function updateThemeToggle(theme) {
+    const toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+        const icon = toggle.querySelector('.theme-toggle-icon');
+        icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
 // Event Listeners
+document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 elements.retryButton.addEventListener('click', initGame);
+
+// Initialize theme on load
+initTheme();
 elements.startGameButton.addEventListener('click', checkPhoneAndStartGame);
 elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
 elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
