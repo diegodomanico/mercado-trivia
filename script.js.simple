@@ -1,11 +1,11 @@
 // Game Configuration
 const GAME_CONFIG = {
     timePerDifficulty: {
-        "Fácil 🟢": 45,
-        "Menos fácil 🟡": 40,
-        "Difícil 🔴": 35,
-        "Muy difícil 🔥": 30,
-        "Complicada 💀": 25
+        facil_🟢: 45,
+        menos_facil_🟡: 40,
+        dificil_🔴: 35,
+        muy_dificil_🔥: 30,
+        complicada_💀: 25
     },
     lifelines: {
         'fifty-fifty': true,
