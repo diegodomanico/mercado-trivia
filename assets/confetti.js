@@ -111,7 +111,7 @@ class ConfettiEffect {
             }
         }
         
-        // Continue animation
+        // Continue animation loop
         this.animationId = requestAnimationFrame(() => this.animate());
     }
     
@@ -122,28 +122,23 @@ class ConfettiEffect {
         this.ctx.globalAlpha = particle.opacity;
         this.ctx.fillStyle = particle.color;
         
-        // Draw as a small rectangle or circle
-        if (Math.random() > 0.5) {
-            this.ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
-        } else {
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, particle.size / 2, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
+        // Draw a rectangle for confetti piece
+        this.ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size / 2);
         
         this.ctx.restore();
     }
 }
 
-// Global functions to start/stop confetti
+// Create confetti instance
+const confetti = new ConfettiEffect();
+
+// Public functions
 function startConfetti() {
-    if (window.confettiEffect) {
-        window.confettiEffect.start();
-    }
+    confetti.canvas.classList.remove('hide');
+    confetti.start();
 }
 
 function stopConfetti() {
-    if (window.confettiEffect) {
-        window.confettiEffect.stop();
-    }
+    confetti.stop();
+    confetti.canvas.classList.add('hide');
 }
