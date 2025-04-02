@@ -272,8 +272,8 @@ button:disabled {
 }
 
 .answer {
-    background-color: var(--ml-white);
-    color: var(--ml-black);
+    background-color: white;
+    color: black;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 8px;
@@ -281,12 +281,10 @@ button:disabled {
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
-    border: 2px solid var(--ml-light-gray);
+    border: 2px solid #ddd;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
 }
 
 .answer:hover {

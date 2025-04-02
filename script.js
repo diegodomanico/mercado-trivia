@@ -677,71 +677,34 @@ function completeRound() {
 }
 
 // End Game
-async function endGame(isWinner) {
-    // Stop timer
-    if (gameState.timer) {
-        clearInterval(gameState.timer);
-        gameState.timer = null;
+function endGame(isWinner) {
+    clearInterval(gameState.timer);
+
+    // Actualizar pantalla de resultados
+    const resultScreen = document.getElementById('results-screen');
+    if (resultScreen) {
+        const resultTitle = document.getElementById('result-title');
+        const resultPrize = document.getElementById('result-prize');
+
+        resultTitle.textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
+        resultPrize.textContent = gameState.player.prize || 0;
+
+        // Mostrar botón de reinicio
+        const playAgainBtn = document.createElement('button');
+        playAgainBtn.textContent = 'Jugar de nuevo';
+        playAgainBtn.className = 'cta-button';
+        playAgainBtn.onclick = () => location.reload();
+
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'result-buttons';
+        buttonsContainer.appendChild(playAgainBtn);
+
+        resultScreen.querySelector('.final-result').appendChild(buttonsContainer);
     }
 
-    // Calculate game time
-    gameState.gameEndTime = new Date();
-    if (gameState.gameStartTime) {
-        gameState.player.totalGameTimeSeconds = Math.floor(
-            (gameState.gameEndTime - gameState.gameStartTime) / 1000
-        );
-    }
-
-    // Update results screen
-    elements.resultTitle.textContent = isWinner ? "¡FELICITACIONES!" : "¡Juego Terminado!";
-    elements.resultPlayerName.textContent = gameState.player.name;
-    elements.resultPlayerPhone.textContent = gameState.player.phone;
-    elements.resultPrize.textContent = gameState.player.prize;
-    elements.resultRound.textContent = gameState.player.currentRound;
-    elements.resultPillar.textContent = gameState.player.currentPillar;
-
-    // Show confetti for winners
-    if (isWinner && typeof showConfetti === 'function') {
-        showConfetti();
-        setTimeout(() => stopConfetti(), 5000);
-    }
-
-    // Play appropriate sound
-    if (typeof playSound === 'function') {
-        playSound(isWinner ? 'winner' : 'gameOver');
-    }
-
-    try {
-        // Save score to server
-        await saveScore();
-    } catch (error) {
-        console.error('Error al guardar puntuación:', error);
-    }
-
-    // Show results screen
-    showScreen(elements.resultsScreen);
-
-    // Create retry buttons
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'result-buttons';
-
-    const playAgainButton = document.createElement('button');
-    playAgainButton.className = 'cta-button';
-    playAgainButton.textContent = 'Jugar de nuevo';
-    playAgainButton.onclick = () => location.reload();
-
-    const viewLeaderboardButton = document.createElement('button');
-    viewLeaderboardButton.className = 'secondary-button';
-    viewLeaderboardButton.textContent = 'Ver tabla de líderes';
-    viewLeaderboardButton.onclick = showLeaderboard;
-
-    buttonsContainer.appendChild(playAgainButton);
-    buttonsContainer.appendChild(viewLeaderboardButton);
-
-    const resultsContainer = document.querySelector('.final-result');
-    if (resultsContainer) {
-        resultsContainer.appendChild(buttonsContainer);
-    }
+    // Ocultar pantalla de juego y mostrar resultados
+    document.getElementById('game-screen').classList.add('hide');
+    resultScreen.classList.remove('hide');
 }
 
 // Start Timer
