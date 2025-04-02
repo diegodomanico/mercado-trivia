@@ -120,19 +120,41 @@ app.post('/api/validate-phone', async (req, res) => {
             });
         }
         
-        // Consultar si el teléfono ya existe
-        const response = await axios.get(
-            `${AIRTABLE_API_URL}/${AIRTABLE_SCORES_TABLE}?filterByFormula={Telefono}="${phone}"`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+        // Intentar diferentes formatos de teléfono para la consulta
+        const cleanPhone = String(phone).replace(/\D/g, '');
+        const phoneFormats = [
+            cleanPhone,                // Formato simple: 1151331242
+            `+${cleanPhone}`,          // Con signo +: +1151331242
+            `+54${cleanPhone}`         // Con prefijo país: +541151331242
+        ];
         
-        // Si no hay registros, el teléfono es válido
-        if (response.data.records.length === 0) {
+        let existsInAnyFormat = false;
+        
+        // Probar con cada formato
+        for (const phoneFormat of phoneFormats) {
+            console.log(`Verificando formato: ${phoneFormat}`);
+            
+            // Consultar si el teléfono ya existe en este formato
+            const response = await axios.get(
+                `${AIRTABLE_API_URL}/${AIRTABLE_SCORES_TABLE}?filterByFormula={Telefono}="${phoneFormat}"`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            // Si hay registros con este formato, el teléfono ya existe
+            if (response.data.records && response.data.records.length > 0) {
+                existsInAnyFormat = true;
+                console.log(`Encontrado en formato: ${phoneFormat}`);
+                break;
+            }
+        }
+        
+        // Si el teléfono no está presente en ningún formato, es válido
+        if (!existsInAnyFormat) {
             return res.json({
                 valid: true,
                 message: 'Número de teléfono válido'
@@ -146,9 +168,10 @@ app.post('/api/validate-phone', async (req, res) => {
         });
     } catch (error) {
         console.error('Error al validar teléfono:', error.message);
-        return res.status(500).json({
-            valid: false,
-            message: 'Error al validar el número de teléfono',
+        // En caso de error, permitir que el juego continúe devolviendo valid=true
+        return res.json({
+            valid: true,
+            message: 'Teléfono aceptado por error en validación',
             error: error.message
         });
     }
