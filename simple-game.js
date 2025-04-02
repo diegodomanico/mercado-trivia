@@ -6,7 +6,7 @@ const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 // Estructura del juego
 const GAME_STRUCTURE = {
     totalRounds: 5,
-    questionsPerRound: 5,
+    questionsPerRound: 1, // Una pregunta por cada tema/pilar
     pillars: [
         "Reputación  ❤️",
         "Oferta 💙",
@@ -416,6 +416,18 @@ function getRandomPillar() {
     return availablePillars[randomIndex];
 }
 
+// Debug - Imprime el estado actual del juego
+function logGameState() {
+    console.log("Estado del juego:", {
+        nivel: gameState.player.level,
+        pilar: gameState.currentPillar,
+        preguntasContestadas: gameState.player.questionsAnswered,
+        preguntasEnRonda: gameState.questionsInRound,
+        chances: gameState.player.prize,
+        pilaresCompletados: gameState.pillarsCompleted
+    });
+}
+
 // Actualiza los puntos de progreso
 function updateProgressDots() {
     // Calcular número de preguntas completadas en módulo 5
@@ -697,6 +709,9 @@ function autoAdvance() {
         
         if (width <= 0) {
             clearInterval(interval);
+            // Registrar estado para depuración
+            logGameState();
+            // Cargar siguiente pregunta
             loadQuestion();
         }
     }, 50); // 50ms * 50 iteraciones = ~2.5 segundos
