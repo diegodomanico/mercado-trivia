@@ -6,8 +6,8 @@ const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 // Estructura del juego
 const GAME_STRUCTURE = {
     totalRounds: 5,
-    questionsPerRound: 1, // Una pregunta por cada tema/pilar
-    pillars: [
+    questionsPerRound: 1, // Una pregunta por cada tema
+    temas: [
         "Reputación  ❤️",
         "Oferta 💙",
         "Servicio 💛",
@@ -402,18 +402,18 @@ function prepareGame() {
     currentPrizeDisplay.textContent = `Chances: 0`;
 }
 
-// Obtiene un pilar aleatorio no completado
+// Obtiene un tema aleatorio no completado
 function getRandomPillar() {
-    const availablePillars = GAME_STRUCTURE.pillars.filter(
-        pillar => !gameState.pillarsCompleted.includes(pillar)
+    const availableTemas = GAME_STRUCTURE.temas.filter(
+        tema => !gameState.pillarsCompleted.includes(tema)
     );
     
-    if (availablePillars.length === 0) {
-        return null; // Todos los pilares completados
+    if (availableTemas.length === 0) {
+        return null; // Todos los temas completados
     }
     
-    const randomIndex = Math.floor(Math.random() * availablePillars.length);
-    return availablePillars[randomIndex];
+    const randomIndex = Math.floor(Math.random() * availableTemas.length);
+    return availableTemas[randomIndex];
 }
 
 // Debug - Imprime el estado actual del juego
@@ -607,10 +607,21 @@ function timeUp() {
     resultText.textContent = "¡Tiempo agotado! Has perdido.";
     resultContainer.style.display = 'block';
     
+    // Limpiar contenido anterior si hubiera algún botón
+    while (resultContainer.childElementCount > 1) {
+        resultContainer.removeChild(resultContainer.lastChild);
+    }
+    
     // Agregar botón para volver al inicio 
     const returnButton = document.createElement('button');
     returnButton.textContent = 'Volver al inicio';
     returnButton.style.marginTop = '10px';
+    returnButton.style.padding = '8px 15px';
+    returnButton.style.backgroundColor = '#7A1DEA';
+    returnButton.style.color = 'white';
+    returnButton.style.border = 'none';
+    returnButton.style.borderRadius = '4px';
+    returnButton.style.cursor = 'pointer';
     returnButton.onclick = () => window.location.reload();
     resultContainer.appendChild(returnButton);
     
@@ -675,22 +686,33 @@ function handleAnswerSelection(selectedIndex) {
         // Iniciar temporizador para avanzar automáticamente
         autoAdvance();
         
-        // Si completó las preguntas para este pilar, marcar como completado
+        // Si completó las preguntas para este tema, marcar como completado
         if (gameState.questionsInRound >= GAME_STRUCTURE.questionsPerRound) {
             gameState.pillarsCompleted.push(gameState.currentPillar);
             gameState.questionsInRound = 0;
             
-            // La siguiente pregunta mostrará la celebración del pilar
+            // La siguiente pregunta mostrará la celebración del tema
             gameState.currentPillar = getRandomPillar();
         }
     } else {
         resultText.textContent = "Respuesta incorrecta. ¡Has perdido!";
         resultContainer.style.display = 'block';
         
+        // Limpiar contenido anterior si hubiera algún botón
+        while (resultContainer.childElementCount > 1) {
+            resultContainer.removeChild(resultContainer.lastChild);
+        }
+        
         // Agregar botón para volver al inicio 
         const returnButton = document.createElement('button');
         returnButton.textContent = 'Volver al inicio';
         returnButton.style.marginTop = '10px';
+        returnButton.style.padding = '8px 15px';
+        returnButton.style.backgroundColor = '#7A1DEA';
+        returnButton.style.color = 'white';
+        returnButton.style.border = 'none';
+        returnButton.style.borderRadius = '4px';
+        returnButton.style.cursor = 'pointer';
         returnButton.onclick = () => window.location.reload();
         resultContainer.appendChild(returnButton);
         
@@ -737,7 +759,7 @@ function showChanceEarnedCelebration() {
     }, 3000);
 }
 
-// Muestra celebración de pilar completado
+// Muestra celebración de tema completado
 function showPillarCompletedCelebration() {
     // Iniciar confetti
     if (window.confettiEffect) {
@@ -745,8 +767,8 @@ function showPillarCompletedCelebration() {
         setTimeout(() => stopConfetti(), 3000);
     }
     
-    // Actualizar nombre del pilar
-    pillarNameElement.textContent = `¡Has completado el pilar ${gameState.currentPillar}!`;
+    // Actualizar nombre del tema
+    pillarNameElement.textContent = `¡Has completado el tema ${gameState.currentPillar}!`;
     
     // Reproducir sonido de nivel superado
     if (typeof playSound === 'function') {
@@ -888,16 +910,99 @@ function useAudience() {
     // Generar porcentajes
     const correctIndex = gameState.currentQuestion.correctIndex;
     const percentages = generateAudiencePercentages(correctIndex);
-    
-    // Mostrar los porcentajes
-    let audienceMessage = "El público opina:\n";
     const letters = ['A', 'B', 'C', 'D'];
     
+    // Crear un elemento para mostrar los resultados de la audiencia
+    const audienceResultsEl = document.createElement('div');
+    audienceResultsEl.className = 'audience-results';
+    audienceResultsEl.style.position = 'fixed';
+    audienceResultsEl.style.top = '50%';
+    audienceResultsEl.style.left = '50%';
+    audienceResultsEl.style.transform = 'translate(-50%, -50%)';
+    audienceResultsEl.style.backgroundColor = '#1a1a1a';
+    audienceResultsEl.style.border = '2px solid #7A1DEA';
+    audienceResultsEl.style.borderRadius = '8px';
+    audienceResultsEl.style.padding = '15px';
+    audienceResultsEl.style.boxShadow = '0 0 15px rgba(122, 29, 234, 0.5)';
+    audienceResultsEl.style.zIndex = '1000';
+    audienceResultsEl.style.minWidth = '250px';
+    
+    // Título
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = 'El público opina:';
+    titleEl.style.color = '#FFE600';
+    titleEl.style.textAlign = 'center';
+    titleEl.style.marginBottom = '15px';
+    audienceResultsEl.appendChild(titleEl);
+    
+    // Crear barras de porcentaje
     for (let i = 0; i < 4; i++) {
-        audienceMessage += `${letters[i]}: ${percentages[i]}%\n`;
+        const barContainer = document.createElement('div');
+        barContainer.style.marginBottom = '10px';
+        barContainer.style.display = 'flex';
+        barContainer.style.alignItems = 'center';
+        
+        // Letra
+        const letterEl = document.createElement('div');
+        letterEl.textContent = letters[i];
+        letterEl.style.width = '30px';
+        letterEl.style.color = '#ffffff';
+        letterEl.style.fontWeight = 'bold';
+        barContainer.appendChild(letterEl);
+        
+        // Barra de porcentaje
+        const barEl = document.createElement('div');
+        barEl.style.flex = '1';
+        barEl.style.height = '20px';
+        barEl.style.backgroundColor = '#333';
+        barEl.style.borderRadius = '4px';
+        barEl.style.overflow = 'hidden';
+        
+        const fillEl = document.createElement('div');
+        fillEl.style.width = '0%'; // Iniciar en 0 y animar
+        fillEl.style.height = '100%';
+        fillEl.style.backgroundColor = i === correctIndex ? '#3483FA' : '#7A1DEA';
+        fillEl.style.transition = 'width 1s ease-in-out';
+        barEl.appendChild(fillEl);
+        
+        barContainer.appendChild(barEl);
+        
+        // Porcentaje
+        const percentEl = document.createElement('div');
+        percentEl.textContent = '0%'; // Iniciar en 0 y animar
+        percentEl.style.width = '50px';
+        percentEl.style.textAlign = 'right';
+        percentEl.style.color = '#ffffff';
+        percentEl.style.paddingLeft = '10px';
+        barContainer.appendChild(percentEl);
+        
+        audienceResultsEl.appendChild(barContainer);
+        
+        // Animar después de añadir al DOM
+        setTimeout(() => {
+            fillEl.style.width = `${percentages[i]}%`;
+            percentEl.textContent = `${percentages[i]}%`;
+        }, 100 + (i * 200));
     }
     
-    alert(audienceMessage);
+    // Botón para cerrar
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Cerrar';
+    closeBtn.style.display = 'block';
+    closeBtn.style.margin = '15px auto 0';
+    closeBtn.style.padding = '8px 15px';
+    closeBtn.style.backgroundColor = '#7A1DEA';
+    closeBtn.style.color = 'white';
+    closeBtn.style.border = 'none';
+    closeBtn.style.borderRadius = '4px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => {
+        document.body.removeChild(audienceResultsEl);
+    };
+    audienceResultsEl.appendChild(closeBtn);
+    
+    // Agregar al body
+    document.body.appendChild(audienceResultsEl);
 }
 
 // Genera porcentajes para la ayuda del público
@@ -966,7 +1071,89 @@ function usePhone() {
     
     const confidencePhrase = confidence[Math.floor(Math.random() * confidence.length)];
     
-    alert(`El experto dice: "Creo que la respuesta es ${expertAnswer}, ${confidencePhrase}."`);
+    // Crear un elemento para mostrar la llamada al experto
+    const phoneCallEl = document.createElement('div');
+    phoneCallEl.className = 'phone-call';
+    phoneCallEl.style.position = 'fixed';
+    phoneCallEl.style.top = '50%';
+    phoneCallEl.style.left = '50%';
+    phoneCallEl.style.transform = 'translate(-50%, -50%)';
+    phoneCallEl.style.backgroundColor = '#1a1a1a';
+    phoneCallEl.style.border = '2px solid #7A1DEA';
+    phoneCallEl.style.borderRadius = '8px';
+    phoneCallEl.style.padding = '20px';
+    phoneCallEl.style.boxShadow = '0 0 15px rgba(122, 29, 234, 0.5)';
+    phoneCallEl.style.zIndex = '1000';
+    phoneCallEl.style.minWidth = '300px';
+    phoneCallEl.style.maxWidth = '450px';
+    
+    // Título
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = 'Llamada al experto';
+    titleEl.style.color = '#FFE600';
+    titleEl.style.textAlign = 'center';
+    titleEl.style.marginBottom = '15px';
+    phoneCallEl.appendChild(titleEl);
+    
+    // Animación de llamada
+    const callingEl = document.createElement('div');
+    callingEl.style.textAlign = 'center';
+    callingEl.style.marginBottom = '15px';
+    callingEl.style.color = '#ffffff';
+    
+    let dots = 0;
+    const callingInterval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        callingEl.textContent = `Llamando${'.'.repeat(dots)}`;
+    }, 300);
+    
+    phoneCallEl.appendChild(callingEl);
+    
+    // Agregar al body inmediatamente para mostrar "Llamando..."
+    document.body.appendChild(phoneCallEl);
+    
+    // Simular tiempo de conexión
+    setTimeout(() => {
+        clearInterval(callingInterval);
+        
+        // Crear burbuja de diálogo
+        const dialogEl = document.createElement('div');
+        dialogEl.style.backgroundColor = '#2a2a2a';
+        dialogEl.style.borderRadius = '10px';
+        dialogEl.style.padding = '15px';
+        dialogEl.style.position = 'relative';
+        dialogEl.style.marginTop = '10px';
+        dialogEl.style.marginBottom = '20px';
+        dialogEl.style.color = '#ffffff';
+        dialogEl.style.fontSize = '16px';
+        dialogEl.style.lineHeight = '1.5';
+        
+        // Agregar texto del experto
+        dialogEl.innerHTML = `<strong>El experto dice:</strong><br>"Creo que la respuesta es <span style="color: #3483FA; font-weight: bold;">${expertAnswer}</span>, ${confidencePhrase}."`;
+        
+        // Eliminar el elemento "llamando"
+        phoneCallEl.removeChild(callingEl);
+        
+        // Agregar el dialogo
+        phoneCallEl.appendChild(dialogEl);
+        
+        // Botón para cerrar
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Cerrar';
+        closeBtn.style.display = 'block';
+        closeBtn.style.margin = '15px auto 0';
+        closeBtn.style.padding = '8px 15px';
+        closeBtn.style.backgroundColor = '#7A1DEA';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = 'none';
+        closeBtn.style.borderRadius = '4px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = () => {
+            document.body.removeChild(phoneCallEl);
+        };
+        phoneCallEl.appendChild(closeBtn);
+        
+    }, 2500); // 2.5 segundos de "llamando..."
 }
 
 // Función para mezclar un array (algoritmo Fisher-Yates)
