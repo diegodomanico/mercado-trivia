@@ -74,6 +74,13 @@ app.post('/api/scores', async (req, res) => {
     try {
         const scoreData = req.body;
         
+        if (!scoreData) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'No score data provided' 
+            });
+        }
+        
         // Log detallado de los datos recibidos
         console.log('-----------------------------------------');
         console.log('DATOS RECIBIDOS DEL CLIENTE:');

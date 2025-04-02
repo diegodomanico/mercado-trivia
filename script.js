@@ -506,26 +506,29 @@ function selectAnswer(e) {
 
 // Check if the answer is correct
 function checkAnswer(selectedIndex) {
+    // If game is not active or answer already selected, do nothing
+    if (!gameState.gameActive || gameState.selectedAnswer !== null) return;
+
+    // Validate current question exists
     if (!gameState.currentQuestion) {
-        console.error('No hay pregunta actual para verificar');
+        console.error('No current question available');
         return;
     }
 
-    clearInterval(gameState.timer);
-
-    const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
+    // Get the current question
+    const correctIndex = gameState.currentQuestion.correctIndex;
 
     // Update UI
-    elements.answers[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
+    elements.answers[selectedIndex].classList.add(selectedIndex === correctIndex ? 'correct' : 'incorrect');
 
     // Play sound
     if (typeof playSound === 'function') {
-        playSound(isCorrect ? 'correct' : 'wrong');
+        playSound(selectedIndex === correctIndex ? 'correct' : 'wrong');
     }
 
     // Process result after a delay
     setTimeout(() => {
-        if (isCorrect) {
+        if (selectedIndex === correctIndex) {
             handleCorrectAnswer();
         } else {
             handleWrongAnswer();
@@ -996,8 +999,7 @@ function generateExpertAdvice() {
         confidencePhrase = "Estoy muy seguro de que";
     } else if (accuracy > 0.7) {
         confidencePhrase = "Creo que";
-    } else if (accuracy > 0.6) {
-        confidencePhrase = "No estoy completamente seguro, pero creo que";
+    } else if (accuracy > 0.6) {confidencePhrase = "No estoy completamente seguro, pero creo que";
     } else {
         confidencePhrase = "Es difícil saberlo, pero si tuviera que adivinar diría que";
     }
