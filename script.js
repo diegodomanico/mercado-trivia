@@ -430,6 +430,18 @@ function generateDefaultQuestions(difficulty, pillar) {
 
 // Load a question
 function loadQuestion() {
+    // Validar que tenemos preguntas cargadas
+    if (!gameState.allQuestions || !gameState.currentPillar) {
+        console.error('No hay preguntas disponibles');
+        endGame(false);
+        return;
+    }
+
+    // Ocultar resultados
+    const resultContainer = document.getElementById('result-container');
+    if (resultContainer) resultContainer.style.display = 'none';
+
+
     // Get the current question
     gameState.currentQuestion = gameState.currentRoundQuestions[gameState.player.currentQuestionIndex];
 
@@ -494,11 +506,15 @@ function selectAnswer(e) {
 
 // Check if the answer is correct
 function checkAnswer(selectedIndex) {
-    // Get correct answer index
-    const correctIndex = gameState.currentQuestion.correctIndex;
+    clearInterval(gameState.timer); // Corrected: Use gameState.timer
 
-    // Check if the answer is correct
-    const isCorrect = selectedIndex === correctIndex;
+    // Validar que existe una pregunta actual
+    if (!gameState.currentQuestion) {
+        console.error('No hay pregunta actual para verificar');
+        return;
+    }
+
+    const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
 
     // Update UI
     elements.answers[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
@@ -679,7 +695,7 @@ function completeRound() {
 // End Game
 function endGame(isWinner) {
     clearInterval(gameState.timer);
-    
+
     // Limpiar cualquier timeout pendiente
     if (gameState.answerTimeout) {
         clearTimeout(gameState.answerTimeout);
@@ -700,7 +716,7 @@ function endGame(isWinner) {
         // Actualizar pantalla de resultados
         const resultScreen = document.getElementById('results-screen');
         const gameScreen = document.getElementById('game-screen');
-        
+
         if (resultScreen && gameScreen) {
             // Actualizar valores
             if (document.getElementById('result-title')) {
