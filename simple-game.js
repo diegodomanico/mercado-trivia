@@ -723,10 +723,13 @@ function handleAnswerSelection(selectedIndex) {
         returnButton.style.border = 'none';
         returnButton.style.borderRadius = '4px';
         returnButton.style.cursor = 'pointer';
-        returnButton.onclick = () => {
+        
+        // Usar addEventListener en lugar de onclick
+        returnButton.addEventListener('click', function() {
             console.log('Botón de volver clickeado (respuesta incorrecta)');
             window.location.reload();
-        };
+        });
+        
         resultContainer.appendChild(returnButton);
         
         // Finalizar juego como perdedor
@@ -852,67 +855,123 @@ async function endGame(isWinner) {
     gameScreen.classList.remove('active');
     resultScreen.classList.add('active');
     
-    // Agregar botón de "Volver al inicio" en la pantalla de resultados
+    // Limpiar cualquier temporizador previo
+    if (gameState.redirectTimer) {
+        clearTimeout(gameState.redirectTimer);
+    }
+    
+    // Obtener el contenedor de botones en la pantalla de resultados
     const resultButtons = document.getElementById('result-buttons');
     console.log('Elemento result-buttons encontrado:', !!resultButtons);
     
     if (resultButtons) {
-        // Limpiar botones existentes
-        resultButtons.innerHTML = '';
-        
-        // Crear botón volver al inicio
-        const backButton = document.createElement('button');
-        backButton.textContent = 'Volver al inicio';
-        backButton.id = 'btnInicio'; // Asignar ID específico
-        backButton.className = 'result-button';
-        backButton.style.marginTop = '20px';
-        backButton.style.padding = '10px 20px';
-        backButton.style.backgroundColor = '#7A1DEA';
-        backButton.style.color = 'white';
-        backButton.style.border = 'none';
-        backButton.style.borderRadius = '5px';
-        backButton.style.cursor = 'pointer';
-        backButton.style.fontSize = '16px';
-        backButton.onclick = () => {
-            console.log('Botón de inicio clickeado');
-            clearTimeout(gameState.redirectTimer);
-            window.location.reload();
-        };
-        
-        resultButtons.appendChild(backButton);
-        console.log('Botón de inicio agregado');
-        
-        // Mostrar temporizador de redirección
-        const timerDisplay = document.createElement('div');
-        timerDisplay.className = 'timer-redirect';
-        timerDisplay.id = 'timerRedirect'; // Asignar ID específico
-        timerDisplay.style.marginTop = '15px';
-        timerDisplay.style.color = '#FFE600';
-        timerDisplay.style.fontSize = '14px';
-        resultButtons.appendChild(timerDisplay);
-        
-        // Iniciar temporizador para redirigir automáticamente (15 segundos)
-        let secondsLeft = 15;
-        timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
-        
-        const countdownInterval = setInterval(() => {
-            secondsLeft--;
-            if (secondsLeft > 0) {
-                timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
-            } else {
-                timerDisplay.textContent = 'Redirigiendo...';
-                clearInterval(countdownInterval);
-            }
-        }, 1000);
-        
-        gameState.redirectTimer = setTimeout(() => {
-            console.log('Temporizador completado, recargando página');
-            window.location.reload();
-        }, 15000); // Usar valor fijo para evitar problemas de timing
-        
-        console.log('Timer de redirección configurado para 15 segundos');
+        try {
+            // Limpiar botones existentes
+            resultButtons.innerHTML = '';
+            
+            // Crear botón volver al inicio
+            const backButton = document.createElement('button');
+            backButton.textContent = 'Volver al inicio';
+            backButton.id = 'btnInicio'; // Asignar ID específico
+            backButton.className = 'result-button';
+            backButton.style.marginTop = '20px';
+            backButton.style.padding = '10px 20px';
+            backButton.style.backgroundColor = '#7A1DEA';
+            backButton.style.color = 'white';
+            backButton.style.border = 'none';
+            backButton.style.borderRadius = '5px';
+            backButton.style.cursor = 'pointer';
+            backButton.style.fontSize = '16px';
+            
+            // Usar addEventListener en lugar de onclick para mejor manejo de eventos
+            backButton.addEventListener('click', function() {
+                console.log('Botón de inicio clickeado');
+                clearTimeout(gameState.redirectTimer);
+                window.location.reload();
+            });
+            
+            resultButtons.appendChild(backButton);
+            console.log('Botón de inicio agregado');
+            
+            // Mostrar temporizador de redirección
+            const timerDisplay = document.createElement('div');
+            timerDisplay.className = 'timer-redirect';
+            timerDisplay.id = 'timerRedirect'; // Asignar ID específico
+            timerDisplay.style.marginTop = '15px';
+            timerDisplay.style.color = '#FFE600';
+            timerDisplay.style.fontSize = '14px';
+            timerDisplay.style.textAlign = 'center';
+            timerDisplay.style.fontWeight = 'bold';
+            resultButtons.appendChild(timerDisplay);
+            
+            // Iniciar temporizador para redirigir automáticamente (10 segundos)
+            let secondsLeft = 10; // Cambiar a 10 segundos para que coincida con las instrucciones
+            timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
+            
+            const countdownInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft > 0) {
+                    timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
+                } else {
+                    timerDisplay.textContent = 'Redirigiendo...';
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+            
+            // Guardar el timeout en el estado del juego para poder cancelarlo si es necesario
+            gameState.redirectTimer = setTimeout(() => {
+                console.log('Temporizador completado, recargando página');
+                window.location.reload();
+            }, 10000); // 10 segundos
+            
+            console.log('Timer de redirección configurado para 10 segundos');
+            
+            // Añadir un segundo botón como alternativa (para cumplir con el diseño original)
+            const playAgainButton = document.createElement('button');
+            playAgainButton.textContent = 'Jugar de nuevo';
+            playAgainButton.id = 'btnJugarDeNuevo';
+            playAgainButton.className = 'result-button';
+            playAgainButton.style.marginTop = '20px';
+            playAgainButton.style.padding = '10px 20px';
+            playAgainButton.style.marginRight = '10px';
+            playAgainButton.style.backgroundColor = '#3483FA';
+            playAgainButton.style.color = 'white';
+            playAgainButton.style.border = 'none';
+            playAgainButton.style.borderRadius = '5px';
+            playAgainButton.style.cursor = 'pointer';
+            playAgainButton.style.fontSize = '16px';
+            
+            playAgainButton.addEventListener('click', function() {
+                console.log('Botón Jugar de nuevo clickeado');
+                clearTimeout(gameState.redirectTimer);
+                window.location.reload();
+            });
+            
+            // Insertar primero este botón para que esté a la izquierda
+            resultButtons.insertBefore(playAgainButton, resultButtons.firstChild);
+            
+        } catch (error) {
+            console.error('Error al configurar botones y temporizador:', error);
+        }
     } else {
         console.error('No se pudo encontrar el elemento result-buttons');
+        // Intento de fallback - buscar en el DOM otro contenedor
+        const fallbackContainer = document.querySelector('.final-result');
+        if (fallbackContainer) {
+            console.log('Usando contenedor alternativo para botones');
+            // Código similar al anterior para añadir botones
+            const backButton = document.createElement('button');
+            backButton.textContent = 'Volver al inicio';
+            backButton.style.marginTop = '20px';
+            backButton.style.padding = '10px 20px';
+            backButton.style.backgroundColor = '#7A1DEA';
+            backButton.style.color = 'white';
+            backButton.style.border = 'none';
+            backButton.style.borderRadius = '5px';
+            backButton.style.cursor = 'pointer';
+            backButton.addEventListener('click', () => window.location.reload());
+            fallbackContainer.appendChild(backButton);
+        }
     }
 }
 

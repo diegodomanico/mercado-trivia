@@ -1,0 +1,78 @@
+Instrucciones para Arreglar la Pantalla de Resultados
+Verificar Estructura del HTML y Carga del Script
+
+Asegúrate de que el archivo HTML de la pantalla de resultados contenga un botón con id="btnInicio".
+
+html
+Copiar
+<button id="btnInicio">Volver al Inicio</button>
+Coloca el <script> que contiene la lógica al final del <body> para garantizar que el DOM se haya cargado:
+
+html
+Copiar
+<body>
+    <!-- Contenido de la pantalla -->
+    <button id="btnInicio">Volver al Inicio</button>
+    <script src="./resultados.js"></script>
+</body>
+Implementar la Funcionalidad del Botón "Volver al Inicio"
+
+En el archivo JavaScript (resultados.js), selecciona el botón y agrega un evento click que redirija al usuario al inicio:
+
+javascript
+Copiar
+const btnInicio = document.getElementById('btnInicio');
+btnInicio.addEventListener('click', () => {
+    clearTimeout(timer); // Cancela el timer si se hace clic.
+    window.location.href = './index.html'; // Ajustar la ruta según la estructura.
+});
+Implementar un Timer para la Redirección Automática
+
+Define un timer que redirija automáticamente al inicio después de 10 segundos:
+
+javascript
+Copiar
+const timer = setTimeout(() => {
+    window.location.href = './index.html'; // Asegúrate de que esta ruta sea correcta.
+}, 10000); // 10,000 ms = 10 segundos
+Agregar Mensajes de Depuración
+
+Para confirmar que el código se está ejecutando correctamente, inserta console.log en puntos clave:
+
+javascript
+Copiar
+console.log("Script cargado correctamente");
+
+// Verifica el botón
+const btnInicio = document.getElementById('btnInicio');
+console.log("Botón encontrado:", btnInicio);
+
+btnInicio.addEventListener('click', () => {
+    console.log("Botón clicado, redirigiendo al inicio...");
+    clearTimeout(timer);
+    window.location.href = './index.html';
+});
+
+// Inicia el timer y muestra mensaje de depuración
+const timer = setTimeout(() => {
+    console.log("Timer completado, redirigiendo automáticamente al inicio...");
+    window.location.href = './index.html';
+}, 10000);
+Revisar la Estructura de Carpetas y Rutas
+
+Confirma que la ruta ./index.html es correcta y que el archivo de inicio se encuentra en esa ubicación.
+
+Verifica que la ruta del script en el HTML corresponde a la ubicación real del archivo resultados.js.
+
+Realizar Pruebas Finales
+
+Ejecuta el juego y, al perder, confirma que:
+
+Se muestra la pantalla de resultados con el botón "Volver al Inicio".
+
+Al hacer clic en el botón, se redirige correctamente al inicio.
+
+Si no se hace clic, el timer redirige automáticamente al inicio después de 10 segundos.
+
+Revisa la consola del navegador para identificar posibles errores o mensajes que ayuden a depurar.
+
