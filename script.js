@@ -430,23 +430,23 @@ function generateDefaultQuestions(difficulty, pillar) {
 
 // Load a question
 function loadQuestion() {
-    // Validar que tenemos preguntas cargadas
-    if (!gameState.allQuestions || !gameState.currentPillar) {
-        console.error('No hay preguntas disponibles');
-        endGame(false);
-        return;
-    }
-
     // Ocultar resultados
     const resultContainer = document.getElementById('result-container');
     if (resultContainer) resultContainer.style.display = 'none';
 
+    // Validate question data exists
+    if (!gameState.currentRoundQuestions || !Array.isArray(gameState.currentRoundQuestions)) {
+        console.error("No hay preguntas disponibles");
+        endGame(false);
+        return;
+    }
 
     // Get the current question
     gameState.currentQuestion = gameState.currentRoundQuestions[gameState.player.currentQuestionIndex];
 
     if (!gameState.currentQuestion) {
         console.error("No se pudo cargar la pregunta actual");
+        endGame(false);
         return;
     }
 
@@ -1096,6 +1096,10 @@ async function saveScore(name, prize, maxRound, finalPillar) {
             finalPillar: finalPillar,
             date: new Date().toISOString()
         };
+
+        if (!scoreData || typeof scoreData !== 'object') {
+            throw new Error('Invalid score data');
+        }
 
         // Send score to server
         const response = await fetch(API_ENDPOINTS.saveScore, {
