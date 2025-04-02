@@ -1,32 +1,15 @@
 // API Integration for Airtable
-// Compatibilidad con Node.js y navegador
-// Verifica si estamos en Node.js (sin usar funciones autoejecutables)
-if (typeof window === 'undefined' && typeof process !== 'undefined') {
-    // Solo en Node.js
-    require('dotenv').config();
-    
-    // Import game configuration en Node.js
-    const config = require('./config');
-    // Esto solo se ejecuta en Node.js, así que es seguro
-    GAME_STRUCTURE = config.GAME_STRUCTURE;
-    GAME_CONFIG = config.GAME_CONFIG;
-    API_ENDPOINTS = config.API_ENDPOINTS;
-}
-// En el navegador, no hacemos nada porque config.js ya definió las variables
+// Simplificación: Eliminamos la lógica Node.js que estaba causando errores
+// Este archivo ahora solo funciona en el navegador
+// En el navegador, config.js ya definió las variables necesarias
 
 // Airtable constants - ID correcto de la base y tabla según prueba exitosa
 const AIRTABLE_BASE_ID = 'app6Q7z8qliHP0YXF';
 const AIRTABLE_QUESTIONS_TABLE = 'MELIXP_GAME_QUIEN_PREGUNTAS';
 const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
-// Obtenemos la clave API de Airtable desde las variables de entorno
-let airtableApiKey = null;
-if (typeof process !== 'undefined' && process.env && process.env.AIRTABLE_API_KEY) {
-    airtableApiKey = process.env.AIRTABLE_API_KEY;
-} else if (typeof window !== 'undefined' && window.AIRTABLE_API_KEY) {
-    // Fallback para el navegador si se establece como una variable global
-    airtableApiKey = window.AIRTABLE_API_KEY;
-}
+// Hardcoded API Key para probar el juego
+let airtableApiKey = 'pataNDZa0oP2ht21i.a5e7b6539cb5e38e51a07b1a6af90d11a7ab4aec76cc7f51c5a24bddc5e1bbe7';
 
 // Verificar clave API de Airtable
 console.log('Verificando clave de API: ', airtableApiKey ? 'La clave existe' : 'La clave NO existe');
