@@ -836,6 +836,58 @@ async function endGame(isWinner) {
     // Cambiar a pantalla de resultados
     gameScreen.classList.remove('active');
     resultScreen.classList.add('active');
+    
+    // Agregar botón de "Volver al inicio" en la pantalla de resultados
+    const resultButtons = document.getElementById('result-buttons');
+    if (resultButtons) {
+        // Limpiar botones existentes
+        resultButtons.innerHTML = '';
+        
+        // Crear botón volver al inicio
+        const backButton = document.createElement('button');
+        backButton.textContent = 'Volver al inicio';
+        backButton.className = 'result-button';
+        backButton.style.marginTop = '20px';
+        backButton.style.padding = '10px 20px';
+        backButton.style.backgroundColor = '#7A1DEA';
+        backButton.style.color = 'white';
+        backButton.style.border = 'none';
+        backButton.style.borderRadius = '5px';
+        backButton.style.cursor = 'pointer';
+        backButton.style.fontSize = '16px';
+        backButton.onclick = () => {
+            clearTimeout(gameState.redirectTimer);
+            window.location.reload();
+        };
+        
+        resultButtons.appendChild(backButton);
+        
+        // Mostrar temporizador de redirección
+        const timerDisplay = document.createElement('div');
+        timerDisplay.className = 'timer-redirect';
+        timerDisplay.style.marginTop = '15px';
+        timerDisplay.style.color = '#FFE600';
+        timerDisplay.style.fontSize = '14px';
+        resultButtons.appendChild(timerDisplay);
+        
+        // Iniciar temporizador para redirigir automáticamente (15 segundos)
+        let secondsLeft = 15;
+        timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
+        
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            if (secondsLeft > 0) {
+                timerDisplay.textContent = `Redirección en ${secondsLeft} segundos...`;
+            } else {
+                timerDisplay.textContent = 'Redirigiendo...';
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+        
+        gameState.redirectTimer = setTimeout(() => {
+            window.location.reload();
+        }, secondsLeft * 1000);
+    }
 }
 
 // Guarda la puntuación
