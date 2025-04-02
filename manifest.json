@@ -1,0 +1,17 @@
+
+{
+  "name": "¿Quién quiere ser un Vendedor SUPER PRO?",
+  "short_name": "Vendedor SUPER PRO",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/domup games vertical y fondo negro.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
