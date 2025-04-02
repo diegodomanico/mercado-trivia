@@ -399,7 +399,7 @@
             
             <div id="result-container" style="display: none;">
                 <h2 id="result-text">¡Respuesta correcta!</h2>
-                <button id="next-button">Siguiente pregunta</button>
+                <div id="timer-next" style="width: 100%; height: 5px; background-color: #3483FA; margin-top: 10px;"></div>
             </div>
         </div>
         
@@ -414,8 +414,6 @@
                     <p><span class="result-label">Chances ganadas:</span> <span id="result-prize">0</span></p>
                     <p><span class="result-label">Nivel máximo alcanzado:</span> <span id="result-level">1</span></p>
                 </div>
-                
-                <button id="play-again">Jugar otra vez</button>
             </div>
         </div>
     </div>
@@ -528,12 +526,6 @@
                     checkAnswer(parseInt(this.dataset.index));
                 });
             });
-            
-            // Botón para siguiente pregunta
-            nextButton.addEventListener('click', loadNextQuestion);
-            
-            // Botón para jugar de nuevo
-            playAgainButton.addEventListener('click', resetGame);
             
             // Eventos para los comodines
             fiftyFifty.addEventListener('click', useFiftyFifty);
@@ -890,6 +882,9 @@
                 
                 resultContainer.style.display = 'block';
                 
+                // Iniciar temporizador para avanzar automáticamente
+                autoAdvance();
+                
                 // Si completó las preguntas para este pilar, marcar como completado
                 if (gameState.questionsInRound >= GAME_STRUCTURE.questionsPerRound) {
                     gameState.pillarsCompleted.push(gameState.currentPillar);
@@ -905,9 +900,24 @@
             }
         }
         
-        // Cargar siguiente pregunta
+        // Cargar siguiente pregunta automáticamente
         function loadNextQuestion() {
             loadQuestion();
+        }
+        
+        // Función para avanzar automáticamente después de una respuesta correcta
+        function autoAdvance() {
+            const timerNext = document.getElementById('timer-next');
+            let width = 100;
+            const interval = setInterval(() => {
+                width -= 2;
+                timerNext.style.width = width + '%';
+                
+                if (width <= 0) {
+                    clearInterval(interval);
+                    loadNextQuestion();
+                }
+            }, 50); // 50ms * 50 iteraciones = ~2.5 segundos
         }
         
         // Finalizar juego
