@@ -173,10 +173,20 @@ app.post('/api/save-score', async (req, res) => {
         const { name, phone, prize, maxLevel, pillar, questionsAnswered } = req.body;
         const apiKey = process.env.AIRTABLE_API_KEY;
         
-        if (!name || !phone) {
-            return res.status(400).json({
+        // Validate required fields
+        if (!name) {
+            return res.status(422).json({
                 success: false,
-                message: 'Faltan datos del jugador'
+                message: 'El nombre es requerido'
+            });
+        }
+
+        // Clean and validate phone
+        const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+        if (!cleanPhone) {
+            return res.status(422).json({
+                success: false,
+                message: 'El teléfono es requerido'
             });
         }
         
