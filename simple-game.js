@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', initGame);
 
 // Función de inicialización
 function initGame() {
+    console.log('Inicializando juego...');
+    
     // Elementos de pantalla
     startScreen = document.getElementById('start-screen');
     gameScreen = document.getElementById('game-screen');
@@ -592,6 +594,7 @@ function startTimer() {
 
 // Tiempo agotado
 function timeUp() {
+    console.log('Tiempo agotado');
     clearInterval(gameState.timerInterval);
     
     // Reproducir sonido de error
@@ -615,6 +618,7 @@ function timeUp() {
     // Agregar botón para volver al inicio 
     const returnButton = document.createElement('button');
     returnButton.textContent = 'Volver al inicio';
+    returnButton.id = 'btnVolver';
     returnButton.style.marginTop = '10px';
     returnButton.style.padding = '8px 15px';
     returnButton.style.backgroundColor = '#7A1DEA';
@@ -622,7 +626,10 @@ function timeUp() {
     returnButton.style.border = 'none';
     returnButton.style.borderRadius = '4px';
     returnButton.style.cursor = 'pointer';
-    returnButton.onclick = () => window.location.reload();
+    returnButton.onclick = () => {
+        console.log('Botón Volver al inicio clickeado (tiempo agotado)');
+        window.location.reload();
+    };
     resultContainer.appendChild(returnButton);
     
     // Finalizar juego como perdedor
@@ -631,6 +638,7 @@ function timeUp() {
 
 // Maneja la selección de respuesta
 function handleAnswerSelection(selectedIndex) {
+    console.log('Respuesta seleccionada:', selectedIndex);
     clearInterval(gameState.timerInterval);
     
     const isCorrect = selectedIndex === gameState.currentQuestion.correctIndex;
@@ -695,6 +703,7 @@ function handleAnswerSelection(selectedIndex) {
             gameState.currentPillar = getRandomPillar();
         }
     } else {
+        console.log('Respuesta incorrecta');
         resultText.textContent = "Respuesta incorrecta. ¡Has perdido!";
         resultContainer.style.display = 'block';
         
@@ -706,6 +715,7 @@ function handleAnswerSelection(selectedIndex) {
         // Agregar botón para volver al inicio 
         const returnButton = document.createElement('button');
         returnButton.textContent = 'Volver al inicio';
+        returnButton.id = 'btnVolverRespuestaIncorrecta';
         returnButton.style.marginTop = '10px';
         returnButton.style.padding = '8px 15px';
         returnButton.style.backgroundColor = '#7A1DEA';
@@ -713,7 +723,10 @@ function handleAnswerSelection(selectedIndex) {
         returnButton.style.border = 'none';
         returnButton.style.borderRadius = '4px';
         returnButton.style.cursor = 'pointer';
-        returnButton.onclick = () => window.location.reload();
+        returnButton.onclick = () => {
+            console.log('Botón de volver clickeado (respuesta incorrecta)');
+            window.location.reload();
+        };
         resultContainer.appendChild(returnButton);
         
         // Finalizar juego como perdedor
@@ -809,6 +822,8 @@ function showLevelUpCelebration() {
 
 // Finaliza el juego
 async function endGame(isWinner) {
+    console.log('Finalizando juego, ganador:', isWinner);
+    
     // Guardar estadísticas finales
     resultName.textContent = gameState.player.name;
     resultPhone.textContent = gameState.player.phone;
@@ -839,6 +854,8 @@ async function endGame(isWinner) {
     
     // Agregar botón de "Volver al inicio" en la pantalla de resultados
     const resultButtons = document.getElementById('result-buttons');
+    console.log('Elemento result-buttons encontrado:', !!resultButtons);
+    
     if (resultButtons) {
         // Limpiar botones existentes
         resultButtons.innerHTML = '';
@@ -846,6 +863,7 @@ async function endGame(isWinner) {
         // Crear botón volver al inicio
         const backButton = document.createElement('button');
         backButton.textContent = 'Volver al inicio';
+        backButton.id = 'btnInicio'; // Asignar ID específico
         backButton.className = 'result-button';
         backButton.style.marginTop = '20px';
         backButton.style.padding = '10px 20px';
@@ -856,15 +874,18 @@ async function endGame(isWinner) {
         backButton.style.cursor = 'pointer';
         backButton.style.fontSize = '16px';
         backButton.onclick = () => {
+            console.log('Botón de inicio clickeado');
             clearTimeout(gameState.redirectTimer);
             window.location.reload();
         };
         
         resultButtons.appendChild(backButton);
+        console.log('Botón de inicio agregado');
         
         // Mostrar temporizador de redirección
         const timerDisplay = document.createElement('div');
         timerDisplay.className = 'timer-redirect';
+        timerDisplay.id = 'timerRedirect'; // Asignar ID específico
         timerDisplay.style.marginTop = '15px';
         timerDisplay.style.color = '#FFE600';
         timerDisplay.style.fontSize = '14px';
@@ -885,8 +906,13 @@ async function endGame(isWinner) {
         }, 1000);
         
         gameState.redirectTimer = setTimeout(() => {
+            console.log('Temporizador completado, recargando página');
             window.location.reload();
-        }, secondsLeft * 1000);
+        }, 15000); // Usar valor fijo para evitar problemas de timing
+        
+        console.log('Timer de redirección configurado para 15 segundos');
+    } else {
+        console.error('No se pudo encontrar el elemento result-buttons');
     }
 }
 
