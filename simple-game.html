@@ -26,6 +26,13 @@
             flex-direction: column;
         }
         
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -270,11 +277,18 @@
             font-weight: bold;
             transition: all 0.2s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            outline: none;
         }
         
-        .answer:hover {
+        .answer:hover, .answer:focus {
             background-color: #f0f0f0;
             transform: translateX(5px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .answer:focus {
+            border: 2px solid #3483FA;
         }
         
         .answer-letter {
@@ -619,7 +633,10 @@
                     <p><span class="result-label">Nivel máximo alcanzado:</span> <span id="result-level">1</span></p>
                 </div>
                 
-                <button onclick="window.location.reload()">Jugar de nuevo</button>
+                <div class="button-container">
+                    <button onclick="window.location.reload()">Jugar de nuevo</button>
+                    <button onclick="window.location.href='/'">Volver al inicio</button>
+                </div>
             </div>
         </div>
     </div>

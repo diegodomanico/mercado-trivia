@@ -150,17 +150,70 @@ function initGame() {
     loadLeaderboard();
     
     // Configurar eventos
+    // Hacer que el botón de inicio sea accesible por teclado
+    startButton.setAttribute('tabindex', '0');
+    startButton.setAttribute('role', 'button');
+    
+    // Eventos para el botón de inicio
     startButton.addEventListener('click', handleStartGame);
+    startButton.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleStartGame();
+        }
+    });
     
     answerElements.forEach(answer => {
+        // Hacer que los elementos de respuesta sean accesibles por teclado
+        answer.setAttribute('tabindex', '0');
+        answer.setAttribute('role', 'button');
+        
+        // Agregar manejador de click 
         answer.addEventListener('click', function() {
             handleAnswerSelection(parseInt(this.dataset.index));
         });
+        
+        // Agregar soporte para teclado (Enter y Espacio)
+        answer.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleAnswerSelection(parseInt(this.dataset.index));
+            }
+        });
     });
     
+    // Hacer que los comodines sean accesibles por teclado
+    [fiftyFiftyBtn, audienceBtn, phoneBtn].forEach(btn => {
+        btn.setAttribute('tabindex', '0');
+        btn.setAttribute('role', 'button');
+    });
+    
+    // Eventos de clic para comodines
     fiftyFiftyBtn.addEventListener('click', useFiftyFifty);
     audienceBtn.addEventListener('click', useAudience);
     phoneBtn.addEventListener('click', usePhone);
+    
+    // Eventos de teclado para comodines
+    fiftyFiftyBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            useFiftyFifty();
+        }
+    });
+    
+    audienceBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            useAudience();
+        }
+    });
+    
+    phoneBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            usePhone();
+        }
+    });
     
     phoneInput.addEventListener('blur', validatePhoneNumber);
 }
@@ -542,6 +595,13 @@ function timeUp() {
     resultText.textContent = "¡Tiempo agotado! Has perdido.";
     resultContainer.style.display = 'block';
     
+    // Agregar botón para volver al inicio 
+    const returnButton = document.createElement('button');
+    returnButton.textContent = 'Volver al inicio';
+    returnButton.style.marginTop = '10px';
+    returnButton.onclick = () => window.location.reload();
+    resultContainer.appendChild(returnButton);
+    
     // Finalizar juego como perdedor
     setTimeout(() => endGame(false), 2000);
 }
@@ -614,6 +674,13 @@ function handleAnswerSelection(selectedIndex) {
     } else {
         resultText.textContent = "Respuesta incorrecta. ¡Has perdido!";
         resultContainer.style.display = 'block';
+        
+        // Agregar botón para volver al inicio 
+        const returnButton = document.createElement('button');
+        returnButton.textContent = 'Volver al inicio';
+        returnButton.style.marginTop = '10px';
+        returnButton.onclick = () => window.location.reload();
+        resultContainer.appendChild(returnButton);
         
         // Finalizar juego como perdedor
         setTimeout(() => endGame(false), 2000);
