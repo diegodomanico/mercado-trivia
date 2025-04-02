@@ -21,11 +21,17 @@ const AIRTABLE_SCORES_TABLE = 'MELIXP_GAME_QUIEN_PUNTAJES';
 
 // Obtenemos la clave API de Airtable desde las variables de entorno
 let airtableApiKey = null;
-if (typeof process !== 'undefined' && process.env && process.env.AIRTABLE_API_KEY) {
+if (typeof window !== 'undefined') {
+    // Browser environment
+    fetch('/api/airtable-key')
+        .then(response => response.json())
+        .then(data => {
+            airtableApiKey = data.key;
+        })
+        .catch(error => console.error('Error fetching Airtable key:', error));
+} else if (typeof process !== 'undefined' && process.env) {
+    // Node.js environment
     airtableApiKey = process.env.AIRTABLE_API_KEY;
-} else if (typeof window !== 'undefined' && window.AIRTABLE_API_KEY) {
-    // Fallback para el navegador si se establece como una variable global
-    airtableApiKey = window.AIRTABLE_API_KEY;
 }
 
 // Verificar clave API de Airtable
