@@ -1188,14 +1188,15 @@ table {
 
 th {
     background: rgba(20, 0, 40, 0.9);
-    color: #FF00FF;
+    color: var(--ml-black);
     font-weight: bold;
     text-transform: uppercase;
     font-size: var(--font-small);
     letter-spacing: 1px;
     padding: 15px var(--space-medium);
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    text-shadow: none;
     box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+    background-color: white;
 }
 
 tbody tr {
@@ -1261,14 +1262,15 @@ th, td {
 }
 
 th {
-    background: linear-gradient(to right, var(--ml-blue), var(--ml-violet));
-    color: white;
+    background: white;
+    color: var(--ml-black);
     font-weight: bold;
     text-transform: uppercase;
     font-size: var(--font-small);
     letter-spacing: 1px;
     padding: 15px var(--space-medium);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Añadir sombra para mejor legibilidad */
+    text-shadow: none;
+    border-bottom: 2px solid var(--ml-violet);
 }
 
 th:first-child {
