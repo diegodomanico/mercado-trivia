@@ -1002,8 +1002,7 @@ async function showLeaderboard() {
         elements.leaderboardLoading.classList.add('hide');
         elements.leaderboardTable.classList.remove('hide');
     } catch (error) {
-        console.error('Error loading leaderboard:', error);
-        elements.leaderboardLoading.innerHTML = `
+        console.error('Error loading leaderboard:', error);        elements.leaderboardLoading.innerHTML = `
             <p>Error cargando tabla de líderes: ${error.message}</p>
         `;
     }
@@ -1184,4 +1183,33 @@ function shuffleArray(array) {
         [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
     return newArray;
+}
+
+function usePhone() {
+    if (!gameState.lifelines.phone) return;
+
+    // Marcar como usado
+    gameState.lifelines.phone = false;
+    phone.classList.add('used');
+
+    // Reproducir sonido de comodín
+    if (typeof playSound === 'function') {
+        playSound('lifeline');
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <h2 class="modal-title">Consejo del Experto</h2>
+        <div class="modal-content">
+            ${generateExpertAdvice()}
+        </div>
+        <button onclick="this.parentElement.remove();document.querySelector('.overlay').remove()">Cerrar</button>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
 }
