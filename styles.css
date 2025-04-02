@@ -1,6 +1,6 @@
 /* Base Styles & Variables */
 :root {
-    /* Mercado Libre & DomUp Colors - Updated based on logo */
+    /* Enhanced color palette */
     --ml-yellow: #FFE600;
     --ml-blue: #3483FA;
     --ml-violet: #7A1DEA;
@@ -10,6 +10,17 @@
     --ml-dark-gray: #222222;
     --ml-black: #111111;
     --ml-white: #FFFFFF;
+    
+    /* New accent colors */
+    --accent-purple: #8B5CF6;
+    --accent-indigo: #6366F1;
+    --accent-cyan: #0EA5E9;
+    --accent-teal: #14B8A6;
+    
+    /* Enhanced gradients */
+    --gradient-primary: linear-gradient(135deg, var(--ml-violet), var(--accent-purple));
+    --gradient-secondary: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+    --gradient-dark: linear-gradient(135deg, var(--ml-violet), var(--ml-blue));
 
     /* UI Colors */
     --success-green: #39B54A;
@@ -122,17 +133,19 @@ button {
 }
 
 .cta-button {
-    background-color: var(--ml-violet);
+    background: var(--gradient-primary);
     color: white;
     padding: var(--space-medium) var(--space-large);
     border-radius: var(--border-radius-medium);
     font-weight: bold;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(122, 29, 234, 0.3);
     letter-spacing: 0.5px;
     border: none;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .cta-button:after {
@@ -504,16 +517,18 @@ input:focus {
 }
 
 .question-container {
-    background-color: var(--ml-black);
+    background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
     color: white;
     border-radius: var(--border-radius-large);
     padding: var(--space-large);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     width: 100%;
     max-width: 800px;
     margin-bottom: var(--space-large);
-    border: 2px solid var(--ml-violet);
-    transition: background-color 0.3s ease;
+    border: 2px solid rgba(122, 29, 234, 0.5);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Fondos de pregunta para los diferentes temas - Colores más intensos */
@@ -591,14 +606,16 @@ input:focus {
     display: flex;
     align-items: center;
     padding: var(--space-medium);
-    background-color: white;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: var(--border-radius-medium);
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid var(--ml-light-gray);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     /* Evitar el highlight al tocar en móviles */
     -webkit-tap-highlight-color: transparent;
     /* Evitar que iOS muestre el último elemento seleccionado */
