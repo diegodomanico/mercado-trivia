@@ -204,6 +204,26 @@ elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLif
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
 elements.viewLeaderboardStartButton.addEventListener('click', showLeaderboard);
 elements.hideLeaderboardButton.addEventListener('click', hideLeaderboard);
+
+// Configurar el botón adicional para mobile
+const mobileBtnStart = document.getElementById('mobile-start-button');
+if (mobileBtnStart) {
+    mobileBtnStart.addEventListener('click', function() {
+        console.log("CLICK en botón MOBILE");
+        const debugMsg = document.getElementById('debug-message');
+        if (debugMsg) debugMsg.textContent = "Botón MOBILE presionado";
+        
+        // Comenzar el juego directamente con un nombre y teléfono fijos
+        gameState.player.name = "Jugador Mobile";
+        gameState.player.phone = "1122334455";
+        
+        // Mostrar un mensaje de confirmación visual
+        debugMsg.textContent = "Comenzando juego en modo mobile...";
+        
+        // Iniciar el juego directamente
+        startGame();
+    });
+}
 // Manejar el botón para continuar después de completar ronda o ganar chance
 elements.nextRoundButton.addEventListener('click', function() {
     console.log("Botón Continuar presionado");

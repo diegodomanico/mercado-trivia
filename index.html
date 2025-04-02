@@ -230,16 +230,16 @@
             <h1>¿Quién quiere ser un<br>Vendedor SUPER PRO?</h1>
             <p class="subtitle">Pon a prueba tus conocimientos sobre Mercado Libre</p>
             
-            <form id="player-form" class="player-form">
+            <div class="player-form">
                 <div class="form-group">
                     <label for="player-name">Nombre:</label>
-                    <input type="text" id="player-name" required placeholder="Tu nombre">
+                    <input type="text" id="player-name" placeholder="Tu nombre">
                     <p id="name-error" class="error-text hide">Por favor ingresa tu nombre</p>
                 </div>
                 
                 <div class="form-group">
                     <label for="player-phone">Teléfono:</label>
-                    <input type="tel" id="player-phone" required placeholder="Tu número de teléfono (10 dígitos)" inputmode="tel">
+                    <input type="tel" id="player-phone" placeholder="Tu número de teléfono (10 dígitos)" inputmode="tel">
                     <p id="phone-error" class="error-text hide">Formato incorrecto de teléfono</p>
                 </div>
                 
@@ -251,13 +251,20 @@
                 </div>
                 
                 <div class="form-buttons">
-                    <!-- Cambiamos el botón submit por un botón normal y lo haremos funcionar con JavaScript -->
                     <button type="button" id="start-game-button" class="cta-button">¡Comenzar Juego!</button>
                     <button type="button" id="view-leaderboard-start" class="secondary-button">Ver Tabla de Líderes</button>
                 </div>
+                
+                <!-- Botón alternativo para dispositivos móviles -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <button type="button" id="mobile-start-button" style="background-color: #7A1DEA; color: white; padding: 15px 30px; font-size: 18px; border-radius: 8px; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.2); width: 100%; max-width: 300px;">
+                        COMENZAR JUEGO (MOBILE)
+                    </button>
+                </div>
+                
                 <!-- Mensaje de debug temporal -->
                 <div id="debug-message" style="margin-top: 10px; color: red; font-weight: bold;"></div>
-            </form>
+            </div>
             
             <div class="game-instructions">
                 <h3>✨ Instrucciones del Juego ✨</h3>
