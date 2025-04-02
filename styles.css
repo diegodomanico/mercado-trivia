@@ -1187,7 +1187,7 @@ table {
 }
 
 th {
-    background: linear-gradient(135deg, var(--ml-violet), var(--accent-bright));
+    background: #FF00FF;
     color: white;
     font-weight: bold;
     text-transform: uppercase;
@@ -1195,6 +1195,7 @@ th {
     letter-spacing: 1px;
     padding: 15px var(--space-medium);
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
 }
 
 tbody tr {
