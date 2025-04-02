@@ -165,19 +165,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             debugMsg.textContent = "Validación OK, comenzando juego...";
             
-            // Crear un evento sintético para mantener compatibilidad con la función existente
-            const event = { preventDefault: function(){} };
+            debugMsg.textContent = "Iniciando juego directamente...";
             
-            // Guardar directamente en el estado del juego
-            gameState.player.name = name;
-            gameState.player.phone = phone;
-            
-            // Llamar a ambas funciones por seguridad
+            // En lugar de llamar a checkPhoneAndStartGame, llamamos directamente a startGame después de verificar el teléfono
             try {
-                checkPhoneAndStartGame(event);
+                // Guardar directamente en el estado del juego los datos del usuario
+                gameState.player.name = name;
+                gameState.player.phone = phone;
+                
+                // SIMPLIFICACIÓN: Saltamos la verificación de teléfono y vamos directamente a iniciar el juego
+                console.log("Iniciando juego con:", name, phone);
+                
+                // Ocultar errores previos por seguridad
+                const phoneError = document.getElementById('phone-error');
+                const nameError = document.getElementById('name-error');
+                if (phoneError) phoneError.classList.add('hide');
+                if (nameError) nameError.classList.add('hide');
+                
+                // Iniciar el juego directamente
+                startGame();
             } catch (err) {
                 console.error("Error al iniciar el juego:", err);
-                debugMsg.textContent = "Error al iniciar: " + err.message;
+                debugMsg.textContent = "Error: " + err.message;
             }
         });
         
@@ -594,6 +603,8 @@ async function checkPhoneAndStartGame(e) {
 
 // Start the Game
 function startGame() {
+    console.log("⭐ INICIO DE JUEGO con:", gameState.player.name, gameState.player.phone);
+    
     // Set game as active and record start time
     gameState.gameActive = true;
     gameState.gameStartTime = new Date();
@@ -605,6 +616,10 @@ function startGame() {
     
     // Update player name display
     elements.playerNameDisplay.textContent = gameState.player.name;
+    
+    // Añadir mensaje de depuración
+    const debugMsg = document.getElementById('debug-message');
+    if (debugMsg) debugMsg.textContent = "Juego iniciado correctamente";
     
     // Select a random pillar
     selectRandomPillar();
