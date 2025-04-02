@@ -22,7 +22,7 @@ const elements = {
     playerPhoneInput: document.getElementById('player-phone'),
     phoneError: document.getElementById('phone-error'),
     nameError: document.getElementById('name-error'),
-    startGameButton: document.getElementById('start-game'),
+    startGameButton: document.getElementById('start-game-button'), // CAMBIADO: start-game -> start-game-button
     statusIcon: document.getElementById('status-icon'),
     statusText: document.getElementById('status-text'),
     
@@ -113,65 +113,83 @@ const gameState = {
 
 // Initialize the game
 document.addEventListener('DOMContentLoaded', function() {
-    // Agregar manejador directo para el botón de comenzar juego
-    const startGameButton = document.getElementById('start-game');
-    const playerForm = document.getElementById('player-form');
-    const debugMessage = document.getElementById('debug-message');
+    // Iniciar el juego para cargar preguntas, etc.
+    initGame();
     
-    if (startGameButton) {
-        startGameButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            debugMessage.textContent = "Botón COMENZAR JUEGO presionado";
-            console.log("Botón comenzar juego presionado directamente");
+    console.log("DOMContentLoaded: Configurando eventos para el juego");
+    
+    // Dejar claro qué elementos estamos observando con mensajes de log
+    console.log("Elementos disponibles al iniciar:");
+    console.log("player-form:", document.getElementById('player-form') ? "✅" : "❌");
+    console.log("start-game-button:", document.getElementById('start-game-button') ? "✅" : "❌");
+    console.log("player-name:", document.getElementById('player-name') ? "✅" : "❌");
+    console.log("player-phone:", document.getElementById('player-phone') ? "✅" : "❌");
+    
+    // Configurar el botón de inicio del juego (ahora con ID start-game-button)
+    const startGameBtn = document.getElementById('start-game-button');
+    const debugMsg = document.getElementById('debug-message');
+    
+    if (startGameBtn) {
+        console.log("Configurando evento para start-game-button");
+        
+        // Agregar un evento que SÓLO responda a click (para móviles y desktop)
+        startGameBtn.addEventListener('click', function(e) {
+            console.log("CLICK en Botón COMENZAR JUEGO");
+            debugMsg.textContent = "Botón presionado ✓";
             
-            // Obtener el formulario y los valores
-            const name = document.getElementById('player-name').value.trim();
-            const phone = document.getElementById('player-phone').value.trim();
+            // Obtener y validar datos del formulario
+            const nameInput = document.getElementById('player-name');
+            const phoneInput = document.getElementById('player-phone');
             
+            if (!nameInput || !phoneInput) {
+                debugMsg.textContent = "Error: No se encontraron los campos del formulario";
+                console.error("No se encontraron los campos del formulario");
+                return;
+            }
+            
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            
+            // Validar campos
             if (!name) {
-                debugMessage.textContent += " - Falta nombre";
+                debugMsg.textContent = "Falta completar el nombre";
+                nameInput.focus();
                 return;
             }
             
             if (!phone) {
-                debugMessage.textContent += " - Falta teléfono";
+                debugMsg.textContent = "Falta completar el teléfono";
+                phoneInput.focus();
                 return;
             }
             
-            // Llamar directamente a checkPhoneAndStartGame
-            checkPhoneAndStartGame(e);
+            debugMsg.textContent = "Validación OK, comenzando juego...";
+            
+            // Crear un evento sintético para mantener compatibilidad con la función existente
+            const event = { preventDefault: function(){} };
+            
+            // Guardar directamente en el estado del juego
+            gameState.player.name = name;
+            gameState.player.phone = phone;
+            
+            // Llamar a ambas funciones por seguridad
+            try {
+                checkPhoneAndStartGame(event);
+            } catch (err) {
+                console.error("Error al iniciar el juego:", err);
+                debugMsg.textContent = "Error al iniciar: " + err.message;
+            }
         });
+        
+        console.log("Evento click configurado para start-game-button ✓");
+    } else {
+        console.error("No se encontró el botón start-game-button en el DOM");
+        if (debugMsg) debugMsg.textContent = "ERROR: No se encontró el botón de inicio";
     }
-    
-    // Iniciar el juego
-    initGame();
 });
 
-// Event Listeners
+// Event Listeners para el resto de elementos
 elements.retryButton.addEventListener('click', initGame);
-// En móviles el evento click no siempre funciona, por eso usamos submit en el formulario
-// IMPORTANTE: Asegurarnos de que el listener se agregue correctamente
-const playerForm = document.getElementById('player-form');
-if (playerForm) {
-    playerForm.addEventListener('submit', checkPhoneAndStartGame);
-    console.log("Listener para submit del formulario agregado correctamente");
-} else {
-    console.error("No se encontró el elemento player-form");
-}
-
-// Mantener el evento click para compatibilidad con PC y como respaldo
-if (elements.startGameButton) {
-    elements.startGameButton.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevenir comportamiento por defecto
-        console.log("Botón de iniciar juego presionado");
-        
-        // Llamar directamente a la función
-        checkPhoneAndStartGame(e);
-    });
-    console.log("Listener para click en startGameButton agregado correctamente");
-} else {
-    console.error("No se encontró el elemento startGameButton");
-}
 elements.answers.forEach(answer => answer.addEventListener('click', selectAnswer));
 elements.lifelines.forEach(lifeline => lifeline.addEventListener('click', useLifeline));
 elements.viewLeaderboardButton.addEventListener('click', showLeaderboard);
