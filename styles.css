@@ -1043,8 +1043,8 @@ input:focus {
     margin-bottom: var(--space-large);
     text-align: center;
     position: relative;
-    color: #FF00FF;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
     font-weight: bold;
 }
 
