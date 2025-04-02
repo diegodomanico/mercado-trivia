@@ -1187,15 +1187,15 @@ table {
 }
 
 th {
-    background: #FF00FF;
-    color: white;
+    background: rgba(20, 0, 40, 0.9);
+    color: #FF00FF;
     font-weight: bold;
     text-transform: uppercase;
     font-size: var(--font-small);
     letter-spacing: 1px;
     padding: 15px var(--space-medium);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
 }
 
 tbody tr {
