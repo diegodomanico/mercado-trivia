@@ -13,7 +13,7 @@ export const launchCampaigns: CampaignSummary[] = [
     slug: "melixp-chile-2026",
     country: "CL",
     name: "MELIXP Chile 2026",
-    eventDate: "2026-08-28T09:00:00-04:00",
+    eventDate: "2026-08-27T09:00:00-04:00",
     expectedParticipants: 3000,
   },
   {

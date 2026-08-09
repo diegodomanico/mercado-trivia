@@ -240,5 +240,5 @@ insert into public.competencies (id, slug, name, description, display_order) val
 insert into public.campaigns (
   country_code, slug, name, event_starts_at, expected_participants, status
 ) values
-  ('CL', 'melixp-chile-2026', 'MELIXP Chile 2026', '2026-08-28T09:00:00-04:00', 3000, 'draft'),
+  ('CL', 'melixp-chile-2026', 'MELIXP Chile 2026', '2026-08-27T09:00:00-04:00', 3000, 'draft'),
   ('AR', 'melixp-argentina-2026', 'MELIXP Argentina 2026', '2026-09-10T09:00:00-03:00', 7000, 'draft');
