@@ -5,13 +5,22 @@
 - Chile: 27/08/2026, capacidad mínima de 3.000 participantes.
 - Argentina: 10/09/2026, capacidad mínima de 7.000 participantes.
 
+## Beneficios y registro
+
+- Más de 500 beneficios, exclusivamente bonificaciones y descuentos aplicables a
+  servicios de DomUp; no se comunican como premios físicos ni dinero.
+- Orden de registro: cuenta convencional de Mercado Libre, publicación activa propia,
+  WhatsApp y aceptación legal.
+- Las piezas deben informar vigencia, alcance, restricciones y forma de aplicación de
+  cada bonificación o descuento.
+
 ## Puertas de salida
 
 1. Credencial del backend retirado revocada y secretos fuera del historial activo.
 2. Vercel y Supabase con proyectos separados para preview y producción.
 3. Conciliación histórica confirmada: 92 filas fuente, 90 candidatas enlazadas y 20
    resultados privados; diferencias documentadas antes de retirar el origen.
-4. Aplicaciones OAuth de Mercado Libre con redirects definitivos por país.
+4. Aplicaciones convencionales OAuth de Mercado Libre con redirects definitivos por país.
 5. WhatsApp OTP operativo, con límites, CAPTCHA y presupuesto confirmado.
 6. Manual de marca e insignias oficiales de Partner aplicados y aprobados por Diego Domanico.
 7. Bases y privacidad publicadas, versionadas y aceptables desde la aplicación.

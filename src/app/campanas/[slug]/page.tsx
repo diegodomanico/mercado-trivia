@@ -30,13 +30,15 @@ export default async function CampaignPage({
           <p className="eyebrow">Desafío oficial del evento</p>
           <h1>Validá tu cuenta. Demostrá lo que sabés.</h1>
           <p>
-            Tu participación será única para {country.name}. Validaremos tu WhatsApp,
-            tu seller de Mercado Libre y una publicación activa que te pertenezca.
+            Tu participación será única para {country.name}. Primero validaremos tu
+            seller de Mercado Libre y una publicación activa propia; después,
+            confirmaremos tu WhatsApp.
           </p>
           <dl className="event-facts">
             <div><dt>Fecha</dt><dd>{new Intl.DateTimeFormat(country.locale, { dateStyle: "long" }).format(new Date(campaign.eventDate))}</dd></div>
             <div><dt>Preguntas</dt><dd>25</dd></div>
             <div><dt>Niveles</dt><dd>5</dd></div>
+            <div><dt>Beneficios</dt><dd>500+</dd></div>
           </dl>
         </div>
 

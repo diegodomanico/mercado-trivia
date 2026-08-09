@@ -14,7 +14,8 @@ inicial queda en `review`; ninguna participación competitiva se habilita por ac
 - Supabase PostgreSQL, Auth y Row Level Security como backend y fuente de datos
   exclusivos.
 - Vercel para previews y producción.
-- OAuth de Mercado Libre por país.
+- OAuth mediante aplicaciones convencionales de Mercado Libre por país; no se usa
+  el modelo de aplicación promocional.
 - WhatsApp OTP mediante Supabase y un proveedor compatible.
 
 ## Desarrollo local
@@ -40,7 +41,8 @@ npm run build
 - Las preguntas correctas no tienen políticas de lectura pública.
 - El score se calcula en PostgreSQL mediante una función disponible sólo para
   `service_role`.
-- OAuth valida estado, país, seller y propiedad de la publicación.
+- OAuth valida estado, país, seller y propiedad de la publicación antes de solicitar
+  la verificación de WhatsApp.
 - El modo campaña exige identidad, publicación, consentimiento y una participación
   única por campaña.
 

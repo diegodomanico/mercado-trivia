@@ -4,6 +4,13 @@ import { countries } from "@/lib/countries";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchMeliItem, itemBelongsToCountry, parseMeliItemId } from "@/lib/mercadolibre/items";
+import {
+  createPublicationProof,
+  publicationProofCookie,
+  readSellerProof,
+  sellerProofCookie,
+  verificationProofMaxAge,
+} from "@/lib/mercadolibre/verification";
 
 const bodySchema = z.object({
   campaign: z.string().regex(/^[a-z0-9-]{3,80}$/),
@@ -15,26 +22,30 @@ export async function POST(request: NextRequest) {
     const body = bodySchema.parse(await request.json());
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Primero validá tu WhatsApp." }, { status: 401 });
 
     const admin = createSupabaseAdminClient();
     const { data: campaign, error: campaignError } = await admin
       .from("campaigns")
       .select("id,country_code")
       .eq("slug", body.campaign)
-      .eq("status", "active")
+      .in("status", ["draft", "active"])
       .single();
     if (campaignError || !campaign) {
       return NextResponse.json({ error: "La campaña todavía no está habilitada." }, { status: 404 });
     }
 
     const country = campaign.country_code as keyof typeof countries;
-    const { data: seller } = await admin
-      .from("seller_verifications")
-      .select("seller_id")
-      .eq("user_id", user.id)
-      .eq("country_code", country)
-      .single();
+    const { data: savedSeller } = user
+      ? await admin
+        .from("seller_verifications")
+        .select("seller_id")
+        .eq("user_id", user.id)
+        .eq("country_code", country)
+        .maybeSingle()
+      : { data: null };
+    const sellerProof = readSellerProof(request.cookies.get(sellerProofCookie)?.value);
+    const proofMatches = sellerProof?.country === country && sellerProof.campaign === body.campaign;
+    const seller = savedSeller ?? (proofMatches ? { seller_id: sellerProof.sellerId } : null);
     if (!seller) return NextResponse.json({ error: "Primero conectá Mercado Libre." }, { status: 403 });
 
     const itemId = parseMeliItemId(body.publication);
@@ -50,21 +61,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "La publicación debe estar activa." }, { status: 400 });
     }
 
-    const { error: saveError } = await admin.from("verified_publications").upsert(
-      {
-        user_id: user.id,
-        campaign_id: campaign.id,
-        item_id: item.id,
+    if (user) {
+      const { error: saveError } = await admin.from("verified_publications").upsert(
+        {
+          user_id: user.id,
+          campaign_id: campaign.id,
+          item_id: item.id,
+          permalink: item.permalink,
+          title: item.title,
+          seller_id: seller.seller_id,
+          verified_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,campaign_id" },
+      );
+      if (saveError) throw saveError;
+    }
+
+    const response = NextResponse.json({ ok: true, title: item.title });
+    response.cookies.set(
+      publicationProofCookie,
+      createPublicationProof({
+        country,
+        campaign: body.campaign,
+        sellerId: seller.seller_id,
+        itemId: item.id,
         permalink: item.permalink,
         title: item.title,
-        seller_id: seller.seller_id,
-        verified_at: new Date().toISOString(),
+      }),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: verificationProofMaxAge,
       },
-      { onConflict: "user_id,campaign_id" },
     );
-    if (saveError) throw saveError;
-
-    return NextResponse.json({ ok: true, title: item.title });
+    return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "El link de publicación no es válido." }, { status: 400 });

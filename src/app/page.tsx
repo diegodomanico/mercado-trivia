@@ -73,7 +73,7 @@ export default function HomePage() {
           <article className="mode-card mode-card-accent" id="eventos">
             <span className="mode-index">02</span>
             <h3>Desafío MELIXP</h3>
-            <p>Participación verificada, ranking independiente y chances para premios.</p>
+            <p>Participación verificada, ranking independiente y más de 500 beneficios en servicios.</p>
             <div className="event-links">
               {launchCampaigns.map((campaign) => (
                 <Link key={campaign.slug} href={`/campanas/${campaign.slug}`}>

@@ -15,7 +15,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [phoneSent, setPhoneSent] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(meliVerified);
+  const [phoneVerified, setPhoneVerified] = useState(false);
   const [sellerVerified, setSellerVerified] = useState(meliVerified);
   const [publication, setPublication] = useState("");
   const [publicationVerified, setPublicationVerified] = useState(false);
@@ -33,7 +33,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
     fetch(`/api/campaigns/${campaign.slug}/status`, { cache: "no-store" })
       .then((response) => response.json())
       .then((status) => {
-        if (cancelled || !status.authenticated) return;
+        if (cancelled) return;
         setPhoneVerified(Boolean(status.phoneVerified));
         setSellerVerified(Boolean(status.sellerVerified));
         setPublicationVerified(Boolean(status.publicationVerified));
@@ -74,8 +74,14 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
       const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
       if (error) throw error;
+
+      const claimResponse = await fetch("/api/mercadolibre/claim", { method: "POST" });
+      const claimResult = await claimResponse.json();
+      if (!claimResponse.ok) {
+        throw new Error(claimResult.error || "No se pudo vincular la validación comercial.");
+      }
       setPhoneVerified(true);
-      setMessage("WhatsApp verificado. Ahora conectá tu cuenta de Mercado Libre.");
+      setMessage("WhatsApp verificado. Tu identidad comercial quedó vinculada.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "El código no es válido.");
     } finally {
@@ -128,13 +134,14 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   return (
     <section className="onboarding-card" aria-labelledby="registro-title">
       <div className="step-track" aria-label="Progreso de validación">
-        <span className={phoneVerified ? "done" : "active"}>1</span>
-        <span className={sellerVerified ? "done" : phoneVerified ? "active" : ""}>2</span>
-        <span className={publicationVerified ? "done" : sellerVerified ? "active" : ""}>3</span>
+        <span className={sellerVerified ? "done" : "active"}>1</span>
+        <span className={publicationVerified ? "done" : sellerVerified ? "active" : ""}>2</span>
+        <span className={phoneVerified ? "done" : publicationVerified ? "active" : ""}>3</span>
+        <span className={consentAccepted ? "done" : phoneVerified ? "active" : ""}>4</span>
       </div>
       <h2 id="registro-title">Prepará tu participación</h2>
 
-      {!phoneVerified && (
+      {publicationVerified && !phoneVerified && (
         <div className="onboarding-step">
           <label htmlFor="phone">WhatsApp con código de país</label>
           <input id="phone" inputMode="tel" autoComplete="tel" placeholder="+56 9... / +54 9..." value={phone} onChange={(event) => setPhone(event.target.value)} />
@@ -150,7 +157,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
         </div>
       )}
 
-      {phoneVerified && !sellerVerified && (
+      {!sellerVerified && (
         <div className="onboarding-step">
           <p>Ingresá con la cuenta de Mercado Libre que usás para vender.</p>
           <a className="button button-meli" href={`/api/mercadolibre/authorize?country=${campaign.country}&campaign=${campaign.slug}`}>Conectar Mercado Libre</a>
@@ -165,7 +172,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
         </form>
       )}
 
-      {publicationVerified && !consentAccepted && (
+      {phoneVerified && publicationVerified && !consentAccepted && (
         <form className="onboarding-step consent-step" onSubmit={acceptCampaignTerms}>
           <strong>Último paso: bases y privacidad</strong>
           {!legalReady && <p>Los documentos legales todavía están pendientes de publicación.</p>}
