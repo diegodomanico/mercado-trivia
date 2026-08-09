@@ -1,0 +1,52 @@
+import { randomBytes } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { getCampaign } from "@/lib/campaigns";
+import { isCountryCode } from "@/lib/countries";
+import { getMeliOAuthConfig } from "@/lib/mercadolibre/oauth";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
+  const countryParam = request.nextUrl.searchParams.get("country") || "";
+  const campaignSlug = request.nextUrl.searchParams.get("campaign") || "";
+  const campaign = getCampaign(campaignSlug);
+
+  if (
+    !isCountryCode(countryParam) ||
+    !campaign ||
+    campaign.country !== countryParam ||
+    (countryParam !== "AR" && countryParam !== "CL")
+  ) {
+    return NextResponse.json({ error: "Campaña o país inválido." }, { status: 400 });
+  }
+
+  try {
+    const config = getMeliOAuthConfig(countryParam);
+    const state = randomBytes(32).toString("base64url");
+    const authorizeUrl = new URL(config.authUrl);
+    authorizeUrl.search = new URLSearchParams({
+      response_type: "code",
+      client_id: config.clientId,
+      redirect_uri: config.redirectUri,
+      state,
+    }).toString();
+
+    const response = NextResponse.redirect(authorizeUrl);
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+      path: "/api/mercadolibre",
+      maxAge: 10 * 60,
+    };
+    response.cookies.set("meli_oauth_state", state, cookieOptions);
+    response.cookies.set("meli_oauth_country", countryParam, cookieOptions);
+    response.cookies.set("meli_oauth_campaign", campaignSlug, cookieOptions);
+    return response;
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "OAuth no disponible." },
+      { status: 503 },
+    );
+  }
+}

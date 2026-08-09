@@ -1,0 +1,193 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type { CampaignSummary } from "@/lib/campaigns";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { GamePlayer } from "@/components/game-player";
+
+type Props = {
+  campaign: CampaignSummary;
+  meliVerified: boolean;
+  initialError?: string;
+};
+
+export function CampaignOnboarding({ campaign, meliVerified, initialError }: Props) {
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [phoneSent, setPhoneSent] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(meliVerified);
+  const [sellerVerified, setSellerVerified] = useState(meliVerified);
+  const [publication, setPublication] = useState("");
+  const [publicationVerified, setPublicationVerified] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [legalReady, setLegalReady] = useState(false);
+  const [campaignStatus, setCampaignStatus] = useState("draft");
+  const [message, setMessage] = useState(initialError ? "No pudimos completar la validación de Mercado Libre." : "");
+  const [busy, setBusy] = useState(false);
+  const phoneAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_PHONE_AUTH === "true";
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/campaigns/${campaign.slug}/status`, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((status) => {
+        if (cancelled || !status.authenticated) return;
+        setPhoneVerified(Boolean(status.phoneVerified));
+        setSellerVerified(Boolean(status.sellerVerified));
+        setPublicationVerified(Boolean(status.publicationVerified));
+        setConsentAccepted(Boolean(status.consentAccepted));
+        setLegalReady(Boolean(status.legalReady));
+        setCampaignStatus(status.campaignStatus || "draft");
+      })
+      .catch(() => {
+        if (!cancelled) setMessage("No pudimos recuperar el estado de tu registro.");
+      });
+    return () => { cancelled = true; };
+  }, [campaign.slug]);
+
+  async function sendOtp() {
+    setBusy(true);
+    setMessage("");
+    try {
+      if (!phoneAuthEnabled) throw new Error("La verificación de WhatsApp aún no está habilitada.");
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: { channel: "whatsapp" },
+      });
+      if (error) throw error;
+      setPhoneSent(true);
+      setMessage("Te enviamos un código por WhatsApp.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo enviar el código.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyOtp() {
+    setBusy(true);
+    setMessage("");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+      if (error) throw error;
+      setPhoneVerified(true);
+      setMessage("WhatsApp verificado. Ahora conectá tu cuenta de Mercado Libre.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "El código no es válido.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyPublication(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/mercadolibre/verify-publication", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ campaign: campaign.slug, publication }),
+      });
+      const result = (await response.json()) as { ok?: boolean; error?: string; title?: string };
+      if (!response.ok || !result.ok) throw new Error(result.error || "No se pudo validar la publicación.");
+      setPublicationVerified(true);
+      setMessage(`Publicación verificada: ${result.title}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo validar la publicación.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function acceptCampaignTerms(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/campaigns/${campaign.slug}/consent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acceptTerms, acceptPrivacy }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "No se pudo registrar la aceptación.");
+      setConsentAccepted(true);
+      setMessage("Registro completo.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo registrar la aceptación.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="onboarding-card" aria-labelledby="registro-title">
+      <div className="step-track" aria-label="Progreso de validación">
+        <span className={phoneVerified ? "done" : "active"}>1</span>
+        <span className={sellerVerified ? "done" : phoneVerified ? "active" : ""}>2</span>
+        <span className={publicationVerified ? "done" : sellerVerified ? "active" : ""}>3</span>
+      </div>
+      <h2 id="registro-title">Prepará tu participación</h2>
+
+      {!phoneVerified && (
+        <div className="onboarding-step">
+          <label htmlFor="phone">WhatsApp con código de país</label>
+          <input id="phone" inputMode="tel" autoComplete="tel" placeholder="+56 9... / +54 9..." value={phone} onChange={(event) => setPhone(event.target.value)} />
+          {!phoneSent ? (
+            <button className="button button-primary" onClick={sendOtp} disabled={busy || !phone}>Validar WhatsApp</button>
+          ) : (
+            <>
+              <label htmlFor="otp">Código recibido</label>
+              <input id="otp" inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} />
+              <button className="button button-primary" onClick={verifyOtp} disabled={busy || otp.length < 6}>Confirmar código</button>
+            </>
+          )}
+        </div>
+      )}
+
+      {phoneVerified && !sellerVerified && (
+        <div className="onboarding-step">
+          <p>Ingresá con la cuenta de Mercado Libre que usás para vender.</p>
+          <a className="button button-meli" href={`/api/mercadolibre/authorize?country=${campaign.country}&campaign=${campaign.slug}`}>Conectar Mercado Libre</a>
+        </div>
+      )}
+
+      {sellerVerified && !publicationVerified && (
+        <form className="onboarding-step" onSubmit={verifyPublication}>
+          <label htmlFor="publication">Link de una publicación activa propia</label>
+          <input id="publication" type="url" placeholder="https://articulo.mercadolibre..." value={publication} onChange={(event) => setPublication(event.target.value)} required />
+          <button className="button button-primary" type="submit" disabled={busy}>Comprobar publicación</button>
+        </form>
+      )}
+
+      {publicationVerified && !consentAccepted && (
+        <form className="onboarding-step consent-step" onSubmit={acceptCampaignTerms}>
+          <strong>Último paso: bases y privacidad</strong>
+          {!legalReady && <p>Los documentos legales todavía están pendientes de publicación.</p>}
+          <label className="check-row"><input type="checkbox" checked={acceptTerms} onChange={(event) => setAcceptTerms(event.target.checked)} />Acepto las bases de la campaña.</label>
+          <label className="check-row"><input type="checkbox" checked={acceptPrivacy} onChange={(event) => setAcceptPrivacy(event.target.checked)} />Acepto el tratamiento de datos para administrar mi participación.</label>
+          <button className="button button-primary" type="submit" disabled={busy || !legalReady || !acceptTerms || !acceptPrivacy}>Completar registro</button>
+        </form>
+      )}
+
+      {consentAccepted && campaignStatus !== "active" && (
+        <div className="onboarding-step success-panel">
+          <strong>Registro e identidad comercial validados</strong>
+          <p>Tu acceso quedará habilitado cuando abra la campaña.</p>
+        </div>
+      )}
+
+      {consentAccepted && campaignStatus === "active" && (
+        <GamePlayer mode="campaign" country={campaign.country} campaign={campaign.slug} />
+      )}
+
+      {message && <p className="form-message" role="status">{message}</p>}
+      <p className="privacy-note">Al continuar aceptás que validemos estos datos únicamente para administrar esta campaña.</p>
+    </section>
+  );
+}
