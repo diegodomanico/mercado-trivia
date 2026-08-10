@@ -14,8 +14,8 @@ inicial queda en `review`; ninguna participación competitiva se habilita por ac
 - Supabase PostgreSQL, Auth y Row Level Security como backend y fuente de datos
   exclusivos.
 - Vercel para previews y producción.
-- OAuth mediante aplicaciones convencionales de Mercado Libre por país; no se usa
-  el modelo de aplicación promocional.
+- OAuth mediante una aplicación convencional de Mercado Libre compartida entre países;
+  no se usa el modelo de aplicación promocional.
 - WhatsApp OTP mediante Supabase y un proveedor compatible.
 
 ## Desarrollo local

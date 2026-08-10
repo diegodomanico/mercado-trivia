@@ -12,9 +12,8 @@ export function getMeliOAuthConfig(country: CountryCode): MeliOAuthConfig {
     throw new Error(`OAuth todavía no está habilitado para ${country}.`);
   }
 
-  const prefix = `MELI_${country}`;
-  const clientId = process.env[`${prefix}_CLIENT_ID`];
-  const clientSecret = process.env[`${prefix}_CLIENT_SECRET`];
+  const clientId = process.env.MELI_CLIENT_ID;
+  const clientSecret = process.env.MELI_CLIENT_SECRET;
   const baseUrl = process.env.MELI_OAUTH_REDIRECT_BASE_URL;
 
   if (!clientId || !clientSecret || !baseUrl) {
