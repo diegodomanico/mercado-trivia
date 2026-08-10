@@ -3,6 +3,7 @@ import { z } from "zod";
 import { countries } from "@/lib/countries";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
 import { fetchMeliItem, itemBelongsToCountry, parseMeliItemId } from "@/lib/mercadolibre/items";
 import {
   createPublicationProof,
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (campaignError && campaignError.code !== "PGRST116") {
       console.error("Publication campaign lookup failed", campaignError);
       return NextResponse.json(
-        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { error: "No se pudo consultar la campaña.", code: getSafeSupabaseErrorCode(campaignError) },
         { status: 503 },
       );
     }

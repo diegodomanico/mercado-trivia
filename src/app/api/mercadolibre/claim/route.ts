@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
 import {
   publicationProofCookie,
   readPublicationProof,
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (campaignError && campaignError.code !== "PGRST116") {
       console.error("Claim campaign lookup failed", campaignError);
       return NextResponse.json(
-        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { error: "No se pudo consultar la campaña.", code: getSafeSupabaseErrorCode(campaignError) },
         { status: 503 },
       );
     }

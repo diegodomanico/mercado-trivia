@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   publicationProofCookie,
@@ -23,7 +24,7 @@ export async function GET(
     if (campaignError && campaignError.code !== "PGRST116") {
       console.error("Campaign status lookup failed", campaignError);
       return NextResponse.json(
-        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { error: "No se pudo consultar la campaña.", code: getSafeSupabaseErrorCode(campaignError) },
         { status: 503 },
       );
     }
@@ -59,7 +60,7 @@ export async function GET(
     if (relatedError) {
       console.error("Campaign participant status lookup failed", relatedError);
       return NextResponse.json(
-        { error: "No se pudo consultar el registro.", code: relatedError.code },
+        { error: "No se pudo consultar el registro.", code: getSafeSupabaseErrorCode(relatedError) },
         { status: 503 },
       );
     }

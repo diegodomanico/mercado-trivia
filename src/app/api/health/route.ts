@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +20,10 @@ export async function GET() {
         .select("id")
         .limit(1);
       supabase.database = !error;
-      supabase.errorCode = error?.code ?? null;
+      supabase.errorCode = error ? getSafeSupabaseErrorCode(error) : null;
       if (error) console.error("Supabase health check failed", error);
     } catch (error) {
-      supabase.errorCode = "SUPABASE_CONNECTION_FAILED";
+      supabase.errorCode = getSafeSupabaseErrorCode(error);
       console.error("Supabase health check failed", error);
     }
   }
