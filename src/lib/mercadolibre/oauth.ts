@@ -7,6 +7,10 @@ type MeliOAuthConfig = {
   authUrl: string;
 };
 
+export function isMeliPkceEnabled() {
+  return process.env.MELI_USE_PKCE === "true";
+}
+
 export function getMeliOAuthConfig(country: CountryCode): MeliOAuthConfig {
   if (country !== "AR" && country !== "CL") {
     throw new Error(`OAuth todavía no está habilitado para ${country}.`);
@@ -31,20 +35,22 @@ export function getMeliOAuthConfig(country: CountryCode): MeliOAuthConfig {
 export async function exchangeAuthorizationCode(
   country: CountryCode,
   code: string,
-  codeVerifier: string,
+  codeVerifier?: string,
 ) {
   const config = getMeliOAuthConfig(country);
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    code,
+    redirect_uri: config.redirectUri,
+  });
+  if (codeVerifier) body.set("code_verifier", codeVerifier);
+
   const response = await fetch("https://api.mercadolibre.com/oauth/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      code,
-      code_verifier: codeVerifier,
-      redirect_uri: config.redirectUri,
-    }),
+    body,
     cache: "no-store",
   });
 

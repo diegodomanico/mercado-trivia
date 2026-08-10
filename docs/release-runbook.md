@@ -20,8 +20,9 @@
 2. Vercel y Supabase con proyectos separados para preview y producción.
 3. Conciliación histórica confirmada: 92 filas fuente, 90 candidatas enlazadas y 20
    resultados privados; diferencias documentadas antes de retirar el origen.
-4. Aplicación convencional OAuth de Mercado Libre compartida entre países, con redirect
-   definitivo y PKCE habilitado.
+4. Aplicación convencional OAuth de Mercado Libre compartida entre países y con redirect
+   definitivo. PKCE debe coincidir con la configuración vigente de IACADEMY y no cambiarse
+   sin probar sus integraciones existentes.
 5. WhatsApp OTP operativo, con límites, CAPTCHA y presupuesto confirmado.
 6. Manual de marca e insignias oficiales de Partner aplicados y aprobados por Diego Domanico.
 7. Bases y privacidad publicadas, versionadas y aceptables desde la aplicación.

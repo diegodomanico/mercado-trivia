@@ -12,10 +12,11 @@ export function GET() {
     clientId: Boolean(process.env.MELI_CLIENT_ID),
     clientSecret: Boolean(process.env.MELI_CLIENT_SECRET),
     redirectBaseUrl: Boolean(process.env.MELI_OAUTH_REDIRECT_BASE_URL),
+    pkce: process.env.MELI_USE_PKCE === "true",
   };
   const checks = {
     supabase: Object.values(supabase).every(Boolean),
-    mercadoLibre: Object.values(mercadoLibre).every(Boolean),
+    mercadoLibre: mercadoLibre.clientId && mercadoLibre.clientSecret && mercadoLibre.redirectBaseUrl,
   };
 
   const ready = Object.values(checks).every(Boolean);

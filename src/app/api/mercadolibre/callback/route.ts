@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { countries, isCountryCode } from "@/lib/countries";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { exchangeAuthorizationCode, fetchMeliUser } from "@/lib/mercadolibre/oauth";
+import {
+  exchangeAuthorizationCode,
+  fetchMeliUser,
+  isMeliPkceEnabled,
+} from "@/lib/mercadolibre/oauth";
 import {
   createSellerProof,
   sellerProofCookie,
@@ -25,7 +29,14 @@ export async function GET(request: NextRequest) {
   const countryValue = request.cookies.get("meli_oauth_country")?.value || "";
   const campaign = request.cookies.get("meli_oauth_campaign")?.value || "";
 
-  if (!code || !state || state !== savedState || !verifier || !isCountryCode(countryValue) || !campaign) {
+  if (
+    !code ||
+    !state ||
+    state !== savedState ||
+    (isMeliPkceEnabled() && !verifier) ||
+    !isCountryCode(countryValue) ||
+    !campaign
+  ) {
     return campaignRedirect(request, campaign || "melixp-chile-2026", { error: "oauth_state" });
   }
 

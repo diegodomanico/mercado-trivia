@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCampaign } from "@/lib/campaigns";
 import { isCountryCode } from "@/lib/countries";
-import { getMeliOAuthConfig } from "@/lib/mercadolibre/oauth";
+import { getMeliOAuthConfig, isMeliPkceEnabled } from "@/lib/mercadolibre/oauth";
 
 export const dynamic = "force-dynamic";
 
@@ -23,17 +23,21 @@ export async function GET(request: NextRequest) {
   try {
     const config = getMeliOAuthConfig(countryParam);
     const state = randomBytes(32).toString("base64url");
-    const verifier = randomBytes(64).toString("base64url");
-    const challenge = createHash("sha256").update(verifier).digest("base64url");
+    const verifier = isMeliPkceEnabled()
+      ? randomBytes(64).toString("base64url")
+      : null;
     const authorizeUrl = new URL(config.authUrl);
-    authorizeUrl.search = new URLSearchParams({
+    const authorizeParams = new URLSearchParams({
       response_type: "code",
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
       state,
-      code_challenge: challenge,
-      code_challenge_method: "S256",
-    }).toString();
+    });
+    if (verifier) {
+      authorizeParams.set("code_challenge", createHash("sha256").update(verifier).digest("base64url"));
+      authorizeParams.set("code_challenge_method", "S256");
+    }
+    authorizeUrl.search = authorizeParams.toString();
 
     const response = NextResponse.redirect(authorizeUrl);
     const cookieOptions = {
@@ -44,7 +48,7 @@ export async function GET(request: NextRequest) {
       maxAge: 10 * 60,
     };
     response.cookies.set("meli_oauth_state", state, cookieOptions);
-    response.cookies.set("meli_oauth_verifier", verifier, cookieOptions);
+    if (verifier) response.cookies.set("meli_oauth_verifier", verifier, cookieOptions);
     response.cookies.set("meli_oauth_country", countryParam, cookieOptions);
     response.cookies.set("meli_oauth_campaign", campaignSlug, cookieOptions);
     return response;
