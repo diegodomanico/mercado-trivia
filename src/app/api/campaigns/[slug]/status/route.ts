@@ -15,11 +15,18 @@ export async function GET(
   try {
     const { slug } = await params;
     const admin = createSupabaseAdminClient();
-    const { data: campaign } = await admin
+    const { data: campaign, error: campaignError } = await admin
       .from("campaigns")
       .select("id,country_code,status,terms_version")
       .eq("slug", slug)
       .single();
+    if (campaignError && campaignError.code !== "PGRST116") {
+      console.error("Campaign status lookup failed", campaignError);
+      return NextResponse.json(
+        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { status: 503 },
+      );
+    }
     if (!campaign) return NextResponse.json({ error: "Campaña inexistente." }, { status: 404 });
 
     const supabase = await createSupabaseServerClient();
@@ -43,11 +50,22 @@ export async function GET(
       });
     }
 
-    const [{ data: seller }, { data: publication }, { data: consent }] = await Promise.all([
+    const [sellerResult, publicationResult, consentResult] = await Promise.all([
       admin.from("seller_verifications").select("id,nickname").eq("user_id", user.id).eq("country_code", campaign.country_code).maybeSingle(),
       admin.from("verified_publications").select("id,title").eq("user_id", user.id).eq("campaign_id", campaign.id).maybeSingle(),
       admin.from("consent_acceptances").select("id").eq("user_id", user.id).eq("campaign_id", campaign.id).maybeSingle(),
     ]);
+    const relatedError = sellerResult.error ?? publicationResult.error ?? consentResult.error;
+    if (relatedError) {
+      console.error("Campaign participant status lookup failed", relatedError);
+      return NextResponse.json(
+        { error: "No se pudo consultar el registro.", code: relatedError.code },
+        { status: 503 },
+      );
+    }
+    const seller = sellerResult.data;
+    const publication = publicationResult.data;
+    const consent = consentResult.data;
 
     return NextResponse.json({
       authenticated: true,

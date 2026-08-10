@@ -29,12 +29,19 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = createSupabaseAdminClient();
-    const { data: campaign } = await admin
+    const { data: campaign, error: campaignError } = await admin
       .from("campaigns")
       .select("id")
       .eq("slug", seller.campaign)
       .eq("country_code", seller.country)
       .single();
+    if (campaignError && campaignError.code !== "PGRST116") {
+      console.error("Claim campaign lookup failed", campaignError);
+      return NextResponse.json(
+        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { status: 503 },
+      );
+    }
     if (!campaign) return NextResponse.json({ error: "Campaña inexistente." }, { status: 404 });
 
     const { error: sellerError } = await admin.from("seller_verifications").upsert(

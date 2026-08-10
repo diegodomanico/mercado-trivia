@@ -31,7 +31,11 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/campaigns/${campaign.slug}/status`, { cache: "no-store" })
-      .then((response) => response.json())
+      .then(async (response) => {
+        const status = await response.json();
+        if (!response.ok) throw new Error(status.error || "No pudimos recuperar el estado de tu registro.");
+        return status;
+      })
       .then((status) => {
         if (cancelled) return;
         setPhoneVerified(Boolean(status.phoneVerified));
@@ -41,8 +45,10 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
         setLegalReady(Boolean(status.legalReady));
         setCampaignStatus(status.campaignStatus || "draft");
       })
-      .catch(() => {
-        if (!cancelled) setMessage("No pudimos recuperar el estado de tu registro.");
+      .catch((error) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "No pudimos recuperar el estado de tu registro.");
+        }
       });
     return () => { cancelled = true; };
   }, [campaign.slug]);

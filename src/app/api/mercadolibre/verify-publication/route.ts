@@ -30,7 +30,14 @@ export async function POST(request: NextRequest) {
       .eq("slug", body.campaign)
       .in("status", ["draft", "active"])
       .single();
-    if (campaignError || !campaign) {
+    if (campaignError && campaignError.code !== "PGRST116") {
+      console.error("Publication campaign lookup failed", campaignError);
+      return NextResponse.json(
+        { error: "No se pudo consultar la campaña.", code: campaignError.code },
+        { status: 503 },
+      );
+    }
+    if (!campaign) {
       return NextResponse.json({ error: "La campaña todavía no está habilitada." }, { status: 404 });
     }
 
