@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCampaign } from "@/lib/campaigns";
 import { isCountryCode } from "@/lib/countries";
@@ -23,12 +23,16 @@ export async function GET(request: NextRequest) {
   try {
     const config = getMeliOAuthConfig(countryParam);
     const state = randomBytes(32).toString("base64url");
+    const verifier = randomBytes(64).toString("base64url");
+    const challenge = createHash("sha256").update(verifier).digest("base64url");
     const authorizeUrl = new URL(config.authUrl);
     authorizeUrl.search = new URLSearchParams({
       response_type: "code",
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
       state,
+      code_challenge: challenge,
+      code_challenge_method: "S256",
     }).toString();
 
     const response = NextResponse.redirect(authorizeUrl);
@@ -40,6 +44,7 @@ export async function GET(request: NextRequest) {
       maxAge: 10 * 60,
     };
     response.cookies.set("meli_oauth_state", state, cookieOptions);
+    response.cookies.set("meli_oauth_verifier", verifier, cookieOptions);
     response.cookies.set("meli_oauth_country", countryParam, cookieOptions);
     response.cookies.set("meli_oauth_campaign", campaignSlug, cookieOptions);
     return response;

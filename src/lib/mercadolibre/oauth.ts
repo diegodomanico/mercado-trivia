@@ -32,6 +32,7 @@ export function getMeliOAuthConfig(country: CountryCode): MeliOAuthConfig {
 export async function exchangeAuthorizationCode(
   country: CountryCode,
   code: string,
+  codeVerifier: string,
 ) {
   const config = getMeliOAuthConfig(country);
   const response = await fetch("https://api.mercadolibre.com/oauth/token", {
@@ -42,6 +43,7 @@ export async function exchangeAuthorizationCode(
       client_id: config.clientId,
       client_secret: config.clientSecret,
       code,
+      code_verifier: codeVerifier,
       redirect_uri: config.redirectUri,
     }),
     cache: "no-store",

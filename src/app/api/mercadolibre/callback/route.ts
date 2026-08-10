@@ -21,17 +21,18 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   const savedState = request.cookies.get("meli_oauth_state")?.value;
+  const verifier = request.cookies.get("meli_oauth_verifier")?.value;
   const countryValue = request.cookies.get("meli_oauth_country")?.value || "";
   const campaign = request.cookies.get("meli_oauth_campaign")?.value || "";
 
-  if (!code || !state || state !== savedState || !isCountryCode(countryValue) || !campaign) {
+  if (!code || !state || state !== savedState || !verifier || !isCountryCode(countryValue) || !campaign) {
     return campaignRedirect(request, campaign || "melixp-chile-2026", { error: "oauth_state" });
   }
 
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    const token = await exchangeAuthorizationCode(countryValue, code);
+    const token = await exchangeAuthorizationCode(countryValue, code, verifier);
     const seller = await fetchMeliUser(token.access_token);
     if (seller.site_id !== countries[countryValue].siteId) {
       return campaignRedirect(request, campaign, { error: "wrong_country" });
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
       },
     );
     response.cookies.delete("meli_oauth_state");
+    response.cookies.delete("meli_oauth_verifier");
     response.cookies.delete("meli_oauth_country");
     response.cookies.delete("meli_oauth_campaign");
     return response;

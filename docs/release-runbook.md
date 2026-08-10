@@ -20,7 +20,8 @@
 2. Vercel y Supabase con proyectos separados para preview y producción.
 3. Conciliación histórica confirmada: 92 filas fuente, 90 candidatas enlazadas y 20
    resultados privados; diferencias documentadas antes de retirar el origen.
-4. Aplicaciones convencionales OAuth de Mercado Libre con redirects definitivos por país.
+4. Aplicaciones convencionales OAuth de Mercado Libre con redirects definitivos por país
+   y PKCE habilitado.
 5. WhatsApp OTP operativo, con límites, CAPTCHA y presupuesto confirmado.
 6. Manual de marca e insignias oficiales de Partner aplicados y aprobados por Diego Domanico.
 7. Bases y privacidad publicadas, versionadas y aceptables desde la aplicación.
