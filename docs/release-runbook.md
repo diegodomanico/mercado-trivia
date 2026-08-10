@@ -30,6 +30,17 @@
 9. Pruebas funcionales, seguridad, accesibilidad y carga aprobadas.
 10. Campaña activada sólo después del ensayo general.
 
+## Estrategia de validación por país
+
+- Argentina es el tester funcional inicial para OAuth, callback, asociación del seller,
+  propiedad de la publicación, WhatsApp, consentimiento y partida.
+- La prueba argentina valida la aplicación IACADEMY y el flujo compartido, pero no
+  certifica el dominio OAuth chileno, `site_id=MLC` ni una publicación `MLC` propia.
+- Conseguir antes del 17/08/2026 un seller principal chileno con una publicación activa
+  para ejecutar el flujo completo. No sirve una cuenta colaboradora.
+- La salida de Chile queda bloqueada hasta documentar OAuth exitoso, seller `MLC`,
+  publicación propia activa y regreso correcto al callback de producción.
+
 ## Chile · 27 de agosto de 2026
 
 - Objetivo de capacidad: más de 3.000 participantes.
