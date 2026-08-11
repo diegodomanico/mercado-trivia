@@ -6,6 +6,7 @@ import {
   exchangeAuthorizationCode,
   fetchMeliUser,
   isMeliPkceEnabled,
+  MeliOAuthError,
 } from "@/lib/mercadolibre/oauth";
 import {
   createSellerProof,
@@ -24,10 +25,15 @@ function campaignRedirect(request: NextRequest, campaign: string, params: Record
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
+  const providerError = request.nextUrl.searchParams.get("error");
   const savedState = request.cookies.get("meli_oauth_state")?.value;
   const verifier = request.cookies.get("meli_oauth_verifier")?.value;
   const countryValue = request.cookies.get("meli_oauth_country")?.value || "";
   const campaign = request.cookies.get("meli_oauth_campaign")?.value || "";
+
+  if (providerError) {
+    return campaignRedirect(request, campaign || "melixp-argentina-2026", { error: "oauth_denied" });
+  }
 
   if (
     !code ||
@@ -86,7 +92,18 @@ export async function GET(request: NextRequest) {
     response.cookies.delete("meli_oauth_country");
     response.cookies.delete("meli_oauth_campaign");
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof MeliOAuthError) {
+      console.error("Mercado Libre OAuth callback failed", {
+        stage: error.stage,
+        status: error.status,
+        providerCode: error.providerCode,
+      });
+      return campaignRedirect(request, campaign, { error: error.publicCode });
+    }
+    console.error("Mercado Libre OAuth callback failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
     return campaignRedirect(request, campaign, { error: "oauth_failed" });
   }
 }

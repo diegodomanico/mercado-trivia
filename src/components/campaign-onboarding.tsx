@@ -11,6 +11,28 @@ type Props = {
   initialError?: string;
 };
 
+function oauthErrorMessage(code?: string) {
+  switch (code) {
+    case "oauth_invalid_client":
+      return "La credencial de la aplicación de Mercado Libre no es válida.";
+    case "oauth_invalid_grant":
+      return "Mercado Libre rechazó la autorización. Reintentá con la cuenta administradora principal.";
+    case "oauth_invalid_operator_user_id":
+      return "La cuenta es colaboradora. Ingresá con el usuario administrador principal del seller.";
+    case "oauth_denied":
+      return "La autorización fue cancelada o rechazada en Mercado Libre.";
+    case "oauth_state":
+      return "La autorización venció o se inició en otra pestaña. Volvé a intentarlo desde aquí.";
+    case "wrong_country":
+      return "La cuenta conectada no pertenece al país de esta campaña.";
+    case "oauth_seller_401":
+    case "oauth_seller_403":
+      return "Mercado Libre autorizó la app, pero no permitió consultar el seller.";
+    default:
+      return "No pudimos completar la validación de Mercado Libre.";
+  }
+}
+
 export function CampaignOnboarding({ campaign, meliVerified, initialError }: Props) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -24,7 +46,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [legalReady, setLegalReady] = useState(false);
   const [campaignStatus, setCampaignStatus] = useState("draft");
-  const [message, setMessage] = useState(initialError ? "No pudimos completar la validación de Mercado Libre." : "");
+  const [message, setMessage] = useState(initialError ? oauthErrorMessage(initialError) : "");
   const [busy, setBusy] = useState(false);
   const phoneAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_PHONE_AUTH === "true";
 

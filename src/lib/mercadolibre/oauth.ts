@@ -7,6 +7,33 @@ type MeliOAuthConfig = {
   authUrl: string;
 };
 
+type MeliErrorBody = {
+  error?: unknown;
+};
+
+export class MeliOAuthError extends Error {
+  constructor(
+    public readonly stage: "token" | "seller",
+    public readonly status: number,
+    public readonly providerCode: string,
+  ) {
+    super(`Mercado Libre OAuth failed at ${stage} (${status}, ${providerCode}).`);
+    this.name = "MeliOAuthError";
+  }
+
+  get publicCode() {
+    return this.stage === "token"
+      ? `oauth_${this.providerCode}`
+      : `oauth_seller_${this.status}`;
+  }
+}
+
+function safeProviderCode(value: unknown): string {
+  return typeof value === "string" && /^[a-z0-9_]{2,80}$/.test(value)
+    ? value
+    : "token_failed";
+}
+
 export function isMeliPkceEnabled() {
   return process.env.MELI_USE_PKCE === "true";
 }
@@ -55,7 +82,8 @@ export async function exchangeAuthorizationCode(
   });
 
   if (!response.ok) {
-    throw new Error(`Mercado Libre rechazó el código OAuth (${response.status}).`);
+    const body = await response.json().catch(() => ({})) as MeliErrorBody;
+    throw new MeliOAuthError("token", response.status, safeProviderCode(body.error));
   }
 
   return (await response.json()) as {
@@ -72,7 +100,7 @@ export async function fetchMeliUser(accessToken: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`No se pudo verificar el seller (${response.status}).`);
+    throw new MeliOAuthError("seller", response.status, "seller_failed");
   }
 
   return (await response.json()) as {
