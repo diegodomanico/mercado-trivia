@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient, hasValidSupabaseSecretKeyFormat } from "@/lib/supabase/admin";
 import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const secretKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const supabase = {
     url: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     publishableKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
-    secretKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    secretKey: Boolean(secretKey),
+    secretKeyFormat: hasValidSupabaseSecretKeyFormat(secretKey),
     database: false,
     errorCode: null as string | null,
   };
 
-  if (supabase.url && supabase.secretKey) {
+  if (supabase.url && supabase.secretKeyFormat) {
     try {
       const { error } = await createSupabaseAdminClient()
         .from("campaigns")
@@ -26,6 +28,8 @@ export async function GET() {
       supabase.errorCode = getSafeSupabaseErrorCode(error);
       console.error("Supabase health check failed", error);
     }
+  } else if (supabase.secretKey && !supabase.secretKeyFormat) {
+    supabase.errorCode = "INVALID_SECRET_FORMAT";
   }
   const mercadoLibre = {
     clientId: Boolean(process.env.MELI_CLIENT_ID),
