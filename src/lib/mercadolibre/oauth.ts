@@ -13,7 +13,7 @@ type MeliErrorBody = {
 
 export class MeliOAuthError extends Error {
   constructor(
-    public readonly stage: "token" | "seller",
+    public readonly stage: "token" | "seller" | "items",
     public readonly status: number,
     public readonly providerCode: string,
   ) {
@@ -22,9 +22,8 @@ export class MeliOAuthError extends Error {
   }
 
   get publicCode() {
-    return this.stage === "token"
-      ? `oauth_${this.providerCode}`
-      : `oauth_seller_${this.status}`;
+    if (this.stage === "token") return `oauth_${this.providerCode}`;
+    return `oauth_${this.stage}_${this.status}`;
   }
 }
 
@@ -108,4 +107,24 @@ export async function fetchMeliUser(accessToken: string) {
     nickname: string;
     site_id: string;
   };
+}
+
+export async function fetchFirstActiveMeliItemId(userId: number, accessToken: string) {
+  const url = new URL(`https://api.mercadolibre.com/users/${userId}/items/search`);
+  url.searchParams.set("status", "active");
+  url.searchParams.set("limit", "1");
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new MeliOAuthError("items", response.status, "items_failed");
+  }
+
+  const body = (await response.json()) as { results?: unknown };
+  if (!Array.isArray(body.results)) return null;
+  const itemId = body.results.find((value): value is string => typeof value === "string");
+  return itemId ?? null;
 }

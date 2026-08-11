@@ -4,12 +4,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   exchangeAuthorizationCode,
+  fetchFirstActiveMeliItemId,
   fetchMeliUser,
   isMeliPkceEnabled,
   MeliOAuthError,
 } from "@/lib/mercadolibre/oauth";
+import { fetchMeliItem } from "@/lib/mercadolibre/items";
 import {
+  createPublicationProof,
   createSellerProof,
+  publicationProofCookie,
   sellerProofCookie,
   verificationProofMaxAge,
 } from "@/lib/mercadolibre/verification";
@@ -54,10 +58,29 @@ export async function GET(request: NextRequest) {
     if (seller.site_id !== countries[countryValue].siteId) {
       return campaignRedirect(request, campaign, { error: "wrong_country" });
     }
+    const itemId = await fetchFirstActiveMeliItemId(seller.id, token.access_token);
+    if (!itemId) {
+      return campaignRedirect(request, campaign, { error: "no_active_publication" });
+    }
+    const item = await fetchMeliItem(itemId);
+    if (
+      String(item.seller_id) !== String(seller.id) ||
+      item.site_id !== countries[countryValue].siteId ||
+      item.status !== "active"
+    ) {
+      return campaignRedirect(request, campaign, { error: "invalid_active_publication" });
+    }
 
     if (user) {
       const admin = createSupabaseAdminClient();
-      const { error } = await admin.from("seller_verifications").upsert(
+      const { data: campaignRow, error: campaignError } = await admin
+        .from("campaigns")
+        .select("id")
+        .eq("slug", campaign)
+        .single();
+      if (campaignError || !campaignRow) throw campaignError ?? new Error("Campaign not found");
+
+      const { error: sellerError } = await admin.from("seller_verifications").upsert(
         {
           user_id: user.id,
           country_code: countryValue,
@@ -67,10 +90,31 @@ export async function GET(request: NextRequest) {
         },
         { onConflict: "user_id,country_code" },
       );
-      if (error) throw error;
+      if (sellerError) throw sellerError;
+
+      const { error: publicationError } = await admin.from("verified_publications").upsert(
+        {
+          user_id: user.id,
+          campaign_id: campaignRow.id,
+          item_id: item.id,
+          seller_id: String(seller.id),
+          permalink: item.permalink,
+          title: item.title,
+          verified_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,campaign_id" },
+      );
+      if (publicationError) throw publicationError;
     }
 
     const response = campaignRedirect(request, campaign, { meli: "verified" });
+    const proofCookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+      path: "/",
+      maxAge: verificationProofMaxAge,
+    };
     response.cookies.set(
       sellerProofCookie,
       createSellerProof({
@@ -79,13 +123,19 @@ export async function GET(request: NextRequest) {
         sellerId: String(seller.id),
         nickname: seller.nickname,
       }),
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: verificationProofMaxAge,
-      },
+      proofCookieOptions,
+    );
+    response.cookies.set(
+      publicationProofCookie,
+      createPublicationProof({
+        country: countryValue,
+        campaign,
+        sellerId: String(seller.id),
+        itemId: item.id,
+        permalink: item.permalink,
+        title: item.title,
+      }),
+      proofCookieOptions,
     );
     response.cookies.delete("meli_oauth_state");
     response.cookies.delete("meli_oauth_verifier");

@@ -28,6 +28,13 @@ function oauthErrorMessage(code?: string) {
     case "oauth_seller_401":
     case "oauth_seller_403":
       return "Mercado Libre autorizó la app, pero no permitió consultar el seller.";
+    case "oauth_items_401":
+    case "oauth_items_403":
+      return "Mercado Libre autorizó la app, pero no permitió consultar las publicaciones del seller.";
+    case "no_active_publication":
+      return "La cuenta no tiene publicaciones activas para validar.";
+    case "invalid_active_publication":
+      return "No se pudo confirmar una publicación activa de esta cuenta.";
     default:
       return "No pudimos completar la validación de Mercado Libre.";
   }
@@ -39,7 +46,6 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   const [phoneSent, setPhoneSent] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [sellerVerified, setSellerVerified] = useState(meliVerified);
-  const [publication, setPublication] = useState("");
   const [publicationVerified, setPublicationVerified] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -117,27 +123,6 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
     }
   }
 
-  async function verifyPublication(event: React.FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setMessage("");
-    try {
-      const response = await fetch("/api/mercadolibre/verify-publication", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaign: campaign.slug, publication }),
-      });
-      const result = (await response.json()) as { ok?: boolean; error?: string; title?: string };
-      if (!response.ok || !result.ok) throw new Error(result.error || "No se pudo validar la publicación.");
-      setPublicationVerified(true);
-      setMessage(`Publicación verificada: ${result.title}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo validar la publicación.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function acceptCampaignTerms(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -162,10 +147,9 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   return (
     <section className="onboarding-card" aria-labelledby="registro-title">
       <div className="step-track" aria-label="Progreso de validación">
-        <span className={sellerVerified ? "done" : "active"}>1</span>
-        <span className={publicationVerified ? "done" : sellerVerified ? "active" : ""}>2</span>
-        <span className={phoneVerified ? "done" : publicationVerified ? "active" : ""}>3</span>
-        <span className={consentAccepted ? "done" : phoneVerified ? "active" : ""}>4</span>
+        <span className={sellerVerified && publicationVerified ? "done" : "active"}>1</span>
+        <span className={phoneVerified ? "done" : publicationVerified ? "active" : ""}>2</span>
+        <span className={consentAccepted ? "done" : phoneVerified ? "active" : ""}>3</span>
       </div>
       <h2 id="registro-title">Prepará tu participación</h2>
 
@@ -185,19 +169,13 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
         </div>
       )}
 
-      {!sellerVerified && (
+      {(!sellerVerified || !publicationVerified) && (
         <div className="onboarding-step">
-          <p>Ingresá con la cuenta de Mercado Libre que usás para vender.</p>
-          <a className="button button-meli" href={`/api/mercadolibre/authorize?country=${campaign.country}&campaign=${campaign.slug}`}>Conectar Mercado Libre</a>
+          <p>Conectá tu cuenta y comprobaremos automáticamente que tenga una publicación activa.</p>
+          <a className="button button-meli" href={`/api/mercadolibre/authorize?country=${campaign.country}&campaign=${campaign.slug}`}>
+            {sellerVerified ? "Volver a comprobar Mercado Libre" : "Conectar Mercado Libre"}
+          </a>
         </div>
-      )}
-
-      {sellerVerified && !publicationVerified && (
-        <form className="onboarding-step" onSubmit={verifyPublication}>
-          <label htmlFor="publication">Link de una publicación activa propia</label>
-          <input id="publication" type="url" placeholder="https://articulo.mercadolibre..." value={publication} onChange={(event) => setPublication(event.target.value)} required />
-          <button className="button button-primary" type="submit" disabled={busy}>Comprobar publicación</button>
-        </form>
       )}
 
       {phoneVerified && publicationVerified && !consentAccepted && (
