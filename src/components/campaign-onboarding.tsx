@@ -35,6 +35,18 @@ function oauthErrorMessage(code?: string) {
       return "La cuenta no tiene publicaciones activas para validar.";
     case "invalid_active_publication":
       return "No se pudo confirmar una publicación activa de esta cuenta.";
+    case "oauth_item_401":
+    case "oauth_item_403":
+      return "Mercado Libre encontró la publicación, pero no permitió consultar su detalle.";
+    case "oauth_item_404":
+      return "Mercado Libre informó una publicación activa que ya no está disponible.";
+    case "oauth_internal_proof":
+      return "Falta completar la configuración segura de la validación.";
+    case "oauth_internal_persistence":
+      return "No se pudo guardar la validación de la cuenta.";
+    case "oauth_internal_item":
+    case "oauth_internal_items":
+      return "No se pudo consultar automáticamente la publicación activa.";
     default:
       return "No pudimos completar la validación de Mercado Libre.";
   }

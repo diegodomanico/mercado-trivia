@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient, hasValidSupabaseSecretKeyFormat } from "@/lib/supabase/admin";
 import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
+import { isVerificationSigningConfigured } from "@/lib/mercadolibre/verification";
 
 export const dynamic = "force-dynamic";
 
@@ -36,10 +37,11 @@ export async function GET() {
     clientSecret: Boolean(process.env.MELI_CLIENT_SECRET),
     redirectBaseUrl: Boolean(process.env.MELI_OAUTH_REDIRECT_BASE_URL),
     pkce: process.env.MELI_USE_PKCE === "true",
+    signingSecret: isVerificationSigningConfigured(),
   };
   const checks = {
     supabase: supabase.url && supabase.publishableKey && supabase.secretKey && supabase.database,
-    mercadoLibre: mercadoLibre.clientId && mercadoLibre.clientSecret && mercadoLibre.redirectBaseUrl,
+    mercadoLibre: mercadoLibre.clientId && mercadoLibre.clientSecret && mercadoLibre.redirectBaseUrl && mercadoLibre.signingSecret,
   };
 
   const ready = Object.values(checks).every(Boolean);

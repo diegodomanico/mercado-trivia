@@ -33,6 +33,10 @@ function signingSecret() {
   return secret;
 }
 
+export function isVerificationSigningConfigured() {
+  return Boolean(process.env.APP_SIGNING_SECRET?.trim().length && process.env.APP_SIGNING_SECRET.trim().length >= 32);
+}
+
 function sign(encoded: string) {
   return createHmac("sha256", signingSecret()).update(encoded).digest("base64url");
 }

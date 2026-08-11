@@ -2,6 +2,13 @@ import { countries, type CountryCode } from "@/lib/countries";
 
 const itemPattern = /\b(MLA|MLC|MCO|MLM|MLU)-?(\d{6,})\b/i;
 
+export class MeliItemLookupError extends Error {
+  constructor(public readonly status: number) {
+    super(`Mercado Libre item lookup failed (${status}).`);
+    this.name = "MeliItemLookupError";
+  }
+}
+
 export function parseMeliItemId(value: string) {
   let decoded = value;
   try {
@@ -15,14 +22,17 @@ export function parseMeliItemId(value: string) {
   return `${match[1].toUpperCase()}${match[2]}`;
 }
 
-export async function fetchMeliItem(itemId: string) {
+export async function fetchMeliItem(itemId: string, accessToken?: string) {
   const response = await fetch(
     `https://api.mercadolibre.com/items/${encodeURIComponent(itemId)}`,
-    { cache: "no-store" },
+    {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      cache: "no-store",
+    },
   );
 
   if (!response.ok) {
-    throw new Error(`No se encontró una publicación válida (${response.status}).`);
+    throw new MeliItemLookupError(response.status);
   }
 
   return (await response.json()) as {

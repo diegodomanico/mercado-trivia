@@ -9,7 +9,7 @@ import {
   isMeliPkceEnabled,
   MeliOAuthError,
 } from "@/lib/mercadolibre/oauth";
-import { fetchMeliItem } from "@/lib/mercadolibre/items";
+import { fetchMeliItem, MeliItemLookupError } from "@/lib/mercadolibre/items";
 import {
   createPublicationProof,
   createSellerProof,
@@ -50,19 +50,24 @@ export async function GET(request: NextRequest) {
     return campaignRedirect(request, campaign || "melixp-chile-2026", { error: "oauth_state" });
   }
 
+  let callbackStage = "session";
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
+    callbackStage = "token";
     const token = await exchangeAuthorizationCode(countryValue, code, verifier);
+    callbackStage = "seller";
     const seller = await fetchMeliUser(token.access_token);
     if (seller.site_id !== countries[countryValue].siteId) {
       return campaignRedirect(request, campaign, { error: "wrong_country" });
     }
+    callbackStage = "items";
     const itemId = await fetchFirstActiveMeliItemId(seller.id, token.access_token);
     if (!itemId) {
       return campaignRedirect(request, campaign, { error: "no_active_publication" });
     }
-    const item = await fetchMeliItem(itemId);
+    callbackStage = "item";
+    const item = await fetchMeliItem(itemId, token.access_token);
     if (
       String(item.seller_id) !== String(seller.id) ||
       item.site_id !== countries[countryValue].siteId ||
@@ -72,6 +77,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (user) {
+      callbackStage = "persistence";
       const admin = createSupabaseAdminClient();
       const { data: campaignRow, error: campaignError } = await admin
         .from("campaigns")
@@ -115,6 +121,7 @@ export async function GET(request: NextRequest) {
       path: "/",
       maxAge: verificationProofMaxAge,
     };
+    callbackStage = "proof";
     response.cookies.set(
       sellerProofCookie,
       createSellerProof({
@@ -151,9 +158,14 @@ export async function GET(request: NextRequest) {
       });
       return campaignRedirect(request, campaign, { error: error.publicCode });
     }
+    if (error instanceof MeliItemLookupError) {
+      console.error("Mercado Libre item lookup failed", { status: error.status });
+      return campaignRedirect(request, campaign, { error: `oauth_item_${error.status}` });
+    }
     console.error("Mercado Libre OAuth callback failed", {
       name: error instanceof Error ? error.name : "UnknownError",
+      stage: callbackStage,
     });
-    return campaignRedirect(request, campaign, { error: "oauth_failed" });
+    return campaignRedirect(request, campaign, { error: `oauth_internal_${callbackStage}` });
   }
 }
