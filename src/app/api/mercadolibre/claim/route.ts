@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSafeSupabaseErrorCode } from "@/lib/supabase/errors";
@@ -9,12 +10,20 @@ import {
   sellerProofCookie,
 } from "@/lib/mercadolibre/verification";
 
+const bodySchema = z.object({
+  whatsapp: z.preprocess(
+    (value) => typeof value === "string" ? value.replace(/[^\d+]/g, "") : value,
+    z.string().regex(/^\+[1-9][0-9]{7,14}$/),
+  ),
+});
+
 export async function POST(request: NextRequest) {
   try {
+    const body = bodySchema.parse(await request.json());
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.phone_confirmed_at) {
-      return NextResponse.json({ error: "Primero validá tu WhatsApp." }, { status: 401 });
+    if (!user?.email || !user.email_confirmed_at) {
+      return NextResponse.json({ error: "Primero validá tu correo." }, { status: 401 });
     }
 
     const seller = readSellerProof(request.cookies.get(sellerProofCookie)?.value);
@@ -71,11 +80,30 @@ export async function POST(request: NextRequest) {
     );
     if (publicationError) throw publicationError;
 
+    const { error: contactError } = await admin.from("participant_contacts").upsert(
+      {
+        user_id: user.id,
+        campaign_id: campaign.id,
+        email: user.email.toLowerCase(),
+        whatsapp_e164: body.whatsapp,
+        email_verified_at: user.email_confirmed_at,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,campaign_id" },
+    );
+    if (contactError) throw contactError;
+
     const response = NextResponse.json({ ok: true });
     response.cookies.delete(sellerProofCookie);
     response.cookies.delete(publicationProofCookie);
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Ingresá el WhatsApp con código de país, por ejemplo +5411..." },
+        { status: 400 },
+      );
+    }
     return NextResponse.json({ error: "No se pudo vincular la validación comercial." }, { status: 500 });
   }
 }

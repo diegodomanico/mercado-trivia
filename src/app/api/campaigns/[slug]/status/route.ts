@@ -40,7 +40,8 @@ export async function GET(
     if (!user) {
       return NextResponse.json({
         authenticated: false,
-        phoneVerified: false,
+        emailVerified: false,
+        contactProvided: false,
         sellerVerified: Boolean(temporarySeller),
         sellerNickname: temporarySeller ? sellerProof.nickname : null,
         publicationVerified: Boolean(temporaryPublication),
@@ -51,12 +52,13 @@ export async function GET(
       });
     }
 
-    const [sellerResult, publicationResult, consentResult] = await Promise.all([
+    const [sellerResult, publicationResult, contactResult, consentResult] = await Promise.all([
       admin.from("seller_verifications").select("id,nickname").eq("user_id", user.id).eq("country_code", campaign.country_code).maybeSingle(),
       admin.from("verified_publications").select("id,title").eq("user_id", user.id).eq("campaign_id", campaign.id).maybeSingle(),
+      admin.from("participant_contacts").select("user_id").eq("user_id", user.id).eq("campaign_id", campaign.id).maybeSingle(),
       admin.from("consent_acceptances").select("id").eq("user_id", user.id).eq("campaign_id", campaign.id).maybeSingle(),
     ]);
-    const relatedError = sellerResult.error ?? publicationResult.error ?? consentResult.error;
+    const relatedError = sellerResult.error ?? publicationResult.error ?? contactResult.error ?? consentResult.error;
     if (relatedError) {
       console.error("Campaign participant status lookup failed", relatedError);
       return NextResponse.json(
@@ -66,11 +68,13 @@ export async function GET(
     }
     const seller = sellerResult.data;
     const publication = publicationResult.data;
+    const contact = contactResult.data;
     const consent = consentResult.data;
 
     return NextResponse.json({
       authenticated: true,
-      phoneVerified: Boolean(user.phone_confirmed_at),
+      emailVerified: Boolean(user.email_confirmed_at),
+      contactProvided: Boolean(contact),
       sellerVerified: Boolean(seller || temporarySeller),
       sellerNickname: seller?.nickname ?? (temporarySeller ? sellerProof.nickname : null),
       publicationVerified: Boolean(publication || temporaryPublication),

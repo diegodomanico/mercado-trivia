@@ -53,10 +53,12 @@ function oauthErrorMessage(code?: string) {
 }
 
 export function CampaignOnboarding({ campaign, meliVerified, initialError }: Props) {
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [phoneSent, setPhoneSent] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [contactProvided, setContactProvided] = useState(false);
   const [sellerVerified, setSellerVerified] = useState(meliVerified);
   const [publicationVerified, setPublicationVerified] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
@@ -66,7 +68,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
   const [campaignStatus, setCampaignStatus] = useState("draft");
   const [message, setMessage] = useState(initialError ? oauthErrorMessage(initialError) : "");
   const [busy, setBusy] = useState(false);
-  const phoneAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_PHONE_AUTH === "true";
+  const emailAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_AUTH === "true";
 
   useEffect(() => {
     let cancelled = false;
@@ -78,7 +80,8 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
       })
       .then((status) => {
         if (cancelled) return;
-        setPhoneVerified(Boolean(status.phoneVerified));
+        setEmailVerified(Boolean(status.emailVerified));
+        setContactProvided(Boolean(status.contactProvided));
         setSellerVerified(Boolean(status.sellerVerified));
         setPublicationVerified(Boolean(status.publicationVerified));
         setConsentAccepted(Boolean(status.consentAccepted));
@@ -93,23 +96,35 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
     return () => { cancelled = true; };
   }, [campaign.slug]);
 
-  async function sendOtp() {
+  async function sendEmailOtp() {
     setBusy(true);
     setMessage("");
     try {
-      if (!phoneAuthEnabled) throw new Error("La verificación de WhatsApp aún no está habilitada.");
+      if (!emailAuthEnabled) throw new Error("La verificación por correo aún no está habilitada.");
       const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithOtp({
-        phone,
-        options: { channel: "whatsapp" },
+        email,
+        options: { shouldCreateUser: true },
       });
       if (error) throw error;
-      setPhoneSent(true);
-      setMessage("Te enviamos un código por WhatsApp.");
+      setEmailSent(true);
+      setMessage("Te enviamos un código por correo.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo enviar el código.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function claimCommercialVerification() {
+    const claimResponse = await fetch("/api/mercadolibre/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ whatsapp: phone }),
+    });
+    const claimResult = await claimResponse.json();
+    if (!claimResponse.ok) {
+      throw new Error(claimResult.error || "No se pudo vincular la validación comercial.");
     }
   }
 
@@ -118,18 +133,29 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
     setMessage("");
     try {
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
       if (error) throw error;
 
-      const claimResponse = await fetch("/api/mercadolibre/claim", { method: "POST" });
-      const claimResult = await claimResponse.json();
-      if (!claimResponse.ok) {
-        throw new Error(claimResult.error || "No se pudo vincular la validación comercial.");
-      }
-      setPhoneVerified(true);
-      setMessage("WhatsApp verificado. Tu identidad comercial quedó vinculada.");
+      await claimCommercialVerification();
+      setEmailVerified(true);
+      setContactProvided(true);
+      setMessage("Correo verificado. Tu identidad comercial y contacto quedaron vinculados.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "El código no es válido.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveContact() {
+    setBusy(true);
+    setMessage("");
+    try {
+      await claimCommercialVerification();
+      setContactProvided(true);
+      setMessage("WhatsApp de contacto guardado.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo guardar el contacto.");
     } finally {
       setBusy(false);
     }
@@ -160,20 +186,28 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
     <section className="onboarding-card" aria-labelledby="registro-title">
       <div className="step-track" aria-label="Progreso de validación">
         <span className={sellerVerified && publicationVerified ? "done" : "active"}>1</span>
-        <span className={phoneVerified ? "done" : publicationVerified ? "active" : ""}>2</span>
-        <span className={consentAccepted ? "done" : phoneVerified ? "active" : ""}>3</span>
+        <span className={emailVerified && contactProvided ? "done" : publicationVerified ? "active" : ""}>2</span>
+        <span className={consentAccepted ? "done" : emailVerified && contactProvided ? "active" : ""}>3</span>
       </div>
       <h2 id="registro-title">Prepará tu participación</h2>
 
-      {publicationVerified && !phoneVerified && (
+      {publicationVerified && (!emailVerified || !contactProvided) && (
         <div className="onboarding-step">
+          {!emailVerified && (
+            <>
+              <label htmlFor="email">Correo</label>
+              <input id="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+            </>
+          )}
           <label htmlFor="phone">WhatsApp con código de país</label>
           <input id="phone" inputMode="tel" autoComplete="tel" placeholder="+56 9... / +54 9..." value={phone} onChange={(event) => setPhone(event.target.value)} />
-          {!phoneSent ? (
-            <button className="button button-primary" onClick={sendOtp} disabled={busy || !phone}>Validar WhatsApp</button>
+          {emailVerified ? (
+            <button className="button button-primary" onClick={saveContact} disabled={busy || !phone}>Guardar WhatsApp</button>
+          ) : !emailSent ? (
+            <button className="button button-primary" onClick={sendEmailOtp} disabled={busy || !email || !phone}>Enviar código por correo</button>
           ) : (
             <>
-              <label htmlFor="otp">Código recibido</label>
+              <label htmlFor="otp">Código recibido por correo</label>
               <input id="otp" inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} />
               <button className="button button-primary" onClick={verifyOtp} disabled={busy || otp.length < 6}>Confirmar código</button>
             </>
@@ -190,7 +224,7 @@ export function CampaignOnboarding({ campaign, meliVerified, initialError }: Pro
         </div>
       )}
 
-      {phoneVerified && publicationVerified && !consentAccepted && (
+      {emailVerified && contactProvided && publicationVerified && !consentAccepted && (
         <form className="onboarding-step consent-step" onSubmit={acceptCampaignTerms}>
           <strong>Último paso: bases y privacidad</strong>
           {!legalReady && <p>Los documentos legales todavía están pendientes de publicación.</p>}
